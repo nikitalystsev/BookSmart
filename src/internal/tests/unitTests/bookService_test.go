@@ -2,7 +2,6 @@ package unitTests
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories"
 	"BookSmart/internal/services/impl"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
@@ -26,7 +25,7 @@ func TestBookService_Create(t *testing.T) {
 		{
 			name: "successful creation",
 			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, repositories.ErrNotFound)
+				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errors.New("[!] ERROR! Object not found"))
 				m.EXPECT().Create(gomock.Any(), book).Return(nil)
 			},
 			expectedError: nil,
@@ -48,7 +47,7 @@ func TestBookService_Create(t *testing.T) {
 		{
 			name: "error creating book",
 			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, repositories.ErrNotFound)
+				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errors.New("[!] ERROR! Object not found"))
 				m.EXPECT().Create(gomock.Any(), book).Return(errors.New("create error"))
 			},
 			expectedError: errors.New("[!] ERROR! Error creating book: create error"),
@@ -95,7 +94,7 @@ func TestBookService_DeleteByTitle(t *testing.T) {
 		{
 			name: "book not found",
 			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, repositories.ErrNotFound)
+				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errors.New("[!] ERROR! Object not found"))
 			},
 			expectedError: errors.New("[!] ERROR! Book with this title does not exist"),
 		},

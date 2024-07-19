@@ -27,15 +27,12 @@ func NewLibCardService(libCardRepo repositories.ILibCardRepo) *LibCardService {
 
 func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error {
 	existingLibCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
-	if err != nil && !errors.Is(err, repositories.ErrNotFound) {
+	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
 		return fmt.Errorf("[!] ERROR! Error checking libCard existence: %v", err)
 	}
 
-	if existingLibCard != nil && lcs.checkValidity(existingLibCard) {
-		return fmt.Errorf("[!] ERROR! User with ID %v already has a valid library card", readerID)
-	}
-	if existingLibCard != nil && !lcs.checkValidity(existingLibCard) {
-		return fmt.Errorf("[!] ERROR! User with ID %v has an expired library card that requires renewal", readerID)
+	if existingLibCard != nil {
+		return fmt.Errorf("[!] ERROR! User with ID %v already has a library card", readerID)
 	}
 
 	libCardNum, _ := lcs.generateLibCardNum()
@@ -60,16 +57,6 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 func (lcs *LibCardService) Update(libCard *models.LibCardModel) error {
 	// логика обновления
 	return nil
-}
-
-func (lcs *LibCardService) checkValidity(libCard *models.LibCardModel) bool {
-	if !libCard.ActionStatus {
-		return false
-	}
-
-	expiryDate := libCard.IssueDate.AddDate(0, 0, libCard.Validity)
-
-	return time.Now().Before(expiryDate)
 }
 
 func (lcs *LibCardService) generateLibCardNum() (string, error) {

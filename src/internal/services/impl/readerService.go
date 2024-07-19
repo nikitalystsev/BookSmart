@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+const MaxBooksPerReader = 5
+
 type ReaderService struct {
 	ReaderRepo      repositories.IReaderRepo
 	ReservationRepo repositories.IReservationRepo
@@ -35,7 +37,7 @@ func CreateNewReaderService(
 
 func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderModel) error {
 	existingReader, err := rs.ReaderRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
-	if err != nil && !errors.Is(err, repositories.ErrNotFound) {
+	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 
@@ -43,7 +45,6 @@ func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderMode
 		return errors.New("[!] ERROR! Reader with this phoneNumbers already exists")
 	}
 
-	// Хеширование пароля
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(reader.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("[!] ERROR! Error hashing password: %v", err)
@@ -51,7 +52,6 @@ func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderMode
 
 	reader.Password = string(hashedPassword)
 
-	// Создание нового пользователя
 	err = rs.ReaderRepo.Create(ctx, reader)
 	if err != nil {
 		return fmt.Errorf("[!] ERROR! Error creating reader: %v", err)
@@ -62,8 +62,7 @@ func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderMode
 
 func (rs *ReaderService) Login(ctx context.Context, reader *dto.ReaderLoginDTO) error {
 	exitingReader, err := rs.ReaderRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
-
-	if err != nil && !errors.Is(err, repositories.ErrNotFound) {
+	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 
@@ -72,7 +71,6 @@ func (rs *ReaderService) Login(ctx context.Context, reader *dto.ReaderLoginDTO) 
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(exitingReader.Password), []byte(reader.Password))
-
 	if err != nil {
 		return fmt.Errorf("[!] ERROR! Wrong password")
 	}
@@ -82,7 +80,7 @@ func (rs *ReaderService) Login(ctx context.Context, reader *dto.ReaderLoginDTO) 
 
 func (rs *ReaderService) ReserveBook(ctx context.Context, readerID, bookID uuid.UUID) error {
 	existingReader, err := rs.ReaderRepo.GetByID(ctx, readerID)
-	if err != nil && !errors.Is(err, repositories.ErrNotFound) {
+	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 	if existingReader == nil {
@@ -90,7 +88,7 @@ func (rs *ReaderService) ReserveBook(ctx context.Context, readerID, bookID uuid.
 	}
 
 	existingBook, err := rs.BookRepo.GetByID(ctx, bookID)
-	if err != nil && !errors.Is(err, repositories.ErrNotFound) {
+	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 	if existingBook == nil {
@@ -117,7 +115,7 @@ func (rs *ReaderService) ReserveBook(ctx context.Context, readerID, bookID uuid.
 	if err != nil {
 		return fmt.Errorf("[!] ERROR! Error checking active reservations: %v", err)
 	}
-	if len(activeReservations) >= 5 {
+	if len(activeReservations) >= MaxBooksPerReader {
 		return fmt.Errorf("[!] ERROR! Reader has reached the limit of active reservations")
 	}
 
@@ -129,13 +127,17 @@ func (rs *ReaderService) ReserveBook(ctx context.Context, readerID, bookID uuid.
 		return fmt.Errorf("[!] ERROR! Reader does not meet the age requirement for this book")
 	}
 
+	if existingBook.Rarity == BookRarityUnique {
+		return fmt.Errorf("[!] ERROR! This book is unique and cannot be reserved")
+	}
+
 	newReservation := &models.ReservationModel{
 		ID:         uuid.New(),
 		ReaderID:   readerID,
 		BookID:     bookID,
 		IssueDate:  time.Now(),
-		ReturnDate: time.Now().AddDate(0, 0, 14),
-		State:      "Выдана",
+		ReturnDate: time.Now().AddDate(0, 0, ReservationIssuePeriodDays),
+		State:      ReservationIssued,
 	}
 
 	err = rs.ReservationRepo.Create(ctx, newReservation)
@@ -143,6 +145,7 @@ func (rs *ReaderService) ReserveBook(ctx context.Context, readerID, bookID uuid.
 		return fmt.Errorf("[!] ERROR! Error creating reservation: %v", err)
 	}
 
+	// TODO перенести в репозиторий, наверное
 	existingBook.CopiesNumber -= 1
 
 	err = rs.BookRepo.Update(ctx, existingBook)
@@ -170,15 +173,15 @@ func (rs *ReaderService) ExtendBook(ctx context.Context, reservation *models.Res
 		return fmt.Errorf("[!] ERROR! Reader has overdue books")
 	}
 
-	if reservation.State == "Закрыта" {
+	if reservation.State == ReservationClosed {
 		return fmt.Errorf("[!] ERROR! This reservation is already closed")
 	}
 
-	if reservation.State == "Просрочена" {
+	if reservation.State == ReservationOverdue {
 		return fmt.Errorf("[!] ERROR! This reservation is past its return date")
 	}
 
-	if reservation.State == "Продлена" {
+	if reservation.State == ReservationExtended {
 		return fmt.Errorf("[!] ERROR! This reservation has already been extended")
 	}
 
@@ -187,13 +190,13 @@ func (rs *ReaderService) ExtendBook(ctx context.Context, reservation *models.Res
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 
-	if existingBook.Rarity == "Не продлевается" {
+	if existingBook.Rarity != BookRarityCommon {
 		return fmt.Errorf("[!] ERROR! This book is not renewed")
 	}
 
 	reservation.IssueDate = time.Now()
-	reservation.ReturnDate = time.Now().AddDate(0, 0, 14)
-	reservation.State = "Продлена"
+	reservation.ReturnDate = time.Now().AddDate(0, 0, ReservationExtensionPeriodDays)
+	reservation.State = ReservationExtended
 
 	err = rs.ReservationRepo.Update(ctx, reservation)
 	if err != nil {

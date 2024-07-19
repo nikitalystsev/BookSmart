@@ -3,12 +3,8 @@ package repositories
 import (
 	"BookSmart/internal/models"
 	"context"
-	"errors"
 	"github.com/google/uuid"
 )
-
-// ErrNotFound my repository errors
-var ErrNotFound = errors.New("[-] ERROR! Book was not found")
 
 //go:generate mockgen -source=IBookRepo.go -destination=../tests/unitTests/mocks/mockIBookRepo.go
 

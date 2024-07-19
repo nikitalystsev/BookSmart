@@ -2,7 +2,6 @@ package unitTests
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories"
 	"BookSmart/internal/services/impl"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
@@ -40,7 +39,7 @@ func TestReservationService_Create(t *testing.T) {
 			mockBehavior: func(res *mockrepositories.MockIReservationRepo, b *mockrepositories.MockIBookRepo, r *mockrepositories.MockIReaderRepo, readerID, bookID uuid.UUID) {
 				r.EXPECT().GetByID(context.Background(), readerID).Return(&models.ReaderModel{ID: readerID}, nil)
 				b.EXPECT().GetByID(context.Background(), bookID).Return(&models.BookModel{ID: bookID}, nil)
-				res.EXPECT().GetByReaderAndBook(context.Background(), readerID, bookID).Return(nil, repositories.ErrNotFound)
+				res.EXPECT().GetByReaderAndBook(context.Background(), readerID, bookID).Return(nil, errors.New("[!] ERROR! Object not found"))
 				res.EXPECT().Create(context.Background(), gomock.Any()).Return(nil)
 			},
 			expectedError: nil,
@@ -112,7 +111,7 @@ func TestReservationService_Create(t *testing.T) {
 			mockBehavior: func(res *mockrepositories.MockIReservationRepo, b *mockrepositories.MockIBookRepo, r *mockrepositories.MockIReaderRepo, readerID, bookID uuid.UUID) {
 				r.EXPECT().GetByID(context.Background(), readerID).Return(&models.ReaderModel{ID: readerID}, nil)
 				b.EXPECT().GetByID(context.Background(), bookID).Return(&models.BookModel{ID: bookID}, nil)
-				res.EXPECT().GetByReaderAndBook(context.Background(), readerID, bookID).Return(nil, repositories.ErrNotFound)
+				res.EXPECT().GetByReaderAndBook(context.Background(), readerID, bookID).Return(nil, errors.New("[!] ERROR! Object not found"))
 				res.EXPECT().Create(context.Background(), gomock.Any()).Return(errors.New("error creating reservation"))
 			},
 			expectedError: fmt.Errorf("[!] ERROR! Error creating reservation: error creating reservation"),
@@ -173,7 +172,7 @@ func TestReservationService_Update(t *testing.T) {
 			name:        "reservation not found",
 			reservation: testReservation,
 			mockBehavior: func(res *mockrepositories.MockIReservationRepo, reservation *models.ReservationModel) {
-				res.EXPECT().GetByID(context.Background(), reservation.ID).Return(nil, repositories.ErrNotFound)
+				res.EXPECT().GetByID(context.Background(), reservation.ID).Return(nil, errors.New("[!] ERROR! Object not found"))
 			},
 			expectedError: fmt.Errorf("[!] ERROR! Reservation with ID %v not found", testReservation.ID),
 		},

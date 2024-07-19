@@ -2,7 +2,6 @@ package unitTests
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories"
 	"BookSmart/internal/services/impl"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
@@ -30,7 +29,7 @@ func TestLibCardService_Create(t *testing.T) {
 			name:     "successful creation",
 			readerID: testReaderID,
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
-				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, repositories.ErrNotFound)
+				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errors.New("[!] ERROR! Object not found"))
 
 				m.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 			},
@@ -80,7 +79,7 @@ func TestLibCardService_Create(t *testing.T) {
 			name:     "error creating library card",
 			readerID: testReaderID,
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
-				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, repositories.ErrNotFound)
+				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errors.New("[!] ERROR! Object not found"))
 				m.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("create error"))
 			},
 			expectedError: errors.New("[!] ERROR! Error creating libCard: create error"),

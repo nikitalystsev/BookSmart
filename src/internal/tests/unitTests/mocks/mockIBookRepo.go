@@ -93,3 +93,17 @@ func (mr *MockIBookRepoMockRecorder) GetByTitle(ctx, title interface{}) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTitle", reflect.TypeOf((*MockIBookRepo)(nil).GetByTitle), ctx, title)
 }
+
+// Update mocks base method.
+func (m *MockIBookRepo) Update(ctx context.Context, book *models.BookModel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, book)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockIBookRepoMockRecorder) Update(ctx, book interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIBookRepo)(nil).Update), ctx, book)
+}

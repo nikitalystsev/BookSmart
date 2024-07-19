@@ -8,6 +8,12 @@ import (
 	"fmt"
 )
 
+const (
+	BookRarityCommon = "Обычная"
+	BookRarityRare   = "Редкая"
+	BookRarityUnique = "Уникальная"
+)
+
 type BookService struct {
 	bookRepo repositories.IBookRepo
 }
@@ -18,7 +24,7 @@ func NewBookService(bookRepo repositories.IBookRepo) *BookService {
 
 func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByTitle(ctx, book.Title)
-	if err != nil && !errors.Is(err, repositories.ErrNotFound) {
+	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 
@@ -36,7 +42,7 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 
 func (bs *BookService) DeleteByTitle(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByTitle(ctx, book.Title)
-	if err != nil && !errors.Is(err, repositories.ErrNotFound) {
+	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 
