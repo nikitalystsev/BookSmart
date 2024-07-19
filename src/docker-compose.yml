@@ -1,0 +1,5 @@
+services:
+  unit-tests:
+    build: ./
+    command: ["go", "test", "-v", "./internal/tests/unitTests/..."]
+    container_name: unitTests-container
