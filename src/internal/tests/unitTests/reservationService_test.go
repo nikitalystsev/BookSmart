@@ -3,7 +3,7 @@ package unitTests
 import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
-	"BookSmart/internal/services/impl"
+	"BookSmart/internal/services/implementations"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
 	"errors"
@@ -126,7 +126,7 @@ func TestReservationService_Create(t *testing.T) {
 			mockReaderRepo := mockrepositories.NewMockIReaderRepo(ctrl)
 			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
 			mockReservationRepo := mockrepositories.NewMockIReservationRepo(ctrl)
-			reservationService := impl.NewReservationService(mockReservationRepo, mockBookRepo, mockReaderRepo)
+			reservationService := implementations.NewReservationService(mockReservationRepo, mockBookRepo, mockReaderRepo)
 
 			readerID := testCase.readerID
 			bookID := testCase.bookID
@@ -151,7 +151,7 @@ func TestReservationService_Update(t *testing.T) {
 		BookID:     uuid.New(),
 		IssueDate:  time.Now(),
 		ReturnDate: time.Now().AddDate(0, 0, 14),
-		State:      impl.ReservationIssued,
+		State:      implementations.ReservationIssued,
 	}
 
 	testTable := []struct {
@@ -202,7 +202,7 @@ func TestReservationService_Update(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockReservationRepo := mockrepositories.NewMockIReservationRepo(ctrl)
-			reservationService := impl.NewReservationService(mockReservationRepo, nil, nil)
+			reservationService := implementations.NewReservationService(mockReservationRepo, nil, nil)
 
 			testCase.mockBehavior(mockReservationRepo, testCase.reservation)
 

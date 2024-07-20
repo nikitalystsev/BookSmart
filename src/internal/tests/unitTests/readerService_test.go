@@ -3,7 +3,7 @@ package unitTests
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
-	"BookSmart/internal/services/impl"
+	"BookSmart/internal/services/implementations"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
 	"github.com/golang/mock/gomock"
@@ -40,7 +40,7 @@ func TestReaderService_Register(t *testing.T) {
 			mockReservationRepo := mockrepositories.NewMockIReservationRepo(ctrl)
 			mockLibCardRepo := mockrepositories.NewMockILibCardRepo(ctrl)
 			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
-			readerService := impl.CreateNewReaderService(
+			readerService := implementations.CreateNewReaderService(
 				mockReaderRepo,
 				mockReservationRepo,
 				mockBookRepo,
@@ -88,7 +88,7 @@ func TestReaderService_Login(t *testing.T) {
 			mockReservationRepo := mockrepositories.NewMockIReservationRepo(ctrl)
 			mockLibCardRepo := mockrepositories.NewMockILibCardRepo(ctrl)
 			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
-			readerService := impl.CreateNewReaderService(
+			readerService := implementations.CreateNewReaderService(
 				mockReaderRepo,
 				mockReservationRepo,
 				mockBookRepo,

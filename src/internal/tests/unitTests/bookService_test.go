@@ -3,7 +3,7 @@ package unitTests
 import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
-	"BookSmart/internal/services/impl"
+	"BookSmart/internal/services/implementations"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
 	"errors"
@@ -60,7 +60,7 @@ func TestBookService_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
-			bookService := impl.NewBookService(mockBookRepo)
+			bookService := implementations.NewBookService(mockBookRepo)
 			newBook := &models.BookModel{
 				ID:     uuid.New(),
 				Title:  "The Great Gatsby",
@@ -121,7 +121,7 @@ func TestBookService_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
-			bookService := impl.NewBookService(mockBookRepo)
+			bookService := implementations.NewBookService(mockBookRepo)
 			newBook := &models.BookModel{
 				ID:     uuid.New(),
 				Title:  "The Great Gatsby",
