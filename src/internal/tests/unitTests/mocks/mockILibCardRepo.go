@@ -13,7 +13,7 @@ import (
 	uuid "github.com/google/uuid"
 )
 
-// MockILibCardRepo is a mock of ILibCardRepo interface.
+// MockILibCardRepo is a mock of ILibCardRepo interfaces.
 type MockILibCardRepo struct {
 	ctrl     *gomock.Controller
 	recorder *MockILibCardRepoMockRecorder

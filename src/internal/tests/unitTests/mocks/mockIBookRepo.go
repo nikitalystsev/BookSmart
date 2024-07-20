@@ -13,7 +13,7 @@ import (
 	uuid "github.com/google/uuid"
 )
 
-// MockIBookRepo is a mock of IBookRepo interface.
+// MockIBookRepo is a mock of IBookRepo interfaces.
 type MockIBookRepo struct {
 	ctrl     *gomock.Controller
 	recorder *MockIBookRepoMockRecorder

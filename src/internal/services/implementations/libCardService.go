@@ -60,6 +60,16 @@ func (lcs *LibCardService) Update(libCard *models.LibCardModel) error {
 	return nil
 }
 
+func (lcs *LibCardService) IsValidLibCard(libCard *models.LibCardModel) bool {
+	if !libCard.ActionStatus {
+		return false
+	}
+
+	expiryDate := libCard.IssueDate.AddDate(0, 0, libCard.Validity)
+
+	return time.Now().Before(expiryDate)
+}
+
 func (lcs *LibCardService) generateLibCardNum() (string, error) {
 	result := make([]byte, libCardNumLength)
 

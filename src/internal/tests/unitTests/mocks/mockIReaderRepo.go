@@ -13,7 +13,7 @@ import (
 	uuid "github.com/google/uuid"
 )
 
-// MockIReaderRepo is a mock of IReaderRepo interface.
+// MockIReaderRepo is a mock of IReaderRepo interfaces.
 type MockIReaderRepo struct {
 	ctrl     *gomock.Controller
 	recorder *MockIReaderRepoMockRecorder

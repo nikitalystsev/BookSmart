@@ -13,7 +13,7 @@ import (
 	uuid "github.com/google/uuid"
 )
 
-// MockIReservationRepo is a mock of IReservationRepo interface.
+// MockIReservationRepo is a mock of IReservationRepo interfaces.
 type MockIReservationRepo struct {
 	ctrl     *gomock.Controller
 	recorder *MockIReservationRepoMockRecorder
