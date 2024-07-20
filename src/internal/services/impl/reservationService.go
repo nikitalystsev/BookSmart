@@ -2,7 +2,8 @@ package impl
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories"
+	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/interfaces"
 	"context"
 	"errors"
 	"fmt"
@@ -23,15 +24,15 @@ const (
 )
 
 type ReservationService struct {
-	reservationRepo repositories.IReservationRepo
-	bookRepo        repositories.IBookRepo
-	readerRepo      repositories.IReaderRepo
+	reservationRepo interfaces.IReservationRepo
+	bookRepo        interfaces.IBookRepo
+	readerRepo      interfaces.IReaderRepo
 }
 
 func NewReservationService(
-	reservationRepo repositories.IReservationRepo,
-	bookRepo repositories.IBookRepo,
-	readerRepo repositories.IReaderRepo,
+	reservationRepo interfaces.IReservationRepo,
+	bookRepo interfaces.IBookRepo,
+	readerRepo interfaces.IReaderRepo,
 ) *ReservationService {
 	return &ReservationService{
 		reservationRepo: reservationRepo,
@@ -43,7 +44,7 @@ func NewReservationService(
 func (rs *ReservationService) Create(ctx context.Context, readerID, bookID uuid.UUID) error {
 
 	exitingReader, err := rs.readerRepo.GetByID(ctx, readerID)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 	if exitingReader == nil {
@@ -51,7 +52,7 @@ func (rs *ReservationService) Create(ctx context.Context, readerID, bookID uuid.
 	}
 
 	exitingBook, err := rs.bookRepo.GetByID(ctx, bookID)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 	if exitingBook == nil {
@@ -59,7 +60,7 @@ func (rs *ReservationService) Create(ctx context.Context, readerID, bookID uuid.
 	}
 
 	existingReservation, err := rs.reservationRepo.GetByReaderAndBook(ctx, readerID, bookID)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking existing reservation: %v", err)
 	}
 	if existingReservation != nil {
@@ -85,7 +86,7 @@ func (rs *ReservationService) Create(ctx context.Context, readerID, bookID uuid.
 
 func (rs *ReservationService) Update(ctx context.Context, reservation *models.ReservationModel) error {
 	existingReservation, err := rs.reservationRepo.GetByID(ctx, reservation.ID)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking reservation existence: %v", err)
 	}
 

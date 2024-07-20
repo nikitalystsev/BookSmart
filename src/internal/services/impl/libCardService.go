@@ -2,7 +2,8 @@ package impl
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories"
+	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/interfaces"
 	"context"
 	"crypto/rand"
 	"errors"
@@ -18,16 +19,16 @@ const (
 )
 
 type LibCardService struct {
-	libCardRepo repositories.ILibCardRepo
+	libCardRepo interfaces.ILibCardRepo
 }
 
-func NewLibCardService(libCardRepo repositories.ILibCardRepo) *LibCardService {
+func NewLibCardService(libCardRepo interfaces.ILibCardRepo) *LibCardService {
 	return &LibCardService{libCardRepo: libCardRepo}
 }
 
 func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error {
 	existingLibCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking libCard existence: %v", err)
 	}
 

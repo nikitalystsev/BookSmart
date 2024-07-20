@@ -2,6 +2,7 @@ package unitTests
 
 import (
 	"BookSmart/internal/models"
+	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/services/impl"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
@@ -25,7 +26,7 @@ func TestBookService_Create(t *testing.T) {
 		{
 			name: "successful creation",
 			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errors.New("[!] ERROR! Object not found"))
+				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errs.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), book).Return(nil)
 			},
 			expectedError: nil,
@@ -47,7 +48,7 @@ func TestBookService_Create(t *testing.T) {
 		{
 			name: "error creating book",
 			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errors.New("[!] ERROR! Object not found"))
+				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errs.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), book).Return(errors.New("create error"))
 			},
 			expectedError: errors.New("[!] ERROR! Error creating book: create error"),
@@ -74,7 +75,7 @@ func TestBookService_Create(t *testing.T) {
 	}
 }
 
-func TestBookService_DeleteByTitle(t *testing.T) {
+func TestBookService_Delete(t *testing.T) {
 
 	type mockBehaviour func(m *mockrepositories.MockIBookRepo, book *models.BookModel)
 
@@ -94,7 +95,7 @@ func TestBookService_DeleteByTitle(t *testing.T) {
 		{
 			name: "book not found",
 			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errors.New("[!] ERROR! Object not found"))
+				m.EXPECT().GetByTitle(gomock.Any(), book.Title).Return(nil, errs.ErrNotFound)
 			},
 			expectedError: errors.New("[!] ERROR! Book with this title does not exist"),
 		},
@@ -129,7 +130,7 @@ func TestBookService_DeleteByTitle(t *testing.T) {
 
 			testCase.mockBehavior(mockBookRepo, newBook)
 
-			err := bookService.DeleteByTitle(context.Background(), newBook)
+			err := bookService.Delete(context.Background(), newBook)
 			assert.Equal(t, testCase.expectedError, err)
 		})
 	}

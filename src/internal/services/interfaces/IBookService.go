@@ -1,4 +1,4 @@
-package services
+package interfaces
 
 import (
 	"BookSmart/internal/models"
@@ -7,5 +7,5 @@ import (
 
 type IBookService interface {
 	Create(ctx context.Context, book *models.BookModel) error
-	DeleteByTitle(ctx context.Context, title string) error
+	Delete(ctx context.Context, book *models.BookModel) error
 }

@@ -2,6 +2,7 @@ package unitTests
 
 import (
 	"BookSmart/internal/models"
+	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/services/impl"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
@@ -39,7 +40,7 @@ func TestReservationService_Create(t *testing.T) {
 			mockBehavior: func(res *mockrepositories.MockIReservationRepo, b *mockrepositories.MockIBookRepo, r *mockrepositories.MockIReaderRepo, readerID, bookID uuid.UUID) {
 				r.EXPECT().GetByID(context.Background(), readerID).Return(&models.ReaderModel{ID: readerID}, nil)
 				b.EXPECT().GetByID(context.Background(), bookID).Return(&models.BookModel{ID: bookID}, nil)
-				res.EXPECT().GetByReaderAndBook(context.Background(), readerID, bookID).Return(nil, errors.New("[!] ERROR! Object not found"))
+				res.EXPECT().GetByReaderAndBook(context.Background(), readerID, bookID).Return(nil, errs.ErrNotFound)
 				res.EXPECT().Create(context.Background(), gomock.Any()).Return(nil)
 			},
 			expectedError: nil,
@@ -111,7 +112,7 @@ func TestReservationService_Create(t *testing.T) {
 			mockBehavior: func(res *mockrepositories.MockIReservationRepo, b *mockrepositories.MockIBookRepo, r *mockrepositories.MockIReaderRepo, readerID, bookID uuid.UUID) {
 				r.EXPECT().GetByID(context.Background(), readerID).Return(&models.ReaderModel{ID: readerID}, nil)
 				b.EXPECT().GetByID(context.Background(), bookID).Return(&models.BookModel{ID: bookID}, nil)
-				res.EXPECT().GetByReaderAndBook(context.Background(), readerID, bookID).Return(nil, errors.New("[!] ERROR! Object not found"))
+				res.EXPECT().GetByReaderAndBook(context.Background(), readerID, bookID).Return(nil, errs.ErrNotFound)
 				res.EXPECT().Create(context.Background(), gomock.Any()).Return(errors.New("error creating reservation"))
 			},
 			expectedError: fmt.Errorf("[!] ERROR! Error creating reservation: error creating reservation"),
@@ -150,7 +151,7 @@ func TestReservationService_Update(t *testing.T) {
 		BookID:     uuid.New(),
 		IssueDate:  time.Now(),
 		ReturnDate: time.Now().AddDate(0, 0, 14),
-		State:      "Активна",
+		State:      impl.ReservationIssued,
 	}
 
 	testTable := []struct {
@@ -172,7 +173,7 @@ func TestReservationService_Update(t *testing.T) {
 			name:        "reservation not found",
 			reservation: testReservation,
 			mockBehavior: func(res *mockrepositories.MockIReservationRepo, reservation *models.ReservationModel) {
-				res.EXPECT().GetByID(context.Background(), reservation.ID).Return(nil, errors.New("[!] ERROR! Object not found"))
+				res.EXPECT().GetByID(context.Background(), reservation.ID).Return(nil, errs.ErrNotFound)
 			},
 			expectedError: fmt.Errorf("[!] ERROR! Reservation with ID %v not found", testReservation.ID),
 		},
@@ -183,36 +184,6 @@ func TestReservationService_Update(t *testing.T) {
 				res.EXPECT().GetByID(context.Background(), reservation.ID).Return(nil, errors.New("some error"))
 			},
 			expectedError: fmt.Errorf("[!] ERROR! Error checking reservation existence: some error"),
-		},
-		{
-			name: "reservation is closed",
-			reservation: &models.ReservationModel{
-				ID:         testReservation.ID,
-				ReaderID:   testReservation.ReaderID,
-				BookID:     testReservation.BookID,
-				IssueDate:  testReservation.IssueDate,
-				ReturnDate: testReservation.ReturnDate,
-				State:      "Закрыта",
-			},
-			mockBehavior: func(res *mockrepositories.MockIReservationRepo, reservation *models.ReservationModel) {
-				res.EXPECT().GetByID(context.Background(), reservation.ID).Return(reservation, nil)
-			},
-			expectedError: fmt.Errorf("[!] ERROR! This reservation is already closed"),
-		},
-		{
-			name: "reservation is overdue",
-			reservation: &models.ReservationModel{
-				ID:         testReservation.ID,
-				ReaderID:   testReservation.ReaderID,
-				BookID:     testReservation.BookID,
-				IssueDate:  testReservation.IssueDate,
-				ReturnDate: testReservation.ReturnDate,
-				State:      "Просрочена",
-			},
-			mockBehavior: func(res *mockrepositories.MockIReservationRepo, reservation *models.ReservationModel) {
-				res.EXPECT().GetByID(context.Background(), reservation.ID).Return(reservation, nil)
-			},
-			expectedError: fmt.Errorf("[!] ERROR! This reservation is past its return date"),
 		},
 		{
 			name:        "error updating reservation",

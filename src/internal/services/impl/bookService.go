@@ -2,7 +2,8 @@ package impl
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories"
+	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/interfaces"
 	"context"
 	"errors"
 	"fmt"
@@ -15,16 +16,16 @@ const (
 )
 
 type BookService struct {
-	bookRepo repositories.IBookRepo
+	bookRepo interfaces.IBookRepo
 }
 
-func NewBookService(bookRepo repositories.IBookRepo) *BookService {
+func NewBookService(bookRepo interfaces.IBookRepo) *BookService {
 	return &BookService{bookRepo: bookRepo}
 }
 
 func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByTitle(ctx, book.Title)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 
@@ -40,9 +41,9 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 	return nil
 }
 
-func (bs *BookService) DeleteByTitle(ctx context.Context, book *models.BookModel) error {
+func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByTitle(ctx, book.Title)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 

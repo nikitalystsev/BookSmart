@@ -3,7 +3,8 @@ package impl
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories"
+	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/interfaces"
 	"context"
 	"errors"
 	"fmt"
@@ -15,17 +16,17 @@ import (
 const MaxBooksPerReader = 5
 
 type ReaderService struct {
-	ReaderRepo      repositories.IReaderRepo
-	ReservationRepo repositories.IReservationRepo
-	BookRepo        repositories.IBookRepo
-	LibCardRepo     repositories.ILibCardRepo
+	ReaderRepo      interfaces.IReaderRepo
+	ReservationRepo interfaces.IReservationRepo
+	BookRepo        interfaces.IBookRepo
+	LibCardRepo     interfaces.ILibCardRepo
 }
 
 func CreateNewReaderService(
-	readerRepo repositories.IReaderRepo,
-	reservationRepo repositories.IReservationRepo,
-	bookRepo repositories.IBookRepo,
-	libCardRepo repositories.ILibCardRepo,
+	readerRepo interfaces.IReaderRepo,
+	reservationRepo interfaces.IReservationRepo,
+	bookRepo interfaces.IBookRepo,
+	libCardRepo interfaces.ILibCardRepo,
 ) *ReaderService {
 	return &ReaderService{
 		ReaderRepo:      readerRepo,
@@ -37,7 +38,7 @@ func CreateNewReaderService(
 
 func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderModel) error {
 	existingReader, err := rs.ReaderRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 
@@ -62,7 +63,7 @@ func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderMode
 
 func (rs *ReaderService) Login(ctx context.Context, reader *dto.ReaderLoginDTO) error {
 	exitingReader, err := rs.ReaderRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 
@@ -80,7 +81,7 @@ func (rs *ReaderService) Login(ctx context.Context, reader *dto.ReaderLoginDTO) 
 
 func (rs *ReaderService) ReserveBook(ctx context.Context, readerID, bookID uuid.UUID) error {
 	existingReader, err := rs.ReaderRepo.GetByID(ctx, readerID)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 	if existingReader == nil {
@@ -88,7 +89,7 @@ func (rs *ReaderService) ReserveBook(ctx context.Context, readerID, bookID uuid.
 	}
 
 	existingBook, err := rs.BookRepo.GetByID(ctx, bookID)
-	if err != nil && !errors.Is(err, errors.New("[!] ERROR! Object not found")) {
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 	if existingBook == nil {

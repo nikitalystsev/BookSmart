@@ -2,6 +2,7 @@ package unitTests
 
 import (
 	"BookSmart/internal/models"
+	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/services/impl"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
@@ -29,7 +30,7 @@ func TestLibCardService_Create(t *testing.T) {
 			name:     "successful creation",
 			readerID: testReaderID,
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
-				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errors.New("[!] ERROR! Object not found"))
+				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errs.ErrNotFound)
 
 				m.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 			},
@@ -44,7 +45,7 @@ func TestLibCardService_Create(t *testing.T) {
 			expectedError: errors.New("[!] ERROR! Error checking libCard existence: some error"),
 		},
 		{
-			name:     "library card already exists and is valid",
+			name:     "library card already exists",
 			readerID: testReaderID,
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
 				existingCard := &models.LibCardModel{
@@ -57,29 +58,13 @@ func TestLibCardService_Create(t *testing.T) {
 				}
 				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(existingCard, nil)
 			},
-			expectedError: fmt.Errorf("[!] ERROR! User with ID %v already has a valid library card", testReaderID),
-		},
-		{
-			name:     "library card exists but is expired",
-			readerID: testReaderID,
-			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
-				existingCard := &models.LibCardModel{
-					ID:           uuid.New(),
-					ReaderID:     readerID,
-					LibCardNum:   "1234567890123",
-					Validity:     365,
-					IssueDate:    time.Now().AddDate(0, 0, -400),
-					ActionStatus: true,
-				}
-				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(existingCard, nil)
-			},
-			expectedError: fmt.Errorf("[!] ERROR! User with ID %v has an expired library card that requires renewal", testReaderID),
+			expectedError: fmt.Errorf("[!] ERROR! User with ID %v already has a library card", testReaderID),
 		},
 		{
 			name:     "error creating library card",
 			readerID: testReaderID,
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
-				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errors.New("[!] ERROR! Object not found"))
+				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errs.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("create error"))
 			},
 			expectedError: errors.New("[!] ERROR! Error creating libCard: create error"),
