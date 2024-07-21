@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -15,13 +16,16 @@ const MaxBooksPerReader = 5
 
 type ReaderService struct {
 	readerRepo intfRepo.IReaderRepo
+	bookRepo   intfRepo.IBookRepo
 }
 
 func CreateNewReaderService(
 	readerRepo intfRepo.IReaderRepo,
+	bookRepo intfRepo.IBookRepo,
 ) *ReaderService {
 	return &ReaderService{
 		readerRepo: readerRepo,
+		bookRepo:   bookRepo,
 	}
 }
 
@@ -63,6 +67,38 @@ func (rs *ReaderService) Login(ctx context.Context, reader *dto.ReaderLoginDTO) 
 	err = bcrypt.CompareHashAndPassword([]byte(exitingReader.Password), []byte(reader.Password))
 	if err != nil {
 		return fmt.Errorf("[!] ERROR! Wrong password")
+	}
+
+	return nil
+}
+
+func (rs *ReaderService) AddToFavorites(ctx context.Context, readerID, bookID uuid.UUID) error {
+	existingReader, err := rs.readerRepo.GetByID(ctx, readerID)
+	if err != nil {
+		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
+	}
+	if existingReader == nil {
+		return fmt.Errorf("[!] ERROR! Reader with this ID does not exist")
+	}
+
+	existingBook, err := rs.bookRepo.GetByID(ctx, bookID)
+	if err != nil {
+		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
+	}
+	if existingBook == nil {
+		return fmt.Errorf("[!] ERROR! Book with this ID does not exist")
+	}
+
+	isFavorite, err := rs.readerRepo.IsFavorite(ctx, readerID, bookID)
+	if err != nil {
+		return fmt.Errorf("[!] ERROR! Error checking if book is already a favorite: %v", err)
+	}
+	if isFavorite {
+		return fmt.Errorf("[!] ERROR! Book is already in favorites")
+	}
+	err = rs.readerRepo.AddToFavorites(ctx, readerID, bookID)
+	if err != nil {
+		return fmt.Errorf("[!] ERROR! Error adding book to favorites: %v", err)
 	}
 
 	return nil

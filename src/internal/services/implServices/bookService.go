@@ -1,12 +1,14 @@
 package implServices
 
 import (
+	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/repositories/intfRepo"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 )
 
 const (
@@ -57,4 +59,26 @@ func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error
 	}
 
 	return nil
+}
+
+func (bs *BookService) GetByID(ctx context.Context, bookID uuid.UUID) (*models.BookModel, error) {
+	book, err := bs.bookRepo.GetByID(ctx, bookID)
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+		return nil, fmt.Errorf("[!] ERROR! Error retrieving book information: %v", err)
+	}
+
+	if book == nil {
+		return nil, errors.New("[!] ERROR! Book with this title does not exist")
+	}
+
+	return book, nil
+}
+
+func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error) {
+	books, err := bs.bookRepo.GetByParams(ctx, params)
+	if err != nil {
+		return nil, fmt.Errorf("[!] ERROR! Error searching for books: %v", err)
+	}
+
+	return books, nil
 }

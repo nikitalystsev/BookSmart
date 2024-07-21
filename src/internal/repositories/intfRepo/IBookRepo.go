@@ -1,6 +1,7 @@
 package intfRepo
 
 import (
+	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
 	"context"
 	"github.com/google/uuid"
@@ -14,4 +15,5 @@ type IBookRepo interface {
 	GetByTitle(ctx context.Context, title string) (*models.BookModel, error)
 	DeleteByTitle(ctx context.Context, title string) error
 	Update(ctx context.Context, book *models.BookModel) error
+	GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error)
 }
