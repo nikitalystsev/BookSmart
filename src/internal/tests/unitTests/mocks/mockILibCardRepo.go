@@ -79,3 +79,17 @@ func (mr *MockILibCardRepoMockRecorder) GetByReaderID(ctx, readerID interface{})
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReaderID", reflect.TypeOf((*MockILibCardRepo)(nil).GetByReaderID), ctx, readerID)
 }
+
+// Update mocks base method.
+func (m *MockILibCardRepo) Update(ctx context.Context, libCard *models.LibCardModel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, libCard)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockILibCardRepoMockRecorder) Update(ctx, libCard interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockILibCardRepo)(nil).Update), ctx, libCard)
+}

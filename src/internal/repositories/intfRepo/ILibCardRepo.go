@@ -12,4 +12,5 @@ type ILibCardRepo interface {
 	Create(ctx context.Context, libCard *models.LibCardModel) error
 	GetByReaderID(ctx context.Context, readerID uuid.UUID) (*models.LibCardModel, error)
 	GetByNum(ctx context.Context, libCardNum string) (*models.LibCardModel, error)
+	Update(ctx context.Context, libCard *models.LibCardModel) error
 }
