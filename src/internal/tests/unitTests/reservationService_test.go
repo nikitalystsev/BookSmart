@@ -3,7 +3,7 @@ package unitTests
 import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
-	"BookSmart/internal/services/implementations"
+	"BookSmart/internal/services/implServices"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
 	"errors"
@@ -125,8 +125,16 @@ func TestReservationService_Create(t *testing.T) {
 
 			mockReaderRepo := mockrepositories.NewMockIReaderRepo(ctrl)
 			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
+			mockLibCardRepo := mockrepositories.NewMockILibCardRepo(ctrl)
 			mockReservationRepo := mockrepositories.NewMockIReservationRepo(ctrl)
-			reservationService := implementations.NewReservationService(mockReservationRepo, mockBookRepo, mockReaderRepo)
+			mockTransactionManager := mockrepositories.NewMockITransactionManager(ctrl)
+			reservationService := implServices.NewReservationService(
+				mockReservationRepo,
+				mockBookRepo,
+				mockReaderRepo,
+				mockLibCardRepo,
+				mockTransactionManager,
+			)
 
 			readerID := testCase.readerID
 			bookID := testCase.bookID
@@ -151,7 +159,7 @@ func TestReservationService_Update(t *testing.T) {
 		BookID:     uuid.New(),
 		IssueDate:  time.Now(),
 		ReturnDate: time.Now().AddDate(0, 0, 14),
-		State:      implementations.ReservationIssued,
+		State:      implServices.ReservationIssued,
 	}
 
 	testTable := []struct {
@@ -199,11 +207,19 @@ func TestReservationService_Update(t *testing.T) {
 	for _, testCase := range testTable {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
+			mockReaderRepo := mockrepositories.NewMockIReaderRepo(ctrl)
+			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
+			mockLibCardRepo := mockrepositories.NewMockILibCardRepo(ctrl)
 			mockReservationRepo := mockrepositories.NewMockIReservationRepo(ctrl)
-			reservationService := implementations.NewReservationService(mockReservationRepo, nil, nil)
-
+			mockTransactionManager := mockrepositories.NewMockITransactionManager(ctrl)
+			reservationService := implServices.NewReservationService(
+				mockReservationRepo,
+				mockBookRepo,
+				mockReaderRepo,
+				mockLibCardRepo,
+				mockTransactionManager,
+			)
 			testCase.mockBehavior(mockReservationRepo, testCase.reservation)
 
 			err := reservationService.Update(context.Background(), testCase.reservation)

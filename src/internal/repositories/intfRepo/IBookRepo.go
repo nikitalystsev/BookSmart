@@ -1,4 +1,4 @@
-package interfaces
+package intfRepo
 
 import (
 	"BookSmart/internal/models"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate mockgen -source=IBookRepo.go -destination=../tests/unitTests/mocks/mockIBookRepo.go
+//go:generate mockgen -source=IBookRepo.go -destination=../../tests/unitTests/mocks/mockIBookRepo.go
 
 type IBookRepo interface {
 	Create(ctx context.Context, book *models.BookModel) error

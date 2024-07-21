@@ -3,7 +3,7 @@ package unitTests
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
-	"BookSmart/internal/services/implementations"
+	"BookSmart/internal/services/implServices"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
 	"github.com/golang/mock/gomock"
@@ -37,14 +37,8 @@ func TestReaderService_Register(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			mockReaderRepo := mockrepositories.NewMockIReaderRepo(ctrl)
-			mockReservationRepo := mockrepositories.NewMockIReservationRepo(ctrl)
-			mockLibCardRepo := mockrepositories.NewMockILibCardRepo(ctrl)
-			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
-			readerService := implementations.CreateNewReaderService(
+			readerService := implServices.CreateNewReaderService(
 				mockReaderRepo,
-				mockReservationRepo,
-				mockBookRepo,
-				mockLibCardRepo,
 			)
 
 			newReader := &models.ReaderModel{
@@ -85,14 +79,8 @@ func TestReaderService_Login(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			mockReaderRepo := mockrepositories.NewMockIReaderRepo(ctrl)
-			mockReservationRepo := mockrepositories.NewMockIReservationRepo(ctrl)
-			mockLibCardRepo := mockrepositories.NewMockILibCardRepo(ctrl)
-			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
-			readerService := implementations.CreateNewReaderService(
+			readerService := implServices.CreateNewReaderService(
 				mockReaderRepo,
-				mockReservationRepo,
-				mockBookRepo,
-				mockLibCardRepo,
 			)
 
 			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)

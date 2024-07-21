@@ -1,4 +1,4 @@
-package interfaces
+package intfServices
 
 import (
 	"BookSmart/internal/models"

@@ -1,9 +1,9 @@
-package implementations
+package implServices
 
 import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
-	"BookSmart/internal/repositories/interfaces"
+	"BookSmart/internal/repositories/intfRepo"
 	"context"
 	"errors"
 	"fmt"
@@ -16,10 +16,10 @@ const (
 )
 
 type BookService struct {
-	bookRepo interfaces.IBookRepo
+	bookRepo intfRepo.IBookRepo
 }
 
-func NewBookService(bookRepo interfaces.IBookRepo) *BookService {
+func NewBookService(bookRepo intfRepo.IBookRepo) *BookService {
 	return &BookService{bookRepo: bookRepo}
 }
 

@@ -1,10 +1,10 @@
-package implementations
+package implServices
 
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
-	"BookSmart/internal/repositories/interfaces"
+	"BookSmart/internal/repositories/intfRepo"
 	"context"
 	"errors"
 	"fmt"
@@ -14,11 +14,11 @@ import (
 const MaxBooksPerReader = 5
 
 type ReaderService struct {
-	readerRepo interfaces.IReaderRepo
+	readerRepo intfRepo.IReaderRepo
 }
 
 func CreateNewReaderService(
-	readerRepo interfaces.IReaderRepo,
+	readerRepo intfRepo.IReaderRepo,
 ) *ReaderService {
 	return &ReaderService{
 		readerRepo: readerRepo,

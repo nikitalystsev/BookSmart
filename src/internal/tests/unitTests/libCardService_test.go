@@ -3,7 +3,7 @@ package unitTests
 import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
-	"BookSmart/internal/services/implementations"
+	"BookSmart/internal/services/implServices"
 	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
 	"context"
 	"errors"
@@ -76,7 +76,7 @@ func TestLibCardService_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			mockLibCardRepo := mockrepositories.NewMockILibCardRepo(ctrl)
-			libCardService := implementations.NewLibCardService(mockLibCardRepo)
+			libCardService := implServices.NewLibCardService(mockLibCardRepo)
 			readerID := testCase.readerID
 
 			testCase.mockBehavior(mockLibCardRepo, readerID)

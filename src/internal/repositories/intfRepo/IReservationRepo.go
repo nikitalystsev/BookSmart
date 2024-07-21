@@ -1,4 +1,4 @@
-package interfaces
+package intfRepo
 
 import (
 	"BookSmart/internal/models"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate mockgen -source=IReservationRepo.go -destination=../tests/unitTests/mocks/mockIReservationRepo.go
+//go:generate mockgen -source=IReservationRepo.go -destination=../../tests/unitTests/mocks/mockIReservationRepo.go
 
 type IReservationRepo interface {
 	Create(ctx context.Context, reservation *models.ReservationModel) error

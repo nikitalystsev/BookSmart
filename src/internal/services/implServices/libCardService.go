@@ -1,9 +1,9 @@
-package implementations
+package implServices
 
 import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
-	"BookSmart/internal/repositories/interfaces"
+	"BookSmart/internal/repositories/intfRepo"
 	"context"
 	"crypto/rand"
 	"errors"
@@ -18,11 +18,13 @@ const (
 	charset          = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
+const libCardValidityPeriod = 365
+
 type LibCardService struct {
-	libCardRepo interfaces.ILibCardRepo
+	libCardRepo intfRepo.ILibCardRepo
 }
 
-func NewLibCardService(libCardRepo interfaces.ILibCardRepo) *LibCardService {
+func NewLibCardService(libCardRepo intfRepo.ILibCardRepo) *LibCardService {
 	return &LibCardService{libCardRepo: libCardRepo}
 }
 
@@ -36,13 +38,13 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 		return fmt.Errorf("[!] ERROR! User with ID %v already has a library card", readerID)
 	}
 
-	libCardNum, _ := lcs.generateLibCardNum()
+	libCardNum := lcs.generateLibCardNum()
 
 	newLibCard := &models.LibCardModel{
 		ID:           uuid.New(),
 		ReaderID:     readerID,
 		LibCardNum:   libCardNum,
-		Validity:     365, // Срок действия 1 год (365 дней)
+		Validity:     libCardValidityPeriod, // Срок действия 1 год (365 дней)
 		IssueDate:    time.Now(),
 		ActionStatus: true,
 	}
@@ -60,27 +62,23 @@ func (lcs *LibCardService) Update(libCard *models.LibCardModel) error {
 	return nil
 }
 
-func (lcs *LibCardService) IsValidLibCard(libCard *models.LibCardModel) bool {
-	if !libCard.ActionStatus {
-		return false
-	}
+//func (lcs *LibCardService) IsValidLibCard(libCard *models.LibCardModel) bool {
+//	if !libCard.ActionStatus {
+//		return false
+//	}
+//
+//	expiryDate := libCard.IssueDate.AddDate(0, 0, libCard.Validity)
+//
+//	return time.Now().Before(expiryDate)
+//}
 
-	expiryDate := libCard.IssueDate.AddDate(0, 0, libCard.Validity)
-
-	return time.Now().Before(expiryDate)
-}
-
-func (lcs *LibCardService) generateLibCardNum() (string, error) {
+func (lcs *LibCardService) generateLibCardNum() string {
 	result := make([]byte, libCardNumLength)
 
 	for i := range result {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
-		if err != nil {
-			return "", fmt.Errorf("[!] ERROR! Error generating library card number: %v", err)
-		}
-
+		num, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		result[i] = charset[num.Int64()]
 	}
 
-	return string(result), nil
+	return string(result)
 }
