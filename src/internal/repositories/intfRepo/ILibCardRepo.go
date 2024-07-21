@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate mockgen -source=ILibCardRepo.go -destination=../../tests/unitTests/mocks/mockILibCardRepo.go
+//go:generate mockgen -source=ILibCardRepo.go -destination=../../tests/unitTests/mocks/mockILibCardRepo.go --package=mocks
 
 type ILibCardRepo interface {
 	Create(ctx context.Context, libCard *models.LibCardModel) error

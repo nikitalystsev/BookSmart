@@ -26,13 +26,9 @@ func NewBookService(bookRepo intfRepo.IBookRepo) *BookService {
 }
 
 func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error {
-	existingBook, err := bs.bookRepo.GetByTitle(ctx, book.Title)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
-		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
-	}
-
-	if existingBook != nil {
-		return errors.New("[!] ERROR! Book with this title already exists")
+	err := bs.baseValidation(ctx, book)
+	if err != nil {
+		return err
 	}
 
 	err = bs.bookRepo.Create(ctx, book)
@@ -44,7 +40,7 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 }
 
 func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error {
-	existingBook, err := bs.bookRepo.GetByTitle(ctx, book.Title)
+	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
 	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
@@ -53,7 +49,7 @@ func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error
 		return errors.New("[!] ERROR! Book with this title does not exist")
 	}
 
-	err = bs.bookRepo.DeleteByTitle(ctx, book.Title)
+	err = bs.bookRepo.Delete(ctx, book.ID)
 	if err != nil {
 		return fmt.Errorf("[!] ERROR! Error deleting book: %v", err)
 	}
@@ -68,7 +64,7 @@ func (bs *BookService) GetByID(ctx context.Context, bookID uuid.UUID) (*models.B
 	}
 
 	if book == nil {
-		return nil, errors.New("[!] ERROR! Book with this title does not exist")
+		return nil, errors.New("[!] ERROR! Book with this ID does not exist")
 	}
 
 	return book, nil
@@ -81,4 +77,33 @@ func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDT
 	}
 
 	return books, nil
+}
+
+func (bs *BookService) baseValidation(ctx context.Context, book *models.BookModel) error {
+	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
+	}
+
+	if existingBook != nil {
+		return errors.New("[!] ERROR! Book with this title already exists")
+	}
+
+	if book.Title == "" {
+		return errors.New("[!] ERROR! Empty book title")
+	}
+
+	if book.Author == "" {
+		return errors.New("[!] ERROR! Empty book author")
+	}
+
+	if book.Rarity == "" {
+		return errors.New("[!] ERROR! Empty book rarity")
+	}
+
+	if book.CopiesNumber <= 0 {
+		return errors.New("[!] ERROR! Invalid book copies number")
+	}
+
+	return nil
 }

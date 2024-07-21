@@ -19,7 +19,7 @@ type ReaderService struct {
 	bookRepo   intfRepo.IBookRepo
 }
 
-func CreateNewReaderService(
+func NewReaderService(
 	readerRepo intfRepo.IReaderRepo,
 	bookRepo intfRepo.IBookRepo,
 ) *ReaderService {
