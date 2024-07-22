@@ -33,7 +33,7 @@ func NewReaderService(
 	}
 }
 
-func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderModel) error {
+func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel) error {
 	err := rs.baseValidation(ctx, reader)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderMode
 	return nil
 }
 
-func (rs *ReaderService) Login(ctx context.Context, reader *dto.ReaderLoginDTO) error {
+func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderLoginDTO) error {
 	exitingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
 	if err != nil && !errors.Is(err, errs.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)

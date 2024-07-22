@@ -7,6 +7,6 @@ import (
 )
 
 type IReaderService interface {
-	Register(ctx context.Context, reader *models.ReaderModel) error
-	Login(ctx context.Context, reader *dto.ReaderLoginDTO) error
+	SignUp(ctx context.Context, reader *models.ReaderModel) error
+	SignIn(ctx context.Context, reader *dto.ReaderLoginDTO) error
 }
