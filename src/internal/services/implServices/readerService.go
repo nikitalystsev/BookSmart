@@ -10,9 +10,13 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"strconv"
 )
 
-const MaxBooksPerReader = 5
+const (
+	MaxBooksPerReader    = 5
+	ReaderPhoneNumberLen = 11
+)
 
 type ReaderService struct {
 	readerRepo intfRepo.IReaderRepo
@@ -30,13 +34,9 @@ func NewReaderService(
 }
 
 func (rs *ReaderService) Register(ctx context.Context, reader *models.ReaderModel) error {
-	existingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
-		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
-	}
-
-	if existingReader != nil {
-		return errors.New("[!] ERROR! Reader with this phoneNumbers already exists")
+	err := rs.baseValidation(ctx, reader)
+	if err != nil {
+		return err
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(reader.Password), bcrypt.DefaultCost)
@@ -99,6 +99,39 @@ func (rs *ReaderService) AddToFavorites(ctx context.Context, readerID, bookID uu
 	err = rs.readerRepo.AddToFavorites(ctx, readerID, bookID)
 	if err != nil {
 		return fmt.Errorf("[!] ERROR! Error adding book to favorites: %v", err)
+	}
+
+	return nil
+}
+
+func (rs *ReaderService) baseValidation(ctx context.Context, reader *models.ReaderModel) error {
+	existingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
+	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
+	}
+
+	if existingReader != nil {
+		return errors.New("[!] ERROR! Reader with this phoneNumbers already exists")
+	}
+
+	if reader.Fio == "" {
+		return errors.New("[!] ERROR! Field Fio is required")
+	}
+	if reader.PhoneNumber == "" {
+		return errors.New("[!] ERROR! Field PhoneNumber is required")
+	}
+
+	if reader.Age <= 0 {
+		return errors.New("[!] ERROR! Field Age is required")
+	}
+
+	if len(reader.PhoneNumber) != ReaderPhoneNumberLen {
+		return errors.New("[!] ERROR! Reader phoneNumbers len")
+	}
+
+	_, err = strconv.Atoi(reader.PhoneNumber)
+	if err != nil {
+		return errors.New("[!] ERROR! Reader phoneNumbers incorrect format")
 	}
 
 	return nil
