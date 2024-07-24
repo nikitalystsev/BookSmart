@@ -92,7 +92,6 @@ func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderLoginDTO)
 	if err != nil {
 		return res, fmt.Errorf("[!] ERROR! Error generating access token: %v", err)
 	}
-	gst
 
 	res.RefreshToken, err = rs.tokenManager.NewRefreshToken()
 	if err != nil {
