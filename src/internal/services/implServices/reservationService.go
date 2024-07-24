@@ -4,7 +4,7 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/repositories/intfRepo"
-	"BookSmart/internal/transactionManager/intfTrManager"
+	"BookSmart/pkg/transact"
 	"context"
 	"errors"
 	"fmt"
@@ -29,7 +29,7 @@ type ReservationService struct {
 	bookRepo           intfRepo.IBookRepo
 	readerRepo         intfRepo.IReaderRepo
 	libCardRepo        intfRepo.ILibCardRepo
-	transactionManager intfTrManager.ITransactionManager
+	transactionManager transact.ITransactionManager
 }
 
 func NewReservationService(
@@ -37,7 +37,7 @@ func NewReservationService(
 	bookRepo intfRepo.IBookRepo,
 	readerRepo intfRepo.IReaderRepo,
 	libCardRepo intfRepo.ILibCardRepo,
-	transactionManager intfTrManager.ITransactionManager,
+	transactionManager transact.ITransactionManager,
 ) *ReservationService {
 	return &ReservationService{
 		reservationRepo:    reservationRepo,

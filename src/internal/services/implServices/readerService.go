@@ -5,12 +5,15 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/repositories/intfRepo"
+	"BookSmart/internal/services/intfServices"
+	"BookSmart/pkg/auth"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"strconv"
+	"time"
 )
 
 const (
@@ -19,20 +22,30 @@ const (
 )
 
 type ReaderService struct {
-	readerRepo intfRepo.IReaderRepo
-	bookRepo   intfRepo.IBookRepo
+	readerRepo      intfRepo.IReaderRepo
+	bookRepo        intfRepo.IBookRepo
+	tokenManager    auth.ITokenManager
+	accessTokenTTL  time.Duration
+	refreshTokenTTL time.Duration
 }
 
 func NewReaderService(
 	readerRepo intfRepo.IReaderRepo,
 	bookRepo intfRepo.IBookRepo,
+	tokenManager auth.ITokenManager,
+	accessTokenTTL time.Duration,
+	refreshTokenTTL time.Duration,
 ) *ReaderService {
 	return &ReaderService{
-		readerRepo: readerRepo,
-		bookRepo:   bookRepo,
+		readerRepo:      readerRepo,
+		bookRepo:        bookRepo,
+		tokenManager:    tokenManager,
+		accessTokenTTL:  accessTokenTTL,
+		refreshTokenTTL: refreshTokenTTL,
 	}
 }
 
+// SignUp Зарегистрироваться
 func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel) error {
 	err := rs.baseValidation(ctx, reader)
 	if err != nil {
@@ -54,22 +67,75 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 	return nil
 }
 
-func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderLoginDTO) error {
+// SignIn Войти
+func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderLoginDTO) (intfServices.Tokens, error) {
+	var (
+		res intfServices.Tokens
+		err error
+	)
+
 	exitingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
 	if err != nil && !errors.Is(err, errs.ErrNotFound) {
-		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
+		return res, fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 
 	if exitingReader == nil {
-		return fmt.Errorf("[!] ERROR! Reader with this phoneNumbers does not exist")
+		return res, fmt.Errorf("[!] ERROR! Reader with this phoneNumbers does not exist")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(exitingReader.Password), []byte(reader.Password))
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Wrong password")
+		return res, fmt.Errorf("[!] ERROR! Wrong password")
 	}
 
-	return nil
+	res.AccessToken, err = rs.tokenManager.NewJWT(exitingReader.ID, rs.accessTokenTTL)
+	if err != nil {
+		return res, fmt.Errorf("[!] ERROR! Error generating access token: %v", err)
+	}
+	gst
+
+	res.RefreshToken, err = rs.tokenManager.NewRefreshToken()
+	if err != nil {
+		return res, fmt.Errorf("[!] ERROR! Error generating refresh token: %v", err)
+	}
+
+	// TODO redis для хранения токена
+	err = rs.readerRepo.SaveRefreshToken(ctx, exitingReader.ID, res.RefreshToken, rs.refreshTokenTTL)
+	if err != nil {
+		return res, fmt.Errorf("[!] ERROR! Error saving refresh token: %v", err)
+	}
+
+	return res, nil
+}
+
+func (rs *ReaderService) RefreshTokens(ctx context.Context, refreshToken string) (intfServices.Tokens, error) {
+	var (
+		res intfServices.Tokens
+		err error
+	)
+
+	existingReader, err := rs.readerRepo.GetByRefreshToken(ctx, refreshToken)
+	if err != nil {
+		return intfServices.Tokens{}, err
+	}
+
+	res.AccessToken, err = rs.tokenManager.NewJWT(existingReader.ID, rs.accessTokenTTL)
+	if err != nil {
+		return res, fmt.Errorf("[!] ERROR! Error generating access token: %v", err)
+	}
+
+	res.RefreshToken, err = rs.tokenManager.NewRefreshToken()
+	if err != nil {
+		return res, fmt.Errorf("[!] ERROR! Error generating refresh token: %v", err)
+	}
+
+	// TODO redis для хранения токена
+	err = rs.readerRepo.SaveRefreshToken(ctx, existingReader.ID, res.RefreshToken, rs.refreshTokenTTL)
+	if err != nil {
+		return res, fmt.Errorf("[!] ERROR! Error saving refresh token: %v", err)
+	}
+
+	return res, nil
 }
 
 func (rs *ReaderService) AddToFavorites(ctx context.Context, readerID, bookID uuid.UUID) error {
