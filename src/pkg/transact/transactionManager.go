@@ -5,10 +5,10 @@ import (
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 )
 
-//go:generate mockgen -source=ITransactionManager.go -destination=../../tests/unitTests/mocks/mockITransactionManager.go --package=mocks
+//go:generate mockgen -source=transactionManager.go -destination=../../internal/tests/unitTests/mocks/mockTransactionManager.go --package=mocks
 
 type ITransactionManager interface {
-	WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error
+	Do(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
 type TransactionManager struct {
@@ -19,6 +19,6 @@ func NewTransactionManager(transactionManager manager.Manager) *TransactionManag
 	return &TransactionManager{transactionManager: transactionManager}
 }
 
-func (trm *TransactionManager) WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
+func (trm *TransactionManager) Do(ctx context.Context, fn func(ctx context.Context) error) error {
 	return trm.transactionManager.Do(ctx, fn)
 }

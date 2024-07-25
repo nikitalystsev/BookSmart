@@ -128,7 +128,7 @@ func (rs *ReservationService) Update(ctx context.Context, reservation *models.Re
 }
 
 func (rs *ReservationService) create(ctx context.Context, readerID, bookID uuid.UUID) error {
-	return rs.transactionManager.WithTransaction(ctx, func(ctx context.Context) error {
+	return rs.transactionManager.Do(ctx, func(ctx context.Context) error {
 		newReservation := &models.ReservationModel{
 			ID:         uuid.New(),
 			ReaderID:   readerID,
