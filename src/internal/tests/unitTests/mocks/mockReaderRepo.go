@@ -8,6 +8,7 @@ import (
 	models "BookSmart/internal/models"
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/google/uuid"
@@ -94,6 +95,21 @@ func (mr *MockIReaderRepoMockRecorder) GetByPhoneNumber(ctx, phoneNumber interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByPhoneNumber", reflect.TypeOf((*MockIReaderRepo)(nil).GetByPhoneNumber), ctx, phoneNumber)
 }
 
+// GetByRefreshToken mocks base method.
+func (m *MockIReaderRepo) GetByRefreshToken(ctx context.Context, token string) (*models.ReaderModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByRefreshToken", ctx, token)
+	ret0, _ := ret[0].(*models.ReaderModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByRefreshToken indicates an expected call of GetByRefreshToken.
+func (mr *MockIReaderRepoMockRecorder) GetByRefreshToken(ctx, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByRefreshToken", reflect.TypeOf((*MockIReaderRepo)(nil).GetByRefreshToken), ctx, token)
+}
+
 // IsFavorite mocks base method.
 func (m *MockIReaderRepo) IsFavorite(ctx context.Context, readerID, bookID uuid.UUID) (bool, error) {
 	m.ctrl.T.Helper()
@@ -107,4 +123,18 @@ func (m *MockIReaderRepo) IsFavorite(ctx context.Context, readerID, bookID uuid.
 func (mr *MockIReaderRepoMockRecorder) IsFavorite(ctx, readerID, bookID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsFavorite", reflect.TypeOf((*MockIReaderRepo)(nil).IsFavorite), ctx, readerID, bookID)
+}
+
+// SaveRefreshToken mocks base method.
+func (m *MockIReaderRepo) SaveRefreshToken(ctx context.Context, id uuid.UUID, token string, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveRefreshToken", ctx, id, token, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveRefreshToken indicates an expected call of SaveRefreshToken.
+func (mr *MockIReaderRepoMockRecorder) SaveRefreshToken(ctx, id, token, ttl interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveRefreshToken", reflect.TypeOf((*MockIReaderRepo)(nil).SaveRefreshToken), ctx, id, token, ttl)
 }

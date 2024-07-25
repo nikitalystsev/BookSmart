@@ -16,9 +16,9 @@ import (
 const (
 	libCardNumLength = 13
 	charset          = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-)
 
-const LibCardValidityPeriod = 365
+	LibCardValidityPeriod = 365
+)
 
 type LibCardService struct {
 	libCardRepo intfRepo.ILibCardRepo

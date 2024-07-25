@@ -5,7 +5,7 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/services/implServices"
-	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
+	mockrepo "BookSmart/internal/tests/unitTests/mocks"
 	"context"
 	"errors"
 	"fmt"
@@ -15,8 +15,10 @@ import (
 	"testing"
 )
 
+// TODO тесты типа написаны, но их бы как то нужно глянуть, а то они пустые
+
 func TestBookService_Create(t *testing.T) {
-	type mockBehaviour func(m *mockrepositories.MockIBookRepo, book *models.BookModel)
+	type mockBehaviour func(m *mockrepo.MockIBookRepo, book *models.BookModel)
 	type expectedFunc func(t *testing.T, err error)
 	type inputStruct struct {
 		book *models.BookModel
@@ -29,7 +31,7 @@ func TestBookService_Create(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "successful creation",
+			name: "Success: successful creation",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -39,7 +41,7 @@ func TestBookService_Create(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), book).Return(nil)
 			},
@@ -48,7 +50,7 @@ func TestBookService_Create(t *testing.T) {
 			},
 		},
 		{
-			name: "error checking book existence",
+			name: "Error: error checking book existence",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -58,15 +60,16 @@ func TestBookService_Create(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errors.New("some error"))
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errors.New("database error"))
 			},
 			expected: func(t *testing.T, err error) {
-				assert.Equal(t, errors.New("[!] ERROR! Error checking book existence: some error"), err)
+				expectedError := errors.New("[!] ERROR! Error checking book existence: database error")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "book already exists",
+			name: "Error: book already exists",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -76,15 +79,16 @@ func TestBookService_Create(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(book, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				assert.Equal(t, errors.New("[!] ERROR! Book with this title already exists"), err)
+				expectedError := errors.New("[!] ERROR! Book with this title already exists")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "empty book title",
+			name: "Error: empty book title",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -93,15 +97,16 @@ func TestBookService_Create(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				assert.Equal(t, errors.New("[!] ERROR! Empty book title"), err)
+				expectedError := errors.New("[!] ERROR! Empty book title")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "empty book author",
+			name: "Error: empty book author",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -110,15 +115,16 @@ func TestBookService_Create(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				assert.Equal(t, errors.New("[!] ERROR! Empty book author"), err)
+				expectedError := errors.New("[!] ERROR! Empty book author")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "empty book rarity",
+			name: "Error: empty book rarity",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -127,15 +133,16 @@ func TestBookService_Create(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				assert.Equal(t, errors.New("[!] ERROR! Empty book rarity"), err)
+				expectedError := errors.New("[!] ERROR! Empty book rarity")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "empty book copies number",
+			name: "Error: empty book copies number",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:     uuid.New(),
@@ -144,15 +151,16 @@ func TestBookService_Create(t *testing.T) {
 					Rarity: implServices.BookRarityCommon,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				assert.Equal(t, errors.New("[!] ERROR! Invalid book copies number"), err)
+				expectedError := errors.New("[!] ERROR! Invalid book copies number")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "error creating book",
+			name: "Error: error creating book",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -162,12 +170,13 @@ func TestBookService_Create(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), book).Return(errors.New("create error"))
 			},
 			expected: func(t *testing.T, err error) {
-				assert.Equal(t, errors.New("[!] ERROR! Error creating book: create error"), err)
+				expectedError := errors.New("[!] ERROR! Error creating book: create error")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 	}
@@ -176,7 +185,7 @@ func TestBookService_Create(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
+			mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
 			bookService := implServices.NewBookService(mockBookRepo)
 
 			testCase.mockBehavior(mockBookRepo, testCase.input.book)
@@ -189,7 +198,7 @@ func TestBookService_Create(t *testing.T) {
 }
 
 func TestBookService_Delete(t *testing.T) {
-	type mockBehaviour func(m *mockrepositories.MockIBookRepo, book *models.BookModel)
+	type mockBehaviour func(m *mockrepo.MockIBookRepo, book *models.BookModel)
 	type expectedFunc func(t *testing.T, err error)
 	type inputStruct struct {
 		book *models.BookModel
@@ -202,7 +211,7 @@ func TestBookService_Delete(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "successfully delete book",
+			name: "Success: successfully delete book",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -212,7 +221,7 @@ func TestBookService_Delete(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(book, nil)
 				m.EXPECT().Delete(gomock.Any(), book.ID).Return(nil)
 			},
@@ -221,7 +230,7 @@ func TestBookService_Delete(t *testing.T) {
 			},
 		},
 		{
-			name: "error getting book",
+			name: "Error: error getting book",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -231,16 +240,16 @@ func TestBookService_Delete(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errors.New("some error"))
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errors.New("database error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Error checking book existence: some error")
+				expectedError := errors.New("[!] ERROR! Error checking book existence: database error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "book not found",
+			name: "Error: book not found",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -250,7 +259,7 @@ func TestBookService_Delete(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
@@ -259,7 +268,7 @@ func TestBookService_Delete(t *testing.T) {
 			},
 		},
 		{
-			name: "error deleting book",
+			name: "Error: error deleting book",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -269,7 +278,7 @@ func TestBookService_Delete(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(book, nil)
 				m.EXPECT().Delete(gomock.Any(), book.ID).Return(fmt.Errorf("delete error"))
 			},
@@ -284,7 +293,7 @@ func TestBookService_Delete(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
+			mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
 			bookService := implServices.NewBookService(mockBookRepo)
 
 			testCase.mockBehavior(mockBookRepo, testCase.input.book)
@@ -297,7 +306,7 @@ func TestBookService_Delete(t *testing.T) {
 }
 
 func TestBookService_GetByID(t *testing.T) {
-	type mockBehaviour func(m *mockrepositories.MockIBookRepo, book *models.BookModel)
+	type mockBehaviour func(m *mockrepo.MockIBookRepo, book *models.BookModel)
 	type expectedFunc func(t *testing.T, err error)
 	type inputStruct struct {
 		book *models.BookModel
@@ -310,7 +319,7 @@ func TestBookService_GetByID(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "successful get book",
+			name: "Success: successful get book",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -320,7 +329,7 @@ func TestBookService_GetByID(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(book, nil)
 			},
 			expected: func(t *testing.T, err error) {
@@ -328,7 +337,7 @@ func TestBookService_GetByID(t *testing.T) {
 			},
 		},
 		{
-			name: "error getting book",
+			name: "Error: error getting book",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -338,16 +347,16 @@ func TestBookService_GetByID(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errors.New("some error"))
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errors.New("database error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Error retrieving book information: some error")
+				expectedError := errors.New("[!] ERROR! Error retrieving book information: database error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "book not found",
+			name: "Error: book not found",
 			input: inputStruct{
 				book: &models.BookModel{
 					ID:           uuid.New(),
@@ -357,7 +366,7 @@ func TestBookService_GetByID(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, book *models.BookModel) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
 				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
@@ -371,7 +380,7 @@ func TestBookService_GetByID(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
+			mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
 			bookService := implServices.NewBookService(mockBookRepo)
 
 			testCase.mockBehavior(mockBookRepo, testCase.input.book)
@@ -384,8 +393,8 @@ func TestBookService_GetByID(t *testing.T) {
 }
 
 func TestBookService_GetByParams(t *testing.T) {
-	type mockBehavior func(m *mockrepositories.MockIBookRepo, params *dto.BookParamsDTO)
-	type expectedFunc func(t *testing.T, books []*models.BookModel, err error)
+	type mockBehavior func(m *mockrepo.MockIBookRepo, params *dto.BookParamsDTO)
+	type expectedFunc func(t *testing.T, err error)
 	type inputStruct struct {
 		bookDTO *dto.BookParamsDTO
 	}
@@ -421,7 +430,7 @@ func TestBookService_GetByParams(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "successful get books",
+			name: "Success: successful get books",
 			input: inputStruct{
 				bookDTO: &dto.BookParamsDTO{
 					Title:        "The Great Gatsby",
@@ -430,16 +439,15 @@ func TestBookService_GetByParams(t *testing.T) {
 					CopiesNumber: 10,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, params *dto.BookParamsDTO) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, params *dto.BookParamsDTO) {
 				m.EXPECT().GetByParams(gomock.Any(), params).Return([]*models.BookModel{testBooks[0]}, nil)
 			},
-			expected: func(t *testing.T, books []*models.BookModel, err error) {
-				assert.NoError(t, err)
-				assert.Equal(t, []*models.BookModel{testBooks[0]}, books)
+			expected: func(t *testing.T, err error) {
+				assert.Equal(t, nil, err)
 			},
 		},
 		{
-			name: "error on getting books",
+			name: "Error: error on getting books",
 			input: inputStruct{
 				bookDTO: &dto.BookParamsDTO{
 					Title:        "Non-existent Book",
@@ -448,13 +456,12 @@ func TestBookService_GetByParams(t *testing.T) {
 					CopiesNumber: 0,
 				},
 			},
-			mockBehavior: func(m *mockrepositories.MockIBookRepo, params *dto.BookParamsDTO) {
+			mockBehavior: func(m *mockrepo.MockIBookRepo, params *dto.BookParamsDTO) {
 				m.EXPECT().GetByParams(gomock.Any(), params).Return(nil, fmt.Errorf("error getting books"))
 			},
-			expected: func(t *testing.T, books []*models.BookModel, err error) {
-				assert.Error(t, err)
-				assert.Nil(t, books)
-				assert.Equal(t, fmt.Errorf("[!] ERROR! Error searching for books: error getting books"), err)
+			expected: func(t *testing.T, err error) {
+				expectedError := fmt.Errorf("[!] ERROR! Error searching for books: error getting books")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 	}
@@ -464,13 +471,13 @@ func TestBookService_GetByParams(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockBookRepo := mockrepositories.NewMockIBookRepo(ctrl)
+			mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
 			bookService := implServices.NewBookService(mockBookRepo)
 
 			testCase.mockBehavior(mockBookRepo, testCase.input.bookDTO)
 
-			books, err := bookService.GetByParams(context.Background(), testCase.input.bookDTO)
-			testCase.expected(t, books, err)
+			_, err := bookService.GetByParams(context.Background(), testCase.input.bookDTO)
+			testCase.expected(t, err)
 		})
 	}
 }

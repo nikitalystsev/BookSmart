@@ -31,7 +31,7 @@ func TestLibCardService_Create(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name:  "successful creation",
+			name:  "Success: successful creation",
 			input: inputStruct{readerID: testReaderID},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
 				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errs.ErrNotFound)
@@ -42,18 +42,18 @@ func TestLibCardService_Create(t *testing.T) {
 			},
 		},
 		{
-			name:  "error checking existing library card",
+			name:  "Error: error checking existing library card",
 			input: inputStruct{readerID: testReaderID},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
-				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errors.New("some error"))
+				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errors.New("database error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Error checking libCard existence: some error")
+				expectedError := errors.New("[!] ERROR! Error checking libCard existence: database error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name:  "library card already exists",
+			name:  "Error: library card already exists",
 			input: inputStruct{readerID: testReaderID},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
 				existingCard := &models.LibCardModel{
@@ -72,7 +72,7 @@ func TestLibCardService_Create(t *testing.T) {
 			},
 		},
 		{
-			name:  "error creating library card",
+			name:  "Error: error creating library card",
 			input: inputStruct{readerID: testReaderID},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
 				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errs.ErrNotFound)
@@ -117,7 +117,7 @@ func TestLibCardService_Update(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "successful update",
+			name: "Success: successful update",
 			input: inputStruct{
 				libCard: &models.LibCardModel{
 					ID:           uuid.New(),
@@ -137,7 +137,7 @@ func TestLibCardService_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "error checking existing library card",
+			name: "Error: error checking existing library card",
 			input: inputStruct{
 				libCard: &models.LibCardModel{
 					ID:           uuid.New(),
@@ -149,15 +149,15 @@ func TestLibCardService_Update(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, libCard *models.LibCardModel) {
-				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(nil, errors.New("some error"))
+				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(nil, errors.New("database error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Error checking libCard existence: some error")
+				expectedError := errors.New("[!] ERROR! Error checking libCard existence: database error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "library card does not exists",
+			name: "Error: library card does not exists",
 			input: inputStruct{
 				libCard: &models.LibCardModel{
 					ID:           uuid.New(),
@@ -177,7 +177,7 @@ func TestLibCardService_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "error library card is valid",
+			name: "Error: error library card is valid",
 			input: inputStruct{
 				libCard: &models.LibCardModel{
 					ID:           uuid.New(),
@@ -197,7 +197,7 @@ func TestLibCardService_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "error update library card",
+			name: "Error: error update library card",
 			input: inputStruct{
 				libCard: &models.LibCardModel{
 					ID:           uuid.New(),

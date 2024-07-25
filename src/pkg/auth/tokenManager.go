@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+//go:generate mockgen -source=tokenManager.go -destination=../../internal/tests/unitTests/mocks/mockTokenManager.go --package=mocks
+
 // ITokenManager provides logic for JWT & Refresh tokens generation and parsing.
 type ITokenManager interface {
 	NewJWT(userID uuid.UUID, ttl time.Duration) (string, error)
@@ -16,19 +18,19 @@ type ITokenManager interface {
 	NewRefreshToken() (string, error)
 }
 
-type Manager struct {
+type TokenManager struct {
 	signingKey string
 }
 
-func NewManager(signingKey string) (*Manager, error) {
+func NewTokenManager(signingKey string) (*TokenManager, error) {
 	if signingKey == "" {
 		return nil, errors.New("empty signing key")
 	}
 
-	return &Manager{signingKey: signingKey}, nil
+	return &TokenManager{signingKey: signingKey}, nil
 }
 
-func (m *Manager) NewJWT(readerID uuid.UUID, ttl time.Duration) (string, error) {
+func (m *TokenManager) NewJWT(readerID uuid.UUID, ttl time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(ttl).Unix(),
 		Subject:   readerID.String(),
@@ -37,7 +39,7 @@ func (m *Manager) NewJWT(readerID uuid.UUID, ttl time.Duration) (string, error) 
 	return token.SignedString([]byte(m.signingKey))
 }
 
-func (m *Manager) Parse(accessToken string) (string, error) {
+func (m *TokenManager) Parse(accessToken string) (string, error) {
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (i interface{}, err error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -57,7 +59,7 @@ func (m *Manager) Parse(accessToken string) (string, error) {
 	return claims["sub"].(string), nil
 }
 
-func (m *Manager) NewRefreshToken() (string, error) {
+func (m *TokenManager) NewRefreshToken() (string, error) {
 	b := make([]byte, 32)
 
 	s := rand.NewSource(time.Now().Unix())

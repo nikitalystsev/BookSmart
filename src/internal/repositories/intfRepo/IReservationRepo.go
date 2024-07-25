@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate mockgen -source=IReservationRepo.go -destination=../../tests/unitTests/mocks/mockIReservationRepo.go --package=mocks
+//go:generate mockgen -source=IReservationRepo.go -destination=../../tests/unitTests/mocks/mockReservationRepo.go --package=mocks
 
 type IReservationRepo interface {
 	Create(ctx context.Context, reservation *models.ReservationModel) error
