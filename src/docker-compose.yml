@@ -1,5 +1,14 @@
 services:
-  unit-tests:
-    build: ./
-    command: ["go", "test", "-v", "./internal/tests/unitTests/..."]
-    container_name: unitTests-container
+#  unit-tests:
+#    build: ./
+#    command: ["go", "test", "-v", "./internal/tests/unitTests/..."]
+#    container_name: unitTests-container
+
+  pg-bookSmart:
+    image: postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"

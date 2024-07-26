@@ -38,7 +38,7 @@ func NewReaderService(
 	bookRepo intfRepo.IBookRepo,
 	tokenManager auth.ITokenManager,
 	hasher hash2.IPasswordHasher,
-) *ReaderService {
+) intfServices.IReaderService {
 	return &ReaderService{
 		readerRepo:   readerRepo,
 		bookRepo:     bookRepo,

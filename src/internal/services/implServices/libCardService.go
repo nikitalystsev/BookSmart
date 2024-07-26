@@ -4,6 +4,7 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/repositories/intfRepo"
+	"BookSmart/internal/services/intfServices"
 	"context"
 	"crypto/rand"
 	"errors"
@@ -24,7 +25,7 @@ type LibCardService struct {
 	libCardRepo intfRepo.ILibCardRepo
 }
 
-func NewLibCardService(libCardRepo intfRepo.ILibCardRepo) *LibCardService {
+func NewLibCardService(libCardRepo intfRepo.ILibCardRepo) intfServices.ILibCardService {
 	return &LibCardService{libCardRepo: libCardRepo}
 }
 

@@ -4,6 +4,7 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/repositories/intfRepo"
+	"BookSmart/internal/services/intfServices"
 	"BookSmart/pkg/transact"
 	"context"
 	"errors"
@@ -38,7 +39,7 @@ func NewReservationService(
 	readerRepo intfRepo.IReaderRepo,
 	libCardRepo intfRepo.ILibCardRepo,
 	transactionManager transact.ITransactionManager,
-) *ReservationService {
+) intfServices.IReservationService {
 	return &ReservationService{
 		reservationRepo:    reservationRepo,
 		bookRepo:           bookRepo,

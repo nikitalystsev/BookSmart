@@ -9,7 +9,7 @@ import (
 
 type IReaderService interface {
 	SignUp(ctx context.Context, reader *models.ReaderModel) error
-	SignIn(ctx context.Context, reader *dto.ReaderLoginDTO) error
+	SignIn(ctx context.Context, reader *dto.ReaderLoginDTO) (Tokens, error)
 	RefreshTokens(ctx context.Context, refreshToken string) (Tokens, error)
 	AddToFavorites(ctx context.Context, readerID, bookID uuid.UUID) error
 }

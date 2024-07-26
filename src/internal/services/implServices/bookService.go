@@ -5,6 +5,7 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/repositories/intfRepo"
+	"BookSmart/internal/services/intfServices"
 	"context"
 	"errors"
 	"fmt"
@@ -21,7 +22,7 @@ type BookService struct {
 	bookRepo intfRepo.IBookRepo
 }
 
-func NewBookService(bookRepo intfRepo.IBookRepo) *BookService {
+func NewBookService(bookRepo intfRepo.IBookRepo) intfServices.IBookService {
 	return &BookService{bookRepo: bookRepo}
 }
 
