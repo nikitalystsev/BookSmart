@@ -17,7 +17,7 @@ type PasswordHasher struct {
 	salt string
 }
 
-func NewPasswordHasher(salt string) *PasswordHasher {
+func NewPasswordHasher(salt string) IPasswordHasher {
 	return &PasswordHasher{salt: salt}
 }
 

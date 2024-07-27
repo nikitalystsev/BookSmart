@@ -15,7 +15,7 @@ type TransactionManager struct {
 	transactionManager manager.Manager
 }
 
-func NewTransactionManager(transactionManager manager.Manager) *TransactionManager {
+func NewTransactionManager(transactionManager manager.Manager) ITransactionManager {
 	return &TransactionManager{transactionManager: transactionManager}
 }
 

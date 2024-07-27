@@ -12,6 +12,10 @@ type ReservationRepo struct {
 	db *sqlx.DB
 }
 
+func NewReservationRepo(db *sqlx.DB) intfRepo.IReservationRepo {
+	return &ReservationRepo{db: db}
+}
+
 func (rr ReservationRepo) Create(ctx context.Context, reservation *models.ReservationModel) error {
 	//TODO implement me
 	panic("implement me")
@@ -40,8 +44,4 @@ func (rr ReservationRepo) GetOverdueByReaderID(ctx context.Context, readerID uui
 func (rr ReservationRepo) GetActiveByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
 	//TODO implement me
 	panic("implement me")
-}
-
-func NewReservationRepo(db *sqlx.DB) intfRepo.IReservationRepo {
-	return &ReservationRepo{db: db}
 }

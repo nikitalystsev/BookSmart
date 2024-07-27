@@ -33,7 +33,7 @@ func (br BookRepo) Create(ctx context.Context, book *models.BookModel) error {
 func (br BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel, error) {
 	var book models.BookModel
 
-	query := `SELECT id, title, author, publisher, copiesnumber, rarity, genre, publishingyear, language, agelimit FROM book WHERE id = $1`
+	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE id = $1`
 
 	err := br.db.GetContext(ctx, &book, query, id)
 	if err != nil {
@@ -46,7 +46,7 @@ func (br BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel
 func (br BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookModel, error) {
 	var book models.BookModel
 
-	query := `SELECT id, title, author, publisher, copiesnumber, rarity, genre, publishingyear, language, agelimit FROM book WHERE title = $1`
+	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE title = $1`
 
 	err := br.db.GetContext(ctx, &book, query, title)
 	if err != nil {
@@ -68,7 +68,7 @@ func (br BookRepo) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (br BookRepo) Update(ctx context.Context, book *models.BookModel) error {
-	query := `UPDATE book SET copiesnumber = $1 WHERE id = $2`
+	query := `UPDATE book SET copies_number = $1 WHERE id = $2`
 
 	_, err := br.db.ExecContext(ctx, query, book.CopiesNumber, book.ID)
 	if err != nil {
@@ -81,7 +81,7 @@ func (br BookRepo) Update(ctx context.Context, book *models.BookModel) error {
 // GetByParams будет уточняться
 func (br BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error) {
 	var books []*models.BookModel
-	query := `SELECT id, title, author, publisher, copiesnumber, rarity, genre, publishingyear, language, agelimit 
+	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit 
 	          FROM book 
 	          WHERE ($1 = '' OR title ILIKE '%' || $1 || '%') AND 
 	                ($2 = '' OR author ILIKE '%' || $2 || '%') AND 

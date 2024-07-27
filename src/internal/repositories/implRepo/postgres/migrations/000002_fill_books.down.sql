@@ -1,2 +1,1 @@
-DELETE
-FROM book;
+DELETE FROM book;

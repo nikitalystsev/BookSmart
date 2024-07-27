@@ -1,54 +1,54 @@
-CREATE TABLE Book
+CREATE TABLE book
 (
-    id             UUID PRIMARY KEY NOT NULL,
-    title          TEXT             NOT NULL,
-    author         TEXT             NOT NULL,
-    publisher      TEXT             NOT NULL,
-    copiesNumber   INT              NOT NULL,
-    rarity         TEXT             NOT NULL,
-    genre          TEXT             NOT NULL,
-    publishingYear INT              NOT NULL,
-    language       TEXT             NOT NULL,
-    ageLimit       INT              NOT NULL
+    id              UUID PRIMARY KEY NOT NULL,
+    title           TEXT             NOT NULL,
+    author          TEXT             NOT NULL,
+    publisher       TEXT             NOT NULL,
+    copies_number   INT              NOT NULL,
+    rarity          TEXT             NOT NULL,
+    genre           TEXT             NOT NULL,
+    publishing_year INT              NOT NULL,
+    language        TEXT             NOT NULL,
+    age_limit       INT              NOT NULL
 );
 
-CREATE TABLE Reader
-(
-    id          UUID PRIMARY KEY NOT NULL,
-    fio         TEXT             NOT NULL,
-    phoneNumber VARCHAR(20)      NOT NULL UNIQUE,
-    age         INT              NOT NULL,
-    password    VARCHAR(10)      NOT NULL
-);
-
-CREATE TABLE LibCard
+CREATE TABLE reader
 (
     id           UUID PRIMARY KEY NOT NULL,
-    readerID     UUID             NOT NULL,
-    libCardNum   VARCHAR(13)      NOT NULL UNIQUE,
-    validity     INT              NOT NULL,
-    issueDate    DATE             NOT NULL,
-    actionStatus BOOLEAN          NOT NULL,
-    FOREIGN KEY (readerID) REFERENCES Reader (id) ON DELETE CASCADE ON UPDATE CASCADE
+    fio          TEXT             NOT NULL,
+    phone_number VARCHAR(20)      NOT NULL UNIQUE,
+    age          INT              NOT NULL,
+    password     VARCHAR(10)      NOT NULL
 );
 
-CREATE TABLE FavoriteBooks
+CREATE TABLE lib_card
 (
-    bookID   UUID,
-    readerID UUID,
-    PRIMARY KEY (bookID, readerID),
-    FOREIGN KEY (bookID) REFERENCES Book (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (readerID) REFERENCES Reader (id) ON DELETE CASCADE ON UPDATE CASCADE
+    id            UUID PRIMARY KEY NOT NULL,
+    reader_id     UUID             NOT NULL,
+    lib_card_num  VARCHAR(13)      NOT NULL UNIQUE,
+    validity      INT              NOT NULL,
+    issue_date    DATE             NOT NULL,
+    action_status BOOLEAN          NOT NULL,
+    FOREIGN KEY (reader_id) REFERENCES reader (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE Reservation
+CREATE TABLE favorite_books
 (
-    id         UUID PRIMARY KEY NOT NULL,
-    readerID   UUID             NOT NULL,
-    bookID     UUID             NOT NULL,
-    issueDate  DATE             NOT NULL,
-    returnDate DATE             NOT NULL,
-    state      TEXT             NOT NULL,
-    FOREIGN KEY (readerID) REFERENCES Reader (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (bookID) REFERENCES Book (id) ON DELETE CASCADE ON UPDATE CASCADE
+    book_id   UUID,
+    reader_id UUID,
+    PRIMARY KEY (book_id, reader_id),
+    FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (reader_id) REFERENCES reader (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE reservation
+(
+    id          UUID PRIMARY KEY NOT NULL,
+    reader_id   UUID             NOT NULL,
+    book_id     UUID             NOT NULL,
+    issue_date  DATE             NOT NULL,
+    return_date DATE             NOT NULL,
+    state       TEXT             NOT NULL,
+    FOREIGN KEY (reader_id) REFERENCES reader (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES book (id) ON DELETE CASCADE ON UPDATE CASCADE
 );

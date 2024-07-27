@@ -22,7 +22,7 @@ type TokenManager struct {
 	signingKey string
 }
 
-func NewTokenManager(signingKey string) (*TokenManager, error) {
+func NewTokenManager(signingKey string) (ITokenManager, error) {
 	if signingKey == "" {
 		return nil, errors.New("empty signing key")
 	}
