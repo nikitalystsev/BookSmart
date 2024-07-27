@@ -1,10 +1,10 @@
-package unitTests
+package serviceTests
 
 import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errs"
 	"BookSmart/internal/services/implServices"
-	mockrepositories "BookSmart/internal/tests/unitTests/mocks"
+	mockrepositories "BookSmart/internal/tests/unitTests/serviceTests/mocks"
 	"context"
 	"errors"
 	"fmt"

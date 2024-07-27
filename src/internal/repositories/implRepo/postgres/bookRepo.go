@@ -5,6 +5,7 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/intfRepo"
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -18,8 +19,15 @@ func NewBookRepo(db *sqlx.DB) intfRepo.IBookRepo {
 }
 
 func (br BookRepo) Create(ctx context.Context, book *models.BookModel) error {
-	//TODO implement me
-	panic("implement me")
+	query := `INSERT INTO book VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+
+	_, err := br.db.ExecContext(ctx, query, book.ID, book.Title, book.Author, book.Publisher,
+		book.CopiesNumber, book.Rarity, book.Genre, book.PublishingYear, book.Language, book.AgeLimit)
+	if err != nil {
+		return fmt.Errorf("error inserting book: %w", err)
+	}
+
+	return nil
 }
 
 func (br BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel, error) {

@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate mockgen -source=IBookRepo.go -destination=../../tests/unitTests/mocks/mockBookRepo.go --package=mocks
+//go:generate mockgen -source=IBookRepo.go -destination=../../tests/unitTests/serviceTests/mocks/mockBookRepo.go --package=mocks
 
 type IBookRepo interface {
 	Create(ctx context.Context, book *models.BookModel) error

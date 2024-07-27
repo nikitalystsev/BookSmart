@@ -5,7 +5,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//go:generate mockgen -source=password.go -destination=../../internal/tests/unitTests/mocks/mockPasswordHasher.go --package=mocks
+//go:generate mockgen -source=password.go -destination=../../internal/tests/unitTests/serviceTests/mocks/mockPasswordHasher.go --package=mocks
 
 // IPasswordHasher provides hashing logic to securely store passwords.
 type IPasswordHasher interface {
