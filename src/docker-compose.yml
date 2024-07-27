@@ -14,4 +14,4 @@ services:
     ports:
       - "${DB_PORT}:5432"
     volumes:
-      - ./docs/data/mydatasets:/data
+      - ${DATASETS_PATH}:/data
