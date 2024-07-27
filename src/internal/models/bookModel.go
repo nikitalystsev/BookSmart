@@ -7,10 +7,10 @@ type BookModel struct {
 	Title          string    `json:"title"`
 	Author         string    `json:"author"`
 	Publisher      string    `json:"publisher"`
-	CopiesNumber   uint      `json:"copies_number"`
+	CopiesNumber   uint      `json:"copiesnumber"`
 	Rarity         string    `json:"rarity"`
 	Genre          string    `json:"genre"`
-	PublishingYear uint      `json:"publishing_year"`
+	PublishingYear uint      `json:"publishingyear"`
 	Language       string    `json:"language"`
-	AgeLimit       uint      `json:"age_limit"`
+	AgeLimit       uint      `json:"agelimit"`
 }
