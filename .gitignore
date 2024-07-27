@@ -25,3 +25,5 @@ go.work.sum
 
 diagrams/scheme_drawio/*.bkp
 src/.env
+src/docs/data/generator.py
+venv/
