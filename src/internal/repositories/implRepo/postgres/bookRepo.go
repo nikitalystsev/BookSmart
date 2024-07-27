@@ -18,7 +18,7 @@ func NewBookRepo(db *sqlx.DB) intfRepo.IBookRepo {
 	return &BookRepo{db: db}
 }
 
-func (br BookRepo) Create(ctx context.Context, book *models.BookModel) error {
+func (br *BookRepo) Create(ctx context.Context, book *models.BookModel) error {
 	query := `INSERT INTO book VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	_, err := br.db.ExecContext(ctx, query, book.ID, book.Title, book.Author, book.Publisher,
@@ -30,7 +30,7 @@ func (br BookRepo) Create(ctx context.Context, book *models.BookModel) error {
 	return nil
 }
 
-func (br BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel, error) {
+func (br *BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel, error) {
 	var book models.BookModel
 
 	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE id = $1`
@@ -43,7 +43,7 @@ func (br BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel
 	return &book, nil
 }
 
-func (br BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookModel, error) {
+func (br *BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookModel, error) {
 	var book models.BookModel
 
 	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE title = $1`
@@ -56,7 +56,7 @@ func (br BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookMo
 	return &book, nil
 }
 
-func (br BookRepo) Delete(ctx context.Context, id uuid.UUID) error {
+func (br *BookRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM book WHERE id = $1`
 
 	_, err := br.db.ExecContext(ctx, query, id)
@@ -67,7 +67,7 @@ func (br BookRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (br BookRepo) Update(ctx context.Context, book *models.BookModel) error {
+func (br *BookRepo) Update(ctx context.Context, book *models.BookModel) error {
 	query := `UPDATE book SET copies_number = $1 WHERE id = $2`
 
 	_, err := br.db.ExecContext(ctx, query, book.CopiesNumber, book.ID)
@@ -79,7 +79,7 @@ func (br BookRepo) Update(ctx context.Context, book *models.BookModel) error {
 }
 
 // GetByParams будет уточняться
-func (br BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error) {
+func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error) {
 	var books []*models.BookModel
 	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit 
 	          FROM book 
@@ -111,7 +111,12 @@ func (br BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) (
 	if err != nil {
 		return nil, fmt.Errorf("error executing query: %w", err)
 	}
-	defer rows.Close()
+	defer func(rows *sqlx.Rows) {
+		err = rows.Close()
+		if err != nil {
+			fmt.Printf("error close rows: %v", err)
+		}
+	}(rows)
 
 	for rows.Next() {
 		var book models.BookModel

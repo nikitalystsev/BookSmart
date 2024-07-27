@@ -476,19 +476,19 @@ func TestBookRepo_Update(t *testing.T) {
 }
 
 func TestBookRepo_GetByParams(t *testing.T) {
-	db, mock, err := sqlxmock.New()
+	db, mock, err := sqlxmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer func(db *sql.DB) {
+
+	defer func(db *sqlx.DB) {
 		err = db.Close()
 		if err != nil {
 			fmt.Printf("error closing db connection %v", err)
 		}
 	}(db)
 
-	sqlxDB := sqlx.NewDb(db, "sqlxmock")
-	br := postgres.NewBookRepo(sqlxDB)
+	br := postgres.NewBookRepo(db)
 
 	type args struct {
 		params *dto.BookParamsDTO
