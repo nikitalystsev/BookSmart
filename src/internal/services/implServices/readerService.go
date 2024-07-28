@@ -178,7 +178,6 @@ func (rs *ReaderService) createTokens(ctx context.Context, readerID uuid.UUID) (
 		return res, fmt.Errorf("[!] ERROR! Error generating refresh token: %v", err)
 	}
 
-	// TODO redis для хранения токена
 	err = rs.readerRepo.SaveRefreshToken(ctx, readerID, res.RefreshToken, refreshTokenTTL)
 	if err != nil {
 		return res, fmt.Errorf("[!] ERROR! Error saving refresh token: %v", err)
