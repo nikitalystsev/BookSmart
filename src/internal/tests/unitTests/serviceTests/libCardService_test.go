@@ -2,7 +2,7 @@ package serviceTests
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/services/implServices"
 	mockrepositories "BookSmart/internal/tests/unitTests/serviceTests/mocks"
 	"context"
@@ -34,7 +34,7 @@ func TestLibCardService_Create(t *testing.T) {
 			name:  "Success: successful creation",
 			input: inputStruct{readerID: testReaderID},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
-				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errsRepo.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
@@ -75,7 +75,7 @@ func TestLibCardService_Create(t *testing.T) {
 			name:  "Error: error creating library card",
 			input: inputStruct{readerID: testReaderID},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, readerID uuid.UUID) {
-				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(nil, errsRepo.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("create error"))
 			},
 			expected: func(t *testing.T, err error) {
@@ -129,7 +129,7 @@ func TestLibCardService_Update(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, libCard *models.LibCardModel) {
-				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(libCard, errs.ErrNotFound)
+				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(libCard, errsRepo.ErrNotFound)
 				m.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
@@ -169,7 +169,7 @@ func TestLibCardService_Update(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, libCard *models.LibCardModel) {
-				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("[!] ERROR! libCard with ID %v does not exist", "1234567890123")
@@ -189,7 +189,7 @@ func TestLibCardService_Update(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, libCard *models.LibCardModel) {
-				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(libCard, errs.ErrNotFound)
+				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(libCard, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("[!] ERROR! libCard with ID %v is valid", "1234567890123")
@@ -209,7 +209,7 @@ func TestLibCardService_Update(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepositories.MockILibCardRepo, libCard *models.LibCardModel) {
-				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(libCard, errs.ErrNotFound)
+				m.EXPECT().GetByNum(gomock.Any(), libCard.LibCardNum).Return(libCard, errsRepo.ErrNotFound)
 				m.EXPECT().Update(gomock.Any(), gomock.Any()).Return(errors.New("update error"))
 			},
 			expected: func(t *testing.T, err error) {

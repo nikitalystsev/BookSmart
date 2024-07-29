@@ -3,19 +3,24 @@ package postgres
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
+	"BookSmart/pkg/logging"
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
 type BookRepo struct {
-	db *sqlx.DB
+	db     *sqlx.DB
+	logger logging.Logger
 }
 
-func NewBookRepo(db *sqlx.DB) intfRepo.IBookRepo {
-	return &BookRepo{db: db}
+func NewBookRepo(db *sqlx.DB, logger logging.Logger) intfRepo.IBookRepo {
+	return &BookRepo{db: db, logger: logger}
 }
 
 func (br *BookRepo) Create(ctx context.Context, book *models.BookModel) error {
@@ -36,10 +41,16 @@ func (br *BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookMode
 	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE id = $1`
 
 	err := br.db.GetContext(ctx, &book, query, id)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		br.logger.Errorf("error getting book by id: %v", err)
 		return nil, err
 	}
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		br.logger.Infof("no book by id found")
+		return nil, errsRepo.ErrNotFound
+	}
 
+	br.logger.
 	return &book, nil
 }
 

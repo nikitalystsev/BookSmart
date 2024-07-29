@@ -3,7 +3,7 @@ package implServices
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
 	"BookSmart/internal/services/intfServices"
 	"BookSmart/pkg/auth"
@@ -72,7 +72,7 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 // SignIn Войти
 func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderLoginDTO) (intfServices.Tokens, error) {
 	exitingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		return intfServices.Tokens{}, fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 
@@ -131,7 +131,7 @@ func (rs *ReaderService) AddToFavorites(ctx context.Context, readerID, bookID uu
 
 func (rs *ReaderService) baseValidation(ctx context.Context, reader *models.ReaderModel) error {
 	existingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 

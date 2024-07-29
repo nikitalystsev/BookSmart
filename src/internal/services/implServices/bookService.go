@@ -3,9 +3,10 @@ package implServices
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
 	"BookSmart/internal/services/intfServices"
+	"BookSmart/pkg/logging"
 	"context"
 	"errors"
 	"fmt"
@@ -20,10 +21,11 @@ const (
 
 type BookService struct {
 	bookRepo intfRepo.IBookRepo
+	logger   logging.Logger
 }
 
-func NewBookService(bookRepo intfRepo.IBookRepo) intfServices.IBookService {
-	return &BookService{bookRepo: bookRepo}
+func NewBookService(bookRepo intfRepo.IBookRepo, logger logging.Logger) intfServices.IBookService {
+	return &BookService{bookRepo: bookRepo, logger: logger}
 }
 
 func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error {
@@ -42,7 +44,7 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 
 func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 
@@ -60,7 +62,7 @@ func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error
 
 func (bs *BookService) GetByID(ctx context.Context, bookID uuid.UUID) (*models.BookModel, error) {
 	book, err := bs.bookRepo.GetByID(ctx, bookID)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		return nil, fmt.Errorf("[!] ERROR! Error retrieving book information: %v", err)
 	}
 
@@ -82,7 +84,7 @@ func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDT
 
 func (bs *BookService) baseValidation(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
 	}
 

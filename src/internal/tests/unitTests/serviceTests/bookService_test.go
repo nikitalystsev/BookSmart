@@ -3,7 +3,7 @@ package serviceTests
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/services/implServices"
 	mockrepo "BookSmart/internal/tests/unitTests/serviceTests/mocks"
 	"context"
@@ -42,7 +42,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errsRepo.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), book).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
@@ -98,7 +98,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errors.New("[!] ERROR! Empty book title")
@@ -116,7 +116,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errors.New("[!] ERROR! Empty book author")
@@ -134,7 +134,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errors.New("[!] ERROR! Empty book rarity")
@@ -152,7 +152,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errors.New("[!] ERROR! Invalid book copies number")
@@ -171,7 +171,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errsRepo.ErrNotFound)
 				m.EXPECT().Create(gomock.Any(), book).Return(errors.New("create error"))
 			},
 			expected: func(t *testing.T, err error) {
@@ -260,7 +260,7 @@ func TestBookService_Delete(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errors.New("[!] ERROR! Book with this title does not exist")
@@ -367,7 +367,7 @@ func TestBookService_GetByID(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, book *models.BookModel) {
-				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errors.New("[!] ERROR! Book with this ID does not exist")

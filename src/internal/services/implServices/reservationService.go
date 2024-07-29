@@ -2,7 +2,7 @@ package implServices
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
 	"BookSmart/internal/services/intfServices"
 	"BookSmart/pkg/transact"
@@ -182,7 +182,7 @@ func (rs *ReservationService) checkBook(ctx context.Context, bookID uuid.UUID) (
 
 func (rs *ReservationService) checkReaderExists(ctx context.Context, readerID uuid.UUID) (*models.ReaderModel, error) {
 	existingReader, err := rs.readerRepo.GetByID(ctx, readerID)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		return nil, fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
 	}
 	if existingReader == nil {

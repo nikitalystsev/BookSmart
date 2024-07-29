@@ -1,13 +1,59 @@
 package logging
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"io"
+	"log"
 	"os"
 	"path"
 	"runtime"
+	"time"
 )
+
+// InfluxDBWriter реализует интерфейс io.Writer для записи логов в InfluxDB
+type InfluxDBWriter struct {
+	writeAPI api.WriteAPI
+}
+
+func (w *InfluxDBWriter) Write(p []byte) (n int, err error) {
+	var logEntry map[string]interface{}
+
+	if err = json.Unmarshal(p, &logEntry); err != nil {
+		return 0, fmt.Errorf("failed to unmarshal log entry: %v", err)
+	}
+
+	point := influxdb2.NewPointWithMeasurement("logs")
+
+	for key, value := range logEntry {
+		if v, ok := value.(float64); ok {
+			point = point.AddField(key, v)
+		} else if v, ok := value.(string); ok {
+			point = point.AddField(key, v)
+		} else if v, ok := value.(bool); ok {
+			point = point.AddField(key, v)
+		} else if v, ok := value.(map[string]interface{}); ok {
+			for subKey, subValue := range v {
+				point = point.AddField(fmt.Sprintf("%s_%s", key, subKey), subValue)
+			}
+		} else {
+			point = point.AddField(key, fmt.Sprintf("%v", value))
+		}
+	}
+
+	// Добавляем временную метку
+	point = point.AddField("time", time.Now().Format(time.RFC3339))
+
+	// Записываем точку
+	w.writeAPI.WritePoint(point)
+	w.writeAPI.Flush()
+
+	return len(p), nil
+}
 
 type writerHook struct {
 	Writer    []io.Writer
@@ -19,6 +65,7 @@ func (hook *writerHook) Fire(entry *logrus.Entry) error {
 	if err != nil {
 		return err
 	}
+
 	for _, w := range hook.Writer {
 		_, err = w.Write([]byte(line))
 		if err != nil {
@@ -26,7 +73,7 @@ func (hook *writerHook) Fire(entry *logrus.Entry) error {
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (hook *writerHook) Levels() []logrus.Level {
@@ -48,7 +95,7 @@ func NewLogger() (*Logger, error) {
 		PrettyPrint: false,
 	})
 
-	err := os.MkdirAll("logs", 0755) // исправлено на 0755 для каталогов
+	err := os.MkdirAll("logs", 0755)
 	if err != nil {
 		return nil, err
 	}
@@ -60,8 +107,23 @@ func NewLogger() (*Logger, error) {
 
 	l.SetOutput(io.Discard)
 
+	if err = godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
+
+	// InfluxDB settings
+	influxDBUrl := os.Getenv("INFLUXDB_URL")
+	influxDBToken := os.Getenv("INFLUXDB_INIT_CLIENT_TOKEN")
+	influxDBOrg := os.Getenv("INFLUXDB_INIT_ORG")
+	influxDBBucket := os.Getenv("INFLUXDB_INIT_BUCKET")
+
+	client := influxdb2.NewClient(influxDBUrl, influxDBToken)
+	writeAPI := client.WriteAPI(influxDBOrg, influxDBBucket)
+
+	influxWriter := &InfluxDBWriter{writeAPI: writeAPI}
+
 	l.AddHook(&writerHook{
-		Writer:    []io.Writer{allFile, os.Stdout},
+		Writer:    []io.Writer{allFile, os.Stdout, influxWriter},
 		LogLevels: logrus.AllLevels,
 	})
 

@@ -2,7 +2,7 @@ package implServices
 
 import (
 	"BookSmart/internal/models"
-	"BookSmart/internal/repositories/errs"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
 	"BookSmart/internal/services/intfServices"
 	"context"
@@ -31,7 +31,7 @@ func NewLibCardService(libCardRepo intfRepo.ILibCardRepo) intfServices.ILibCardS
 
 func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error {
 	existingLibCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking libCard existence: %v", err)
 	}
 
@@ -60,7 +60,7 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 
 func (lcs *LibCardService) Update(ctx context.Context, libCard *models.LibCardModel) error {
 	existingLibCard, err := lcs.libCardRepo.GetByNum(ctx, libCard.LibCardNum)
-	if err != nil && !errors.Is(err, errs.ErrNotFound) {
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		return fmt.Errorf("[!] ERROR! Error checking libCard existence: %v", err)
 	}
 
