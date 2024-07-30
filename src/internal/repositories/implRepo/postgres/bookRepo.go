@@ -24,73 +24,110 @@ func NewBookRepo(db *sqlx.DB, logger logging.Logger) intfRepo.IBookRepo {
 }
 
 func (br *BookRepo) Create(ctx context.Context, book *models.BookModel) error {
+	br.logger.Infof("inserting book with ID: %s", book.ID)
+
 	query := `INSERT INTO book VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+
+	br.logger.Infof("executing query: %s", query)
 
 	_, err := br.db.ExecContext(ctx, query, book.ID, book.Title, book.Author, book.Publisher,
 		book.CopiesNumber, book.Rarity, book.Genre, book.PublishingYear, book.Language, book.AgeLimit)
 	if err != nil {
-		return fmt.Errorf("error inserting book: %w", err)
+		br.logger.Errorf("error inserting book: %v", err)
+		return err
 	}
+
+	br.logger.Infof("book with ID: %s inserted successfully", book.ID)
 
 	return nil
 }
 
 func (br *BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel, error) {
-	var book models.BookModel
+	br.logger.Infof("select book with ID: %s", id)
 
 	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE id = $1`
 
+	br.logger.Infof("executing query: %s", query)
+
+	var book models.BookModel
 	err := br.db.GetContext(ctx, &book, query, id)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		br.logger.Errorf("error getting book by id: %v", err)
+		br.logger.Errorf("error selected book by id: %v", err)
 		return nil, err
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		br.logger.Infof("no book by id found")
+		br.logger.Warnf("no book found by id: %s", id.String())
 		return nil, errsRepo.ErrNotFound
 	}
+
+	br.logger.Infof("successfully selected book: %v", book)
 
 	return &book, nil
 }
 
 func (br *BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookModel, error) {
-	var book models.BookModel
+	br.logger.Infof("selected book by title: %s", title)
 
 	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE title = $1`
 
+	br.logger.Infof("executing query: %s", query)
+
+	var book models.BookModel
 	err := br.db.GetContext(ctx, &book, query, title)
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		br.logger.Errorf("error selected book by title: %v", err)
 		return nil, err
 	}
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		br.logger.Warnf("no book found by title: %s", title)
+		return nil, errsRepo.ErrNotFound
+	}
+
+	br.logger.Infof("successfully selected book: %v", book)
 
 	return &book, nil
 }
 
 func (br *BookRepo) Delete(ctx context.Context, id uuid.UUID) error {
+	br.logger.Infof("deleting book with ID: %s", id)
+
 	query := `DELETE FROM book WHERE id = $1`
+
+	br.logger.Infof("executing query: %s", query)
 
 	_, err := br.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error deleting book: %v", err)
+		br.logger.Errorf("error deleting book with ID %s: %v", id, err)
+		return err
 	}
+
+	br.logger.Infof("successfully deleted book with ID: %s", id)
 
 	return nil
 }
 
 func (br *BookRepo) Update(ctx context.Context, book *models.BookModel) error {
+	br.logger.Infof("updating book with ID: %s", book.ID)
+
 	query := `UPDATE book SET copies_number = $1 WHERE id = $2`
+
+	br.logger.Infof("executing query: %s", query)
 
 	_, err := br.db.ExecContext(ctx, query, book.CopiesNumber, book.ID)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error updating book copies: %v", err)
+		br.logger.Errorf("error updating book copies: %v", err)
+		return err
 	}
+
+	br.logger.Infof("successfully updated book copies for ID: %s", book.ID)
 
 	return nil
 }
 
 // GetByParams будет уточняться
 func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error) {
-	var books []*models.BookModel
+	br.logger.Infof("selecting books with params: %+v", params)
+
 	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit 
 	          FROM book 
 	          WHERE ($1 = '' OR title ILIKE '%' || $1 || '%') AND 
@@ -103,6 +140,8 @@ func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) 
 	                ($8 = '' OR language ILIKE '%' || $8 || '%') AND 
 	                ($9 = 0 OR age_limit = $9)
 	          LIMIT $10 OFFSET $11`
+
+	br.logger.Infof("executing query")
 
 	rows, err := br.db.QueryxContext(ctx, query,
 		params.Title,
@@ -119,26 +158,34 @@ func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) 
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("error executing query: %w", err)
+		br.logger.Errorf("error selecting books with params: %v", err)
+		return nil, err
 	}
 	defer func(rows *sqlx.Rows) {
 		err = rows.Close()
 		if err != nil {
-			fmt.Printf("error close rows: %v", err)
+			br.logger.Errorf("error closing rows: %v", err)
+			fmt.Printf("error closing rows: %v", err)
 		}
 	}(rows)
 
+	var books []*models.BookModel
 	for rows.Next() {
 		var book models.BookModel
 		if err = rows.StructScan(&book); err != nil {
-			return nil, fmt.Errorf("error scanning row: %w", err)
+			br.logger.Errorf("error scanning row: %v", err)
+			return nil, err
 		}
+
 		books = append(books, &book)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %w", err)
+		br.logger.Errorf("rows iteration error: %v", err)
+		return nil, err
 	}
+
+	br.logger.Infof("successfully found %d books with params: %+v", len(books), params)
 
 	return books, nil
 }

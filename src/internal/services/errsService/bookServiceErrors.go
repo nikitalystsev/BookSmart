@@ -1,0 +1,12 @@
+package errsService
+
+import "errors"
+
+var (
+	ErrBookAlreadyExist     = errors.New("[!] bookService error! Book already exists")
+	ErrEmptyBookTitle       = errors.New("[!] bookService error! Empty book title")
+	ErrEmptyBookAuthor      = errors.New("[!] bookService error! Empty book author")
+	ErrEmptyBookRarity      = errors.New("[!] bookService error! Empty book rarity")
+	ErrInvalidBookCopiesNum = errors.New("[!] bookService error! Invalid book copies number")
+	ErrBookDoesNotExists    = errors.New("[!] bookService error! Book does not exist")
+)

@@ -5,12 +5,11 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
+	"BookSmart/internal/services/errsService"
 	"BookSmart/internal/services/intfServices"
 	"BookSmart/pkg/logging"
 	"context"
 	"errors"
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
@@ -30,84 +29,119 @@ func NewBookService(bookRepo intfRepo.IBookRepo, logger logging.Logger) intfServ
 }
 
 func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error {
+	bs.logger.Info("starting book creation process")
+
 	err := bs.baseValidation(ctx, book)
 	if err != nil {
+		bs.logger.Errorf("book validation failed: %v", err)
 		return err
 	}
 
+	bs.logger.Infof("creating book in repository: %+v", book)
+
 	err = bs.bookRepo.Create(ctx, book)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error creating book: %v", err)
+		bs.logger.Errorf("error creating book: %v", err)
+		return err
 	}
+
+	bs.logger.Info("book creation successful")
 
 	return nil
 }
 
 func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error {
+	bs.logger.Infof("attempting to delete book with ID: %s", book.ID)
+
 	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
 	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
-		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
+		bs.logger.Errorf("error checking book existence: %v", err)
+		return err
 	}
 
 	if existingBook == nil {
-		return errors.New("[!] ERROR! Book with this title does not exist")
+		bs.logger.Warn("book with this ID does not exist")
+		return errsService.ErrBookDoesNotExists
 	}
 
 	err = bs.bookRepo.Delete(ctx, book.ID)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error deleting book: %v", err)
+		bs.logger.Errorf("error deleting book with ID %s: %v", book.ID, err)
+		return err
 	}
+
+	bs.logger.Infof("successfully deleted book with ID: %s", book.ID)
 
 	return nil
 }
 
 func (bs *BookService) GetByID(ctx context.Context, bookID uuid.UUID) (*models.BookModel, error) {
+	bs.logger.Infof("attempting to get book with ID: %s", bookID)
+
 	book, err := bs.bookRepo.GetByID(ctx, bookID)
 	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
-		return nil, fmt.Errorf("[!] ERROR! Error retrieving book information: %v", err)
+		bs.logger.Errorf("error checking book existence: %v", err)
+		return nil, err
 	}
 
 	if book == nil {
-		return nil, errors.New("[!] ERROR! Book with this ID does not exist")
+		bs.logger.Warn("book with this ID does not exist")
+		return nil, errsService.ErrBookDoesNotExists
 	}
+
+	bs.logger.Infof("successfully getting book by ID: %s", bookID)
 
 	return book, nil
 }
 
 func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error) {
+	bs.logger.Infof("attempting to search for books with params: %+v", params)
+
 	books, err := bs.bookRepo.GetByParams(ctx, params)
 	if err != nil {
-		return nil, fmt.Errorf("[!] ERROR! Error searching for books: %v", err)
+		bs.logger.Errorf("error searching books with params: %v", err)
+		return nil, err
 	}
-	
+
+	bs.logger.Infof("successfully found %d books with params: %+v", len(books), params)
+
 	return books, nil
 }
 
 func (bs *BookService) baseValidation(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
+
 	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
-		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
+		bs.logger.Errorf("error checking book existence: %v", err)
+		return err
 	}
 
 	if existingBook != nil {
-		return errors.New("[!] ERROR! Book with this title already exists")
+		bs.logger.Warn("book with this ID already exists")
+		return errsService.ErrBookAlreadyExist
 	}
 
 	if book.Title == "" {
-		return errors.New("[!] ERROR! Empty book title")
+		bs.logger.Warn("empty book title")
+		return errsService.ErrEmptyBookTitle
 	}
 
 	if book.Author == "" {
-		return errors.New("[!] ERROR! Empty book author")
+		bs.logger.Warn("empty book author")
+		return errsService.ErrEmptyBookAuthor
 	}
 
 	if book.Rarity == "" {
-		return errors.New("[!] ERROR! Empty book rarity")
+		bs.logger.Warn("empty book rarity")
+		return errsService.ErrEmptyBookRarity
 	}
 
 	if book.CopiesNumber <= 0 {
-		return errors.New("[!] ERROR! Invalid book copies number")
+		bs.logger.Warn("invalid book copies number")
+		return errsService.ErrInvalidBookCopiesNum
 	}
+
+	bs.logger.Info("book validation successful")
 
 	return nil
 }
