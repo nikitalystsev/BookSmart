@@ -4,10 +4,11 @@ import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errsRepo"
+	"BookSmart/internal/services/errsService"
 	"BookSmart/internal/services/implServices"
 	"BookSmart/internal/tests/unitTests/serviceTests/mocks"
+	"BookSmart/pkg/logging"
 	"context"
-	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -17,23 +18,21 @@ import (
 )
 
 func TestReaderService_SignUp(t *testing.T) {
-
 	type mockBehaviour func(m *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel)
-
 	type expectedFunc func(t *testing.T, err error)
-	type inputStruct struct {
+	type args struct {
 		reader *models.ReaderModel
 	}
 
 	testTable := []struct {
 		name          string
-		input         inputStruct
+		args          args
 		mockBehaviour mockBehaviour
 		expected      expectedFunc
 	}{
 		{
-			name: "Success: successful SignUp",
-			input: inputStruct{
+			name: "Success successful signUp",
+			args: args{
 				&models.ReaderModel{
 					ID:          uuid.New(),
 					Fio:         "John Doe",
@@ -52,8 +51,8 @@ func TestReaderService_SignUp(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: error checking reader existence",
-			input: inputStruct{
+			name: "Error error checking reader existence",
+			args: args{
 				&models.ReaderModel{
 					ID:          uuid.New(),
 					Fio:         "John Doe",
@@ -66,13 +65,13 @@ func TestReaderService_SignUp(t *testing.T) {
 				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, fmt.Errorf("database error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := fmt.Errorf("[!] ERROR! Error checking reader existence: database error")
+				expectedError := fmt.Errorf("database error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: reader already exists",
-			input: inputStruct{
+			name: "Error reader already exists",
+			args: args{
 				&models.ReaderModel{
 					ID:          uuid.New(),
 					Fio:         "John Doe",
@@ -85,13 +84,13 @@ func TestReaderService_SignUp(t *testing.T) {
 				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(reader, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Reader with this phoneNumbers already exists")
+				expectedError := errsService.ErrReaderAlreadyExist
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: missing fio",
-			input: inputStruct{
+			name: "Error missing fio",
+			args: args{
 				&models.ReaderModel{
 					ID:          uuid.New(),
 					PhoneNumber: "12345678901",
@@ -103,13 +102,13 @@ func TestReaderService_SignUp(t *testing.T) {
 				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Field Fio is required")
+				expectedError := errsService.ErrEmptyReaderFio
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: missing PhoneNumber",
-			input: inputStruct{
+			name: "Error missing phoneNumber",
+			args: args{
 				&models.ReaderModel{
 					ID:       uuid.New(),
 					Fio:      "John Doe",
@@ -121,13 +120,13 @@ func TestReaderService_SignUp(t *testing.T) {
 				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Field PhoneNumber is required")
+				expectedError := errsService.ErrEmptyReaderPhoneNumber
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: invalid Age",
-			input: inputStruct{
+			name: "Error invalid age",
+			args: args{
 				&models.ReaderModel{
 					ID:          uuid.New(),
 					Fio:         "John Doe",
@@ -140,13 +139,13 @@ func TestReaderService_SignUp(t *testing.T) {
 				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Field Age is required")
+				expectedError := errsService.ErrInvalidReaderAge
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: invalid PhoneNumber length",
-			input: inputStruct{
+			name: "Error invalid phoneNumber len",
+			args: args{
 				&models.ReaderModel{
 					ID:          uuid.New(),
 					Fio:         "John Doe",
@@ -159,13 +158,13 @@ func TestReaderService_SignUp(t *testing.T) {
 				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Reader phoneNumbers len")
+				expectedError := errsService.ErrInvalidReaderPhoneNumberLen
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: invalid PhoneNumber format",
-			input: inputStruct{
+			name: "Error invalid phoneNumber format",
+			args: args{
 				&models.ReaderModel{
 					ID:          uuid.New(),
 					Fio:         "John Doe",
@@ -178,13 +177,13 @@ func TestReaderService_SignUp(t *testing.T) {
 				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Reader phoneNumbers incorrect format")
+				expectedError := errsService.ErrInvalidReaderPhoneNumberFormat
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: error creating reader",
-			input: inputStruct{
+			name: "Error error creating reader",
+			args: args{
 				&models.ReaderModel{
 					ID:          uuid.New(),
 					Fio:         "John Doe",
@@ -199,7 +198,7 @@ func TestReaderService_SignUp(t *testing.T) {
 				r.EXPECT().Create(gomock.Any(), gomock.Any()).Return(fmt.Errorf("database error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := fmt.Errorf("[!] ERROR! Error creating reader: database error")
+				expectedError := fmt.Errorf("database error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -211,11 +210,14 @@ func TestReaderService_SignUp(t *testing.T) {
 
 			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
 			mockHasher := mocks.NewMockIPasswordHasher(ctrl)
-			readerService := implServices.NewReaderService(mockReaderRepo, nil, nil, mockHasher)
+			readerService := implServices.NewReaderService(
+				mockReaderRepo, nil, nil,
+				mockHasher, logging.GetLoggerForTests(),
+			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockHasher, testCase.input.reader)
+			testCase.mockBehaviour(mockReaderRepo, mockHasher, testCase.args.reader)
 
-			err := readerService.SignUp(context.Background(), testCase.input.reader)
+			err := readerService.SignUp(context.Background(), testCase.args.reader)
 
 			testCase.expected(t, err)
 		})
@@ -230,9 +232,8 @@ func TestReaderService_SignIn(t *testing.T) {
 		readerDTO *dto.ReaderLoginDTO,
 		reader *models.ReaderModel,
 	)
-
 	type expectedFunc func(t *testing.T, err error)
-	type inputStruct struct {
+	type args struct {
 		readerDTO *dto.ReaderLoginDTO
 		reader    *models.ReaderModel
 	}
@@ -244,13 +245,13 @@ func TestReaderService_SignIn(t *testing.T) {
 
 	testTable := []struct {
 		name          string
-		input         inputStruct
+		args          args
 		mockBehaviour mockBehaviour
 		expected      expectedFunc
 	}{
 		{
-			name: "Success: successful SignIn",
-			input: inputStruct{
+			name: "Success successful signIn",
+			args: args{
 				readerDTO: &dto.ReaderLoginDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
@@ -275,8 +276,8 @@ func TestReaderService_SignIn(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: reader not found",
-			input: inputStruct{
+			name: "Error reader not found",
+			args: args{
 				readerDTO: &dto.ReaderLoginDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
@@ -286,13 +287,13 @@ func TestReaderService_SignIn(t *testing.T) {
 				r.EXPECT().GetByPhoneNumber(gomock.Any(), readerDTO.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := fmt.Errorf("[!] ERROR! Reader with this phoneNumbers does not exist")
+				expectedError := errsService.ErrReaderDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: wrong password",
-			input: inputStruct{
+			name: "Error wrong password",
+			args: args{
 				readerDTO: &dto.ReaderLoginDTO{
 					PhoneNumber: "12345678901",
 					Password:    "wrong_password",
@@ -315,8 +316,8 @@ func TestReaderService_SignIn(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: access token generation error",
-			input: inputStruct{
+			name: "Error access token generation error",
+			args: args{
 				readerDTO: &dto.ReaderLoginDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
@@ -335,13 +336,13 @@ func TestReaderService_SignIn(t *testing.T) {
 				t.EXPECT().NewJWT(reader.ID, accessTokenTTL).Return("accessToken", fmt.Errorf("some error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := fmt.Errorf("[!] ERROR! Error generating access token: some error")
+				expectedError := fmt.Errorf("some error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: refresh token generation error",
-			input: inputStruct{
+			name: "Error refresh token generation error",
+			args: args{
 				readerDTO: &dto.ReaderLoginDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
@@ -361,13 +362,13 @@ func TestReaderService_SignIn(t *testing.T) {
 				t.EXPECT().NewRefreshToken().Return("refreshToken", fmt.Errorf("some error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := fmt.Errorf("[!] ERROR! Error generating refresh token: some error")
+				expectedError := fmt.Errorf("some error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
 			name: "Error: save refresh token error",
-			input: inputStruct{
+			args: args{
 				readerDTO: &dto.ReaderLoginDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
@@ -388,7 +389,7 @@ func TestReaderService_SignIn(t *testing.T) {
 				r.EXPECT().SaveRefreshToken(gomock.Any(), reader.ID, "refreshToken", refreshTokenTTL).Return(fmt.Errorf("some error"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := fmt.Errorf("[!] ERROR! Error saving refresh token: some error")
+				expectedError := fmt.Errorf("some error")
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -401,11 +402,14 @@ func TestReaderService_SignIn(t *testing.T) {
 			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
 			mockHasher := mocks.NewMockIPasswordHasher(ctrl)
 			mockTokenManager := mocks.NewMockITokenManager(ctrl)
-			readerService := implServices.NewReaderService(mockReaderRepo, nil, mockTokenManager, mockHasher)
+			readerService := implServices.NewReaderService(
+				mockReaderRepo, nil, mockTokenManager,
+				mockHasher, logging.GetLoggerForTests(),
+			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockHasher, mockTokenManager, testCase.input.readerDTO, testCase.input.reader)
+			testCase.mockBehaviour(mockReaderRepo, mockHasher, mockTokenManager, testCase.args.readerDTO, testCase.args.reader)
 
-			_, err := readerService.SignIn(context.Background(), testCase.input.readerDTO)
+			_, err := readerService.SignIn(context.Background(), testCase.args.readerDTO)
 
 			testCase.expected(t, err)
 		})
@@ -419,9 +423,8 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 		refreshToken string,
 		existingReader *models.ReaderModel,
 	)
-
 	type expectedFunc func(t *testing.T, err error)
-	type inputStruct struct {
+	type args struct {
 		refreshToken   string
 		existingReader *models.ReaderModel
 	}
@@ -433,13 +436,13 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 
 	testTable := []struct {
 		name          string
-		input         inputStruct
+		args          args
 		mockBehaviour mockBehaviour
 		expected      expectedFunc
 	}{
 		{
-			name: "Error: successful token refresh",
-			input: inputStruct{
+			name: "Success successful token refresh",
+			args: args{
 				refreshToken: "validRefreshToken",
 				existingReader: &models.ReaderModel{
 					ID:          uuid.New(),
@@ -460,8 +463,8 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: failed to get reader by refresh token",
-			input: inputStruct{
+			name: "Error failed to get reader by refresh token",
+			args: args{
 				refreshToken:   "invalidRefreshToken",
 				existingReader: nil,
 			},
@@ -474,8 +477,8 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: error generating access token",
-			input: inputStruct{
+			name: "Error error generating access token",
+			args: args{
 				refreshToken: "validRefreshToken",
 				existingReader: &models.ReaderModel{
 					ID:          uuid.New(),
@@ -490,7 +493,7 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 				t.EXPECT().NewJWT(existingReader.ID, accessTokenTTL).Return("", fmt.Errorf("error generating JWT"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := fmt.Errorf("[!] ERROR! Error generating access token: error generating JWT")
+				expectedError := fmt.Errorf("error generating JWT")
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -502,11 +505,14 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 
 			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
 			mockTokenManager := mocks.NewMockITokenManager(ctrl)
-			readerService := implServices.NewReaderService(mockReaderRepo, nil, mockTokenManager, nil)
+			readerService := implServices.NewReaderService(
+				mockReaderRepo, nil, mockTokenManager,
+				nil, logging.GetLoggerForTests(),
+			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockTokenManager, testCase.input.refreshToken, testCase.input.existingReader)
+			testCase.mockBehaviour(mockReaderRepo, mockTokenManager, testCase.args.refreshToken, testCase.args.existingReader)
 
-			_, err := readerService.RefreshTokens(context.Background(), testCase.input.refreshToken)
+			_, err := readerService.RefreshTokens(context.Background(), testCase.args.refreshToken)
 
 			testCase.expected(t, err)
 		})
@@ -517,20 +523,20 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 	type mockBehaviour func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, readerID, bookID uuid.UUID)
 
 	type expectedFunc func(t *testing.T, err error)
-	type inputStruct struct {
+	type args struct {
 		readerID uuid.UUID
 		bookID   uuid.UUID
 	}
 
 	testTable := []struct {
 		name          string
-		input         inputStruct
+		args          args
 		mockBehaviour mockBehaviour
 		expected      expectedFunc
 	}{
 		{
-			name: "Success: successful AddToFavorites",
-			input: inputStruct{
+			name: "Success successful AddToFavorites",
+			args: args{
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
@@ -545,8 +551,8 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: reader not found",
-			input: inputStruct{
+			name: "Error reader not found",
+			args: args{
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
@@ -554,13 +560,13 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				r.EXPECT().GetByID(gomock.Any(), readerID).Return(nil, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Reader with this ID does not exist")
+				expectedError := errsService.ErrReaderDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: book not found",
-			input: inputStruct{
+			name: "Error book not found",
+			args: args{
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
@@ -569,13 +575,13 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				b.EXPECT().GetByID(gomock.Any(), bookID).Return(nil, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Book with this ID does not exist")
+				expectedError := errsService.ErrBookDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: already in favorites",
-			input: inputStruct{
+			name: "Error already in favorites",
+			args: args{
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
@@ -585,13 +591,13 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				r.EXPECT().IsFavorite(gomock.Any(), readerID, bookID).Return(true, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Book is already in favorites")
+				expectedError := errsService.ErrBookAlreadyIsFavorite
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: error adding to favorites",
-			input: inputStruct{
+			name: "Error error adding to favorites",
+			args: args{
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
@@ -602,7 +608,7 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				r.EXPECT().AddToFavorites(gomock.Any(), readerID, bookID).Return(fmt.Errorf("error add"))
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("[!] ERROR! Error adding book to favorites: error add")
+				expectedError := fmt.Errorf("error add")
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -611,15 +617,17 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 	for _, testCase := range testTable {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 
 			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
 			mockBookRepo := mocks.NewMockIBookRepo(ctrl)
-			readerService := implServices.NewReaderService(mockReaderRepo, mockBookRepo, nil, nil)
+			readerService := implServices.NewReaderService(
+				mockReaderRepo, mockBookRepo, nil,
+				nil, logging.GetLoggerForTests(),
+			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, testCase.input.readerID, testCase.input.bookID)
+			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, testCase.args.readerID, testCase.args.bookID)
 
-			err := readerService.AddToFavorites(context.Background(), testCase.input.readerID, testCase.input.bookID)
+			err := readerService.AddToFavorites(context.Background(), testCase.args.readerID, testCase.args.bookID)
 
 			testCase.expected(t, err)
 		})
