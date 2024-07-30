@@ -50,7 +50,6 @@ func (br *BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookMode
 		return nil, errsRepo.ErrNotFound
 	}
 
-	br.logger.
 	return &book, nil
 }
 

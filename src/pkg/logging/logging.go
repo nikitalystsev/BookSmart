@@ -27,28 +27,25 @@ func (w *InfluxDBWriter) Write(p []byte) (n int, err error) {
 		return 0, fmt.Errorf("failed to unmarshal log entry: %v", err)
 	}
 
-	point := influxdb2.NewPointWithMeasurement("logs")
+	point := influxdb2.NewPointWithMeasurement("logs").SetTime(time.Now())
 
 	for key, value := range logEntry {
-		if v, ok := value.(float64); ok {
-			point = point.AddField(key, v)
-		} else if v, ok := value.(string); ok {
-			point = point.AddField(key, v)
-		} else if v, ok := value.(bool); ok {
-			point = point.AddField(key, v)
-		} else if v, ok := value.(map[string]interface{}); ok {
+		switch v := value.(type) {
+		case float64:
+			point.AddField(key, v)
+		case string:
+			point.AddField(key, v)
+		case bool:
+			point.AddField(key, v)
+		case map[string]interface{}:
 			for subKey, subValue := range v {
-				point = point.AddField(fmt.Sprintf("%s_%s", key, subKey), subValue)
+				point.AddField(fmt.Sprintf("%s_%s", key, subKey), subValue)
 			}
-		} else {
-			point = point.AddField(key, fmt.Sprintf("%v", value))
+		default:
+			point.AddField(key, fmt.Sprintf("%v", value))
 		}
 	}
 
-	// Добавляем временную метку
-	point = point.AddField("time", time.Now().Format(time.RFC3339))
-
-	// Записываем точку
 	w.writeAPI.WritePoint(point)
 	w.writeAPI.Flush()
 

@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
 )
 
@@ -78,7 +79,7 @@ func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDT
 	if err != nil {
 		return nil, fmt.Errorf("[!] ERROR! Error searching for books: %v", err)
 	}
-
+	
 	return books, nil
 }
 
