@@ -77,11 +77,7 @@ func (hook *writerHook) Levels() []logrus.Level {
 	return hook.LogLevels
 }
 
-type Logger struct {
-	*logrus.Entry
-}
-
-func NewLogger() (*Logger, error) {
+func NewLogger() (*logrus.Entry, error) {
 	l := logrus.New()
 	l.SetReportCaller(true)
 	l.SetFormatter(&logrus.JSONFormatter{
@@ -108,7 +104,6 @@ func NewLogger() (*Logger, error) {
 		log.Fatal(err)
 	}
 
-	// InfluxDB settings
 	influxDBUrl := os.Getenv("INFLUXDB_URL")
 	influxDBToken := os.Getenv("INFLUXDB_INIT_CLIENT_TOKEN")
 	influxDBOrg := os.Getenv("INFLUXDB_INIT_ORG")
@@ -126,9 +121,13 @@ func NewLogger() (*Logger, error) {
 
 	l.SetLevel(logrus.TraceLevel)
 
-	return &Logger{logrus.NewEntry(l)}, nil
+	return logrus.NewEntry(l), nil
 }
 
-func (l *Logger) GetLoggerWithField(k string, v interface{}) *Logger {
-	return &Logger{l.WithField(k, v)}
+func GetLoggerForTests() (logger *logrus.Entry) {
+	l := logrus.New()
+	l.SetOutput(io.Discard)
+	logger = logrus.NewEntry(l)
+
+	return
 }

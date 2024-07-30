@@ -3,13 +3,13 @@ package repositoryTests
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/implRepo/postgres"
+	"BookSmart/pkg/logging"
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"
@@ -21,20 +21,13 @@ func TestBookRepo_Create(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	br := postgres.NewBookRepo(db)
+	br := postgres.NewBookRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		book *models.BookModel
 	}
 
-	type mockBehavior func(args args, id uuid.UUID)
+	type mockBehavior func(args args)
 	type expectedFunc func(t *testing.T, err error)
 
 	testsTable := []struct {
@@ -44,8 +37,8 @@ func TestBookRepo_Create(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: create book",
-			mockBehavior: func(args args, id uuid.UUID) {
+			name: "Success insert book",
+			mockBehavior: func(args args) {
 
 				mock.ExpectExec(`INSERT INTO book VALUES`).
 					WithArgs(args.book.ID, args.book.Title, args.book.Author, args.book.Publisher,
@@ -73,8 +66,8 @@ func TestBookRepo_Create(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: executing query",
-			mockBehavior: func(args args, id uuid.UUID) {
+			name: "Error executing query",
+			mockBehavior: func(args args) {
 
 				mock.ExpectExec(`INSERT INTO book VALUES`).
 					WithArgs(args.book.ID, args.book.Title, args.book.Author, args.book.Publisher,
@@ -98,15 +91,17 @@ func TestBookRepo_Create(t *testing.T) {
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				expectedError := errors.New("error inserting book: insert error")
-				assert.Equal(t, expectedError.Error(), err.Error())
+				expectedError := errors.New("insert error")
+				assert.Equal(t, expectedError, err)
+				err = mock.ExpectationsWereMet()
+				assert.NoError(t, err)
 			},
 		},
 	}
 
 	for _, testCase := range testsTable {
 		t.Run(testCase.name, func(t *testing.T) {
-			testCase.mockBehavior(testCase.args, testCase.args.book.ID)
+			testCase.mockBehavior(testCase.args)
 
 			err = br.Create(context.Background(), testCase.args.book)
 
@@ -121,14 +116,7 @@ func TestBookRepo_GetByID(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	br := postgres.NewBookRepo(db)
+	br := postgres.NewBookRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		id uuid.UUID
@@ -144,7 +132,7 @@ func TestBookRepo_GetByID(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: get book by ID",
+			name: "Success get book by ID",
 			mockBehavior: func(args args) {
 				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copiesnumber", "rarity", "genre", "publishingyear", "language", "agelimit"}).
 					AddRow(args.id, "Test Book", "Test Author", "Test Publisher", "10", "Common", "Fiction", 2021, "English", 12)
@@ -172,11 +160,10 @@ func TestBookRepo_GetByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: book not found",
+			name: "Error book not found",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM book WHERE (.+)`).
-					WithArgs(args.id).
-					WillReturnError(sql.ErrNoRows)
+					WithArgs(args.id).WillReturnError(sql.ErrNoRows)
 			},
 			args: args{
 				id: uuid.New(),
@@ -184,7 +171,7 @@ func TestBookRepo_GetByID(t *testing.T) {
 			expected: func(t *testing.T, book *models.BookModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, book)
-				expectedError := sql.ErrNoRows
+				expectedError := errsRepo.ErrNotFound
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -212,7 +199,8 @@ func TestBookRepo_GetByID(t *testing.T) {
 
 			testCase.mockBehavior(testCase.args)
 
-			book, err := br.GetByID(context.Background(), testCase.args.id)
+			var book *models.BookModel
+			book, err = br.GetByID(context.Background(), testCase.args.id)
 
 			testCase.expected(t, book, err)
 		})
@@ -225,14 +213,7 @@ func TestBookRepo_GetByTitle(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	br := postgres.NewBookRepo(db)
+	br := postgres.NewBookRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		title string
@@ -248,7 +229,7 @@ func TestBookRepo_GetByTitle(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: get book by title",
+			name: "Success get book by title",
 			mockBehavior: func(args args) {
 				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copiesnumber", "rarity", "genre", "publishingyear", "language", "agelimit"}).
 					AddRow(uuid.New(), args.title, "Test Author", "Test Publisher", "10", "Common", "Fiction", 2021, "English", 12)
@@ -276,11 +257,10 @@ func TestBookRepo_GetByTitle(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: book not found",
+			name: "Error book not found",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM book WHERE (.+)`).
-					WithArgs(args.title).
-					WillReturnError(sql.ErrNoRows)
+					WithArgs(args.title).WillReturnError(sql.ErrNoRows)
 			},
 			args: args{
 				title: "Test Book",
@@ -288,12 +268,12 @@ func TestBookRepo_GetByTitle(t *testing.T) {
 			expected: func(t *testing.T, book *models.BookModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, book)
-				expectedError := sql.ErrNoRows
+				expectedError := errsRepo.ErrNotFound
 				assert.Equal(t, expectedError, err)
 			},
 		},
 		{
-			name: "Error: executing query",
+			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM book WHERE (.+)`).
 					WithArgs(args.title).
@@ -316,7 +296,8 @@ func TestBookRepo_GetByTitle(t *testing.T) {
 
 			testCase.mockBehavior(testCase.args)
 
-			book, err := br.GetByTitle(context.Background(), testCase.args.title)
+			var book *models.BookModel
+			book, err = br.GetByTitle(context.Background(), testCase.args.title)
 
 			testCase.expected(t, book, err)
 		})
@@ -329,14 +310,7 @@ func TestBookRepo_Delete(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	br := postgres.NewBookRepo(db)
+	br := postgres.NewBookRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		id uuid.UUID
@@ -352,11 +326,10 @@ func TestBookRepo_Delete(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: delete book by ID",
+			name: "Success delete book by ID",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`DELETE FROM book WHERE (.+)`).
-					WithArgs(args.id).
-					WillReturnResult(sqlxmock.NewResult(1, 1))
+					WithArgs(args.id).WillReturnResult(sqlxmock.NewResult(1, 1))
 			},
 			args: args{
 				id: uuid.New(),
@@ -368,7 +341,7 @@ func TestBookRepo_Delete(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: executing query",
+			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`DELETE FROM book WHERE (.+)`).
 					WithArgs(args.id).
@@ -379,7 +352,7 @@ func TestBookRepo_Delete(t *testing.T) {
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				expectedError := errors.New("[!] ERROR! Error deleting book: delete error")
+				expectedError := errors.New("delete error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
@@ -402,14 +375,7 @@ func TestBookRepo_Update(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	br := postgres.NewBookRepo(db)
+	br := postgres.NewBookRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		book *models.BookModel
@@ -425,7 +391,7 @@ func TestBookRepo_Update(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: update book copies",
+			name: "Success update book copies",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`UPDATE book SET (.+) WHERE (.+)`).
 					WithArgs(args.book.CopiesNumber, args.book.ID).
@@ -458,7 +424,7 @@ func TestBookRepo_Update(t *testing.T) {
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				expectedError := errors.New("[!] ERROR! Error updating book copies: update error")
+				expectedError := errors.New("update error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
@@ -481,14 +447,7 @@ func TestBookRepo_GetByParams(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	br := postgres.NewBookRepo(db)
+	br := postgres.NewBookRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		params *dto.BookParamsDTO
@@ -504,7 +463,7 @@ func TestBookRepo_GetByParams(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: get books by params",
+			name: "Success get books by params",
 			mockBehavior: func(args args) {
 				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copiesnumber", "rarity", "genre", "publishingyear", "language", "agelimit"}).
 					AddRow(uuid.New(), "Test Book", "Test Author", "Test Publisher", 10, "Common", "Fiction", 2021, "English", 12)
@@ -545,7 +504,7 @@ func TestBookRepo_GetByParams(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: executing query",
+			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM book WHERE (.+)`).
 					WithArgs(args.params.Title, args.params.Author, args.params.Publisher, args.params.CopiesNumber, args.params.Rarity, args.params.Genre, args.params.PublishingYear, args.params.Language, args.params.AgeLimit, args.params.Limit, args.params.Offset).
@@ -575,13 +534,47 @@ func TestBookRepo_GetByParams(t *testing.T) {
 				assert.NoError(t, err)
 			},
 		},
+		{
+			name: "Error books not found",
+			mockBehavior: func(args args) {
+				mock.ExpectQuery(`SELECT (.+) FROM book WHERE (.+)`).
+					WithArgs(args.params.Title, args.params.Author, args.params.Publisher, args.params.CopiesNumber,
+						args.params.Rarity, args.params.Genre, args.params.PublishingYear,
+						args.params.Language, args.params.AgeLimit, args.params.Limit, args.params.Offset).
+					WillReturnError(sql.ErrNoRows)
+			},
+			args: args{
+				params: &dto.BookParamsDTO{
+					Title:          "Test Book",
+					Author:         "Test Author",
+					Publisher:      "Test Publisher",
+					CopiesNumber:   10,
+					Rarity:         "Common",
+					Genre:          "Fiction",
+					PublishingYear: 2021,
+					Language:       "English",
+					AgeLimit:       12,
+					Limit:          10,
+					Offset:         0,
+				},
+			},
+			expected: func(t *testing.T, books []*models.BookModel, err error) {
+				assert.Error(t, err)
+				assert.Nil(t, books)
+				expectedError := errsRepo.ErrNotFound
+				assert.Equal(t, expectedError.Error(), err.Error())
+				err = mock.ExpectationsWereMet()
+				assert.NoError(t, err)
+			},
+		},
 	}
 
 	for _, testCase := range testsTable {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			books, err := br.GetByParams(context.Background(), testCase.args.params)
+			var books []*models.BookModel
+			books, err = br.GetByParams(context.Background(), testCase.args.params)
 
 			testCase.expected(t, books, err)
 		})

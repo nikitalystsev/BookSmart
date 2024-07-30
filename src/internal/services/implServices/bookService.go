@@ -7,24 +7,24 @@ import (
 	"BookSmart/internal/repositories/intfRepo"
 	"BookSmart/internal/services/errsService"
 	"BookSmart/internal/services/intfServices"
-	"BookSmart/pkg/logging"
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	BookRarityCommon = "Обычная"
-	BookRarityRare   = "Редкая"
-	BookRarityUnique = "Уникальная"
+	BookRarityCommon = "Common"
+	BookRarityRare   = "Rare"
+	BookRarityUnique = "Unique"
 )
 
 type BookService struct {
 	bookRepo intfRepo.IBookRepo
-	logger   logging.Logger
+	logger   *logrus.Entry
 }
 
-func NewBookService(bookRepo intfRepo.IBookRepo, logger logging.Logger) intfServices.IBookService {
+func NewBookService(bookRepo intfRepo.IBookRepo, logger *logrus.Entry) intfServices.IBookService {
 	return &BookService{bookRepo: bookRepo, logger: logger}
 }
 

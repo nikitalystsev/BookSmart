@@ -5,21 +5,21 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
-	"BookSmart/pkg/logging"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 )
 
 type BookRepo struct {
 	db     *sqlx.DB
-	logger logging.Logger
+	logger *logrus.Entry
 }
 
-func NewBookRepo(db *sqlx.DB, logger logging.Logger) intfRepo.IBookRepo {
+func NewBookRepo(db *sqlx.DB, logger *logrus.Entry) intfRepo.IBookRepo {
 	return &BookRepo{db: db, logger: logger}
 }
 
@@ -156,11 +156,15 @@ func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) 
 		params.Limit,
 		params.Offset,
 	)
-
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		br.logger.Errorf("error selecting books with params: %v", err)
 		return nil, err
 	}
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		br.logger.Warnf("no books found by params")
+		return nil, errsRepo.ErrNotFound
+	}
+
 	defer func(rows *sqlx.Rows) {
 		err = rows.Close()
 		if err != nil {
