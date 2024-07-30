@@ -2,13 +2,13 @@ package repositoryTests
 
 import (
 	"BookSmart/internal/models"
+	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/implRepo/postgres"
+	"BookSmart/pkg/logging"
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"
@@ -21,14 +21,7 @@ func TestLibCardRepo_Create(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	lcr := postgres.NewLibCardRepo(db)
+	lcr := postgres.NewLibCardRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		libCard *models.LibCardModel
@@ -44,7 +37,7 @@ func TestLibCardRepo_Create(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: create lib card",
+			name: "Success create libCard",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`INSERT INTO lib_card VALUES`).
 					WithArgs(args.libCard.ID, args.libCard.ReaderID, args.libCard.LibCardNum, args.libCard.Validity,
@@ -68,7 +61,7 @@ func TestLibCardRepo_Create(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: executing query",
+			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`INSERT INTO lib_card VALUES`).
 					WithArgs(args.libCard.ID, args.libCard.ReaderID, args.libCard.LibCardNum, args.libCard.Validity,
@@ -87,7 +80,7 @@ func TestLibCardRepo_Create(t *testing.T) {
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				expectedError := fmt.Errorf("error inserting libCard: insert error")
+				expectedError := errors.New("insert error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
@@ -110,14 +103,7 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	lcr := postgres.NewLibCardRepo(db)
+	lcr := postgres.NewLibCardRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		readerID uuid.UUID
@@ -133,14 +119,13 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: get lib card by reader ID",
+			name: "Success get libCard by readerID",
 			mockBehavior: func(args args) {
 				rows := sqlxmock.NewRows([]string{"id", "readerid", "libcardnum", "validity", "issuedate", "actionstatus"}).
 					AddRow(uuid.New(), args.readerID, "1234567890123", 12, time.Now(), true)
 
 				mock.ExpectQuery(`SELECT (.+) FROM lib_card WHERE (.+)`).
-					WithArgs(args.readerID).
-					WillReturnRows(rows)
+					WithArgs(args.readerID).WillReturnRows(rows)
 			},
 			args: args{
 				readerID: uuid.New(),
@@ -156,34 +141,33 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: no rows found",
+			name: "Error no rows found",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM lib_card WHERE (.+)`).
-					WithArgs(args.readerID).
-					WillReturnError(sql.ErrNoRows)
+					WithArgs(args.readerID).WillReturnError(sql.ErrNoRows)
 			},
 			args: args{
 				readerID: uuid.New(),
 			},
 			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
 				assert.Nil(t, libCard)
+				assert.Equal(t, errsRepo.ErrNotFound, err)
 				err = mock.ExpectationsWereMet()
 				assert.NoError(t, err)
 			},
 		},
 		{
-			name: "Error: query execution",
+			name: "Error query execution",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM lib_card WHERE (.+)`).
-					WithArgs(args.readerID).
-					WillReturnError(errors.New("query error"))
+					WithArgs(args.readerID).WillReturnError(errors.New("query error"))
 			},
 			args: args{
 				readerID: uuid.New(),
 			},
 			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
 				assert.Error(t, err)
-				expectedError := errors.New("error retrieving lib card by reader ID: query error")
+				expectedError := errors.New("query error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 				assert.Nil(t, libCard)
 				err = mock.ExpectationsWereMet()
@@ -196,7 +180,8 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			libCard, err := lcr.GetByReaderID(context.Background(), testCase.args.readerID)
+			var libCard *models.LibCardModel
+			libCard, err = lcr.GetByReaderID(context.Background(), testCase.args.readerID)
 
 			testCase.expected(t, libCard, err)
 		})
@@ -209,14 +194,7 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	lcr := postgres.NewLibCardRepo(db)
+	lcr := postgres.NewLibCardRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		libCardNum string
@@ -232,14 +210,13 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: get lib card by num",
+			name: "Success get libCard by num",
 			mockBehavior: func(args args) {
 				rows := sqlxmock.NewRows([]string{"id", "readerid", "libcardnum", "validity", "issuedate", "actionstatus"}).
 					AddRow(uuid.New(), uuid.New(), args.libCardNum, 12, time.Now(), true)
 
 				mock.ExpectQuery(`SELECT (.+) FROM lib_card WHERE (.+)`).
-					WithArgs(args.libCardNum).
-					WillReturnRows(rows)
+					WithArgs(args.libCardNum).WillReturnRows(rows)
 			},
 			args: args{
 				libCardNum: "1234567890123",
@@ -255,17 +232,17 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: no rows found",
+			name: "Error no rows found",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM lib_card WHERE (.+)`).
-					WithArgs(args.libCardNum).
-					WillReturnError(sql.ErrNoRows)
+					WithArgs(args.libCardNum).WillReturnError(sql.ErrNoRows)
 			},
 			args: args{
 				libCardNum: "1234567890123",
 			},
 			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
 				assert.Nil(t, libCard)
+				assert.Equal(t, errsRepo.ErrNotFound, err)
 				err = mock.ExpectationsWereMet()
 				assert.NoError(t, err)
 			},
@@ -282,7 +259,7 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 			},
 			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
 				assert.Error(t, err)
-				expectedError := errors.New("error retrieving lib card by num: query error")
+				expectedError := errors.New("query error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 				assert.Nil(t, libCard)
 				err = mock.ExpectationsWereMet()
@@ -295,7 +272,8 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			libCard, err := lcr.GetByNum(context.Background(), testCase.args.libCardNum)
+			var libCard *models.LibCardModel
+			libCard, err = lcr.GetByNum(context.Background(), testCase.args.libCardNum)
 
 			testCase.expected(t, libCard, err)
 		})
@@ -308,14 +286,7 @@ func TestLibCardRepo_Update(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection %v", err)
-		}
-	}(db)
-
-	lcr := postgres.NewLibCardRepo(db)
+	lcr := postgres.NewLibCardRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		libCard *models.LibCardModel
@@ -331,7 +302,7 @@ func TestLibCardRepo_Update(t *testing.T) {
 		expected     expectedFunc
 	}{
 		{
-			name: "Success: update lib card",
+			name: "Success update lib card",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`UPDATE lib_card SET (.+) WHERE (.+)`).
 					WithArgs(args.libCard.IssueDate, args.libCard.ID).
@@ -354,7 +325,7 @@ func TestLibCardRepo_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: executing query",
+			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`UPDATE lib_card SET (.+) WHERE (.+)`).
 					WithArgs(args.libCard.IssueDate, args.libCard.ID).
@@ -372,8 +343,8 @@ func TestLibCardRepo_Update(t *testing.T) {
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				expectedError := "[!] ERROR! Error updating lib card: update error"
-				assert.Equal(t, expectedError, err.Error())
+				expectedError := errors.New("update error")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 	}

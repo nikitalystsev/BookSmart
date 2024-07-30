@@ -4,12 +4,13 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
+	"BookSmart/internal/services/errsService"
 	"BookSmart/internal/services/intfServices"
 	"context"
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"math/big"
 	"time"
 )
@@ -23,20 +24,26 @@ const (
 
 type LibCardService struct {
 	libCardRepo intfRepo.ILibCardRepo
+	logger      *logrus.Entry
 }
 
-func NewLibCardService(libCardRepo intfRepo.ILibCardRepo) intfServices.ILibCardService {
-	return &LibCardService{libCardRepo: libCardRepo}
+func NewLibCardService(libCardRepo intfRepo.ILibCardRepo, logger *logrus.Entry) intfServices.ILibCardService {
+	return &LibCardService{libCardRepo: libCardRepo, logger: logger}
 }
 
 func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error {
+	lcs.logger.Info("starting libCard creation process")
+
 	existingLibCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
+
 	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
-		return fmt.Errorf("[!] ERROR! Error checking libCard existence: %v", err)
+		lcs.logger.Errorf("error checking libCard existence: %v", err)
+		return err
 	}
 
 	if existingLibCard != nil {
-		return fmt.Errorf("[!] ERROR! User with ID %v already has a library card", readerID)
+		lcs.logger.Warnf("User with ID %v already has a library card", readerID)
+		return errsService.ErrLibCardAlreadyExist
 	}
 
 	libCardNum := lcs.generateLibCardNum()
@@ -50,34 +57,48 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 		ActionStatus: true,
 	}
 
+	lcs.logger.Infof("creating libCard in repository: %+v", newLibCard)
+
 	err = lcs.libCardRepo.Create(ctx, newLibCard)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error creating libCard: %v", err)
+		lcs.logger.Errorf("error creating libCard: %v", err)
+		return err
 	}
+
+	lcs.logger.Info("libCard creation successful")
 
 	return nil
 }
 
 func (lcs *LibCardService) Update(ctx context.Context, libCard *models.LibCardModel) error {
+	lcs.logger.Infof("attempting to update libCard with ID: %s", libCard.ID)
+
 	existingLibCard, err := lcs.libCardRepo.GetByNum(ctx, libCard.LibCardNum)
 	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
-		return fmt.Errorf("[!] ERROR! Error checking libCard existence: %v", err)
+		lcs.logger.Errorf("error checking libCard existence: %v", err)
+		return err
 	}
 
 	if existingLibCard == nil {
-		return fmt.Errorf("[!] ERROR! libCard with ID %v does not exist", libCard.LibCardNum)
+		lcs.logger.Warn("libCard with this Nun does not exist")
+		return errsService.ErrLibCardDoesNotExists
 	}
 
 	if lcs.isValidLibCard(existingLibCard) {
-		return fmt.Errorf("[!] ERROR! libCard with ID %v is valid", libCard.LibCardNum)
+		lcs.logger.Warn("libCard with this Nun is already valid")
+		return errsService.ErrLibCardIsValid
 	}
 
 	libCard.IssueDate = time.Now()
+	libCard.ActionStatus = true
 
 	err = lcs.libCardRepo.Update(ctx, libCard)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error updating libCard: %v", err)
+		lcs.logger.Errorf("error updating libCard: %v", err)
+		return err
 	}
+
+	lcs.logger.Infof("successfully updated book with ID: %s", libCard.ID)
 
 	return nil
 }
