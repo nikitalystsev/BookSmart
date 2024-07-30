@@ -95,19 +95,19 @@ func (mr *MockIReservationRepoMockRecorder) GetByReaderAndBook(ctx, readerID, bo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReaderAndBook", reflect.TypeOf((*MockIReservationRepo)(nil).GetByReaderAndBook), ctx, readerID, bookID)
 }
 
-// GetOverdueByReaderID mocks base method.
-func (m *MockIReservationRepo) GetOverdueByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
+// GetExpiredByReaderID mocks base method.
+func (m *MockIReservationRepo) GetExpiredByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOverdueByReaderID", ctx, readerID)
+	ret := m.ctrl.Call(m, "GetExpiredByReaderID", ctx, readerID)
 	ret0, _ := ret[0].([]*models.ReservationModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetOverdueByReaderID indicates an expected call of GetOverdueByReaderID.
-func (mr *MockIReservationRepoMockRecorder) GetOverdueByReaderID(ctx, readerID interface{}) *gomock.Call {
+// GetExpiredByReaderID indicates an expected call of GetExpiredByReaderID.
+func (mr *MockIReservationRepoMockRecorder) GetExpiredByReaderID(ctx, readerID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOverdueByReaderID", reflect.TypeOf((*MockIReservationRepo)(nil).GetOverdueByReaderID), ctx, readerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExpiredByReaderID", reflect.TypeOf((*MockIReservationRepo)(nil).GetExpiredByReaderID), ctx, readerID)
 }
 
 // Update mocks base method.

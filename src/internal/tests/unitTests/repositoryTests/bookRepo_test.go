@@ -528,7 +528,7 @@ func TestBookRepo_GetByParams(t *testing.T) {
 			expected: func(t *testing.T, books []*models.BookModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, books)
-				expectedError := errors.New("error executing query: query error")
+				expectedError := errors.New("query error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 				err = mock.ExpectationsWereMet()
 				assert.NoError(t, err)

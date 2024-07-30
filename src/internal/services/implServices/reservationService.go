@@ -4,20 +4,21 @@ import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/errsRepo"
 	"BookSmart/internal/repositories/intfRepo"
+	"BookSmart/internal/services/errsService"
 	"BookSmart/internal/services/intfServices"
 	"BookSmart/pkg/transact"
 	"context"
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 const (
-	ReservationIssued   = "Выдана"
-	ReservationExtended = "Продлена"
-	ReservationOverdue  = "Просрочена"
-	ReservationClosed   = "Закрыта"
+	ReservationIssued   = "Issued"
+	ReservationExtended = "Extended"
+	ReservationExpired  = "Expired"
+	ReservationClosed   = "Closed"
 )
 
 const (
@@ -31,6 +32,7 @@ type ReservationService struct {
 	readerRepo         intfRepo.IReaderRepo
 	libCardRepo        intfRepo.ILibCardRepo
 	transactionManager transact.ITransactionManager
+	logger             *logrus.Entry
 }
 
 func NewReservationService(
@@ -39,6 +41,7 @@ func NewReservationService(
 	readerRepo intfRepo.IReaderRepo,
 	libCardRepo intfRepo.ILibCardRepo,
 	transactionManager transact.ITransactionManager,
+	logger *logrus.Entry,
 ) intfServices.IReservationService {
 	return &ReservationService{
 		reservationRepo:    reservationRepo,
@@ -46,10 +49,13 @@ func NewReservationService(
 		readerRepo:         readerRepo,
 		libCardRepo:        libCardRepo,
 		transactionManager: transactionManager,
+		logger:             logger,
 	}
 }
 
 func (rs *ReservationService) Create(ctx context.Context, readerID, bookID uuid.UUID) error {
+	rs.logger.Info("starting reservation creation process")
+
 	existingReader, err := rs.checkReader(ctx, readerID)
 	if err != nil {
 		return err
@@ -67,18 +73,23 @@ func (rs *ReservationService) Create(ctx context.Context, readerID, bookID uuid.
 
 	err = rs.create(ctx, readerID, bookID)
 	if err != nil {
+		rs.logger.Errorf("error creating reservation: %v", err)
 		return err
 	}
+
+	rs.logger.Info("reservation creation successful")
 
 	return nil
 }
 
 func (rs *ReservationService) Update(ctx context.Context, reservation *models.ReservationModel) error {
+	rs.logger.Info("attempting to update reservation")
+
 	err := rs.checkValidLibCard(ctx, reservation.ReaderID)
 	if err != nil {
 		return err
 	}
-	err = rs.checkNoOverdueBooks(ctx, reservation.ReaderID)
+	err = rs.checkNoExpiredBooks(ctx, reservation.ReaderID)
 	if err != nil {
 		return err
 	}
@@ -97,10 +108,14 @@ func (rs *ReservationService) Update(ctx context.Context, reservation *models.Re
 	reservation.ReturnDate = time.Now().AddDate(0, 0, ReservationExtensionPeriodDays)
 	reservation.State = ReservationExtended
 
+	rs.logger.Info("update reservation in repository")
 	err = rs.reservationRepo.Update(ctx, reservation)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error creating reservation: %v", err)
+		rs.logger.Errorf("error updating reservation: %v", err)
+		return err
 	}
+
+	rs.logger.Info("reservation update successful")
 
 	return nil
 }
@@ -116,22 +131,31 @@ func (rs *ReservationService) create(ctx context.Context, readerID, bookID uuid.
 			State:      ReservationIssued,
 		}
 
+		rs.logger.Info("creating reservation in repository")
+
 		err := rs.reservationRepo.Create(ctx, newReservation)
 		if err != nil {
-			return fmt.Errorf("[!] ERROR! Error creating reservation: %v", err)
+			rs.logger.Errorf("error creating reservation: %v", err)
+			return err
 		}
 
 		existingBook, err := rs.bookRepo.GetByID(ctx, bookID)
-		if err != nil {
-			return fmt.Errorf("[!] ERROR! Error retrieving book: %v", err)
+		if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+			rs.logger.Errorf("error checking book existence: %v", err)
+			return err
 		}
 
 		existingBook.CopiesNumber -= 1
 
+		rs.logger.Info("updating book copiesNumber in repository")
+
 		err = rs.bookRepo.Update(ctx, existingBook)
 		if err != nil {
-			return fmt.Errorf("[!] ERROR! Error updating book availability: %v", err)
+			rs.logger.Errorf("error updating book: %v", err)
+			return err
 		}
+
+		rs.logger.Info("successfully updated book copiesNumber")
 
 		return nil
 	})
@@ -143,7 +167,7 @@ func (rs *ReservationService) checkReader(ctx context.Context, readerID uuid.UUI
 		return nil, err
 	}
 
-	err = rs.checkNoOverdueBooks(ctx, readerID)
+	err = rs.checkNoExpiredBooks(ctx, readerID)
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +181,8 @@ func (rs *ReservationService) checkReader(ctx context.Context, readerID uuid.UUI
 	if err != nil {
 		return nil, err
 	}
+
+	rs.logger.Info("reader is valid")
 
 	return existingReader, nil
 }
@@ -177,115 +203,164 @@ func (rs *ReservationService) checkBook(ctx context.Context, bookID uuid.UUID) (
 		return nil, err
 	}
 
+	rs.logger.Info("book is valid")
+
 	return existingBook, nil
 }
 
 func (rs *ReservationService) checkReaderExists(ctx context.Context, readerID uuid.UUID) (*models.ReaderModel, error) {
 	existingReader, err := rs.readerRepo.GetByID(ctx, readerID)
 	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
-		return nil, fmt.Errorf("[!] ERROR! Error checking reader existence: %v", err)
+		rs.logger.Errorf("error checking book existence: %v", err)
+		return nil, err
 	}
 	if existingReader == nil {
-		return nil, fmt.Errorf("[!] ERROR! Reader with this ID does not exist")
+		rs.logger.Warn("reader with this ID does not exist")
+		return nil, errsService.ErrReaderDoesNotExists
 	}
+
+	rs.logger.Info("reader exists")
 
 	return existingReader, nil
 }
 
-func (rs *ReservationService) checkNoOverdueBooks(ctx context.Context, readerID uuid.UUID) error {
-	overdueBooks, err := rs.reservationRepo.GetOverdueByReaderID(ctx, readerID)
+func (rs *ReservationService) checkNoExpiredBooks(ctx context.Context, readerID uuid.UUID) error {
+	overdueBooks, err := rs.reservationRepo.GetExpiredByReaderID(ctx, readerID)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error checking overdue books: %v", err)
+		rs.logger.Errorf("error checking expired book existence: %v", err)
+		return err
 	}
 
 	if len(overdueBooks) > 0 {
-		return fmt.Errorf("[!] ERROR! Reader has overdue books")
+		rs.logger.Warn("reader has expired books")
+		return errsService.ErrReaderHasExpiredBooks
 	}
+
+	rs.logger.Info("reader has not expired books")
+
 	return nil
 }
 
 func (rs *ReservationService) checkActiveReservationsLimit(ctx context.Context, readerID uuid.UUID) error {
 	activeReservations, err := rs.reservationRepo.GetActiveByReaderID(ctx, readerID)
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error checking active reservations: %v", err)
+		rs.logger.Errorf("error checking active reservations: %v", err)
+		return err
 	}
 	if len(activeReservations) >= MaxBooksPerReader {
-		return fmt.Errorf("[!] ERROR! Reader has reached the limit of active reservations")
+		rs.logger.Warn("reader has reached the limit of active reservations")
+		return errsService.ErrReservationsLimitExceeded
 	}
+
+	rs.logger.Info("reader has not reached the limit of active reservations")
+
 	return nil
 }
 
 func (rs *ReservationService) checkValidLibCard(ctx context.Context, readerID uuid.UUID) error {
 	libCard, err := rs.libCardRepo.GetByReaderID(ctx, readerID)
-	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error checking libCard existence: %v", err)
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+		rs.logger.Errorf("error checking libCard existence: %v", err)
+		return err
 	}
-	if libCard == nil || !libCard.ActionStatus {
-		return fmt.Errorf("[!] ERROR! Reader does not have a valid library card")
+	if libCard == nil {
+		rs.logger.Warn("reader does not have libCard")
+		return errsService.ErrLibCardDoesNotExists
 	}
+
+	if !libCard.ActionStatus {
+		rs.logger.Warn("reader has invalid libCard")
+		return errsService.ErrLibCardIsInvalid
+	}
+
+	rs.logger.Info("reader has valid libCard")
+
 	return nil
 }
 
 func (rs *ReservationService) checkBookExists(ctx context.Context, bookID uuid.UUID) (*models.BookModel, error) {
 	existingBook, err := rs.bookRepo.GetByID(ctx, bookID)
-	if err != nil {
-		return nil, fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+		rs.logger.Errorf("error checking book existence: %v", err)
+		return nil, err
 	}
 	if existingBook == nil {
-		return nil, fmt.Errorf("[!] ERROR! Book with this ID does not exist")
+		rs.logger.Warn("book with this ID does not exist")
+		return nil, errsService.ErrBookDoesNotExists
 	}
+
+	rs.logger.Info("book exists")
+
 	return existingBook, nil
 }
 
 func (rs *ReservationService) checkBookCopiesNumber(book *models.BookModel) error {
 	if book.CopiesNumber <= 0 {
-		return fmt.Errorf("[!] ERROR! No copies of the book are available in the library")
+		rs.logger.Warn("no copies of the book are available in the library")
+		return errsService.ErrBookNoCopiesNum
 	}
+
+	rs.logger.Info("book has copies available")
 
 	return nil
 }
 
 func (rs *ReservationService) checkBookRarityCreate(book *models.BookModel) error {
 	if book.Rarity == BookRarityUnique {
-		return fmt.Errorf("[!] ERROR! This book is unique and cannot be reserved")
+		rs.logger.Warn("this book is unique and cannot be reserved")
+		return errsService.ErrUniqueBookNotReserved
 	}
+
+	rs.logger.Info("book is not unique")
 
 	return nil
 }
 
 func (rs *ReservationService) checkAgeLimit(reader *models.ReaderModel, book *models.BookModel) error {
 	if reader.Age < book.AgeLimit {
-		return fmt.Errorf("[!] ERROR! Reader does not meet the age requirement for this book")
+		rs.logger.Warn("reader does not meet the age requirement for this book")
+		return errsService.ErrReservationAgeLimit
 	}
+
+	rs.logger.Info("reader's age is appropriate")
 
 	return nil
 }
 
 func (rs *ReservationService) checkBookRarityUpdate(ctx context.Context, bookID uuid.UUID) error {
 	existingBook, err := rs.bookRepo.GetByID(ctx, bookID)
-	if err != nil {
-		return fmt.Errorf("[!] ERROR! Error checking book existence: %v", err)
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+		rs.logger.Errorf("error checking book existence: %v", err)
+		return err
 	}
 
 	if existingBook.Rarity == BookRarityRare || existingBook.Rarity == BookRarityUnique {
-		return fmt.Errorf("[!] ERROR! This book is not renewed")
+		rs.logger.Warn("rare and unique book cannot be renewed.")
+		return errsService.ErrRareAndUniqueBookNotExtended
 	}
+
+	rs.logger.Info("book's rarity is common")
 
 	return nil
 }
 
 func (rs *ReservationService) checkReservationState(reservationState string) error {
 	if reservationState == ReservationClosed {
-		return fmt.Errorf("[!] ERROR! This reservation is already closed")
+		rs.logger.Warn("this reservation is already closed")
+		return errsService.ErrReservationIsAlreadyClosed
 	}
 
-	if reservationState == ReservationOverdue {
-		return fmt.Errorf("[!] ERROR! This reservation is past its return date")
+	if reservationState == ReservationExpired {
+		rs.logger.Warn("this reservation is already expired")
+		return errsService.ErrReservationIsAlreadyExpired
 	}
 
 	if reservationState == ReservationExtended {
-		return fmt.Errorf("[!] ERROR! This reservation has already been extended")
+		rs.logger.Warn("this reservation is already extended")
+		return errsService.ErrReservationIsAlreadyExtended
 	}
+
+	rs.logger.Info("reservation is only issued")
 
 	return nil
 }

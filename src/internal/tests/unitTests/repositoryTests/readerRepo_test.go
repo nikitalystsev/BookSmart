@@ -213,7 +213,7 @@ func TestReaderRepo_GetByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: reader not found",
+			name: "Error reader not found",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
 					WithArgs(args.id).WillReturnError(errors.New("sql: no rows in result set"))
@@ -224,7 +224,7 @@ func TestReaderRepo_GetByID(t *testing.T) {
 			expected: func(t *testing.T, reader *models.ReaderModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reader)
-				expectedError := fmt.Errorf("error fetching reader by phone number: sql: no rows in result set")
+				expectedError := fmt.Errorf("sql: no rows in result set")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},

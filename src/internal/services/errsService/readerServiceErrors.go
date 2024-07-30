@@ -10,4 +10,5 @@ var (
 	ErrInvalidReaderPhoneNumberFormat = errors.New("[!] readerService error! Invalid Reader phoneNumber format")
 	ErrInvalidReaderAge               = errors.New("[!] readerService error! Invalid Reader age")
 	ErrReaderDoesNotExists            = errors.New("[!] readerService error! Reader does not exist")
+	ErrReaderHasExpiredBooks          = errors.New("[!] readerService error! Reader has expired books")
 )

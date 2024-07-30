@@ -3,11 +3,12 @@ package repositoryTests
 import (
 	"BookSmart/internal/models"
 	"BookSmart/internal/repositories/implRepo/postgres"
+	"BookSmart/internal/services/implServices"
+	"BookSmart/pkg/logging"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	sqlmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"
@@ -19,14 +20,8 @@ func TestReservationRepo_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer func(db *sqlx.DB) {
-		err := db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection: %v", err)
-		}
-	}(db)
 
-	rr := postgres.NewReservationRepo(db)
+	rr := postgres.NewReservationRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		reservation *models.ReservationModel
@@ -39,7 +34,7 @@ func TestReservationRepo_Create(t *testing.T) {
 		expected     func(t *testing.T, err error)
 	}{
 		{
-			name: "Success: create reservation",
+			name: "Success create reservation",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`INSERT INTO reservation`).
 					WithArgs(args.reservation.ID, args.reservation.ReaderID, args.reservation.BookID,
@@ -53,7 +48,7 @@ func TestReservationRepo_Create(t *testing.T) {
 					BookID:     uuid.New(),
 					IssueDate:  time.Now(),
 					ReturnDate: time.Now().Add(14 * 24 * time.Hour),
-					State:      "active",
+					State:      implServices.ReservationIssued,
 				},
 			},
 			expected: func(t *testing.T, err error) {
@@ -63,7 +58,7 @@ func TestReservationRepo_Create(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: executing query",
+			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`INSERT INTO reservation`).
 					WithArgs(args.reservation.ID, args.reservation.ReaderID, args.reservation.BookID, args.reservation.IssueDate, args.reservation.ReturnDate, args.reservation.State).
@@ -81,8 +76,8 @@ func TestReservationRepo_Create(t *testing.T) {
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				expectedError := fmt.Errorf("error creating reservation: %w", errors.New("insert error"))
-				assert.Equal(t, expectedError.Error(), err.Error())
+				expectedError := errors.New("insert error")
+				assert.Equal(t, expectedError, err)
 			},
 		},
 	}
@@ -91,7 +86,7 @@ func TestReservationRepo_Create(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			err := rr.Create(context.Background(), testCase.args.reservation)
+			err = rr.Create(context.Background(), testCase.args.reservation)
 
 			testCase.expected(t, err)
 		})
@@ -103,14 +98,8 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection: %v", err)
-		}
-	}(db)
 
-	rr := postgres.NewReservationRepo(db)
+	rr := postgres.NewReservationRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		readerID uuid.UUID
@@ -124,7 +113,7 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 		expected     func(t *testing.T, reservation *models.ReservationModel, err error)
 	}{
 		{
-			name: "Success: get reservation by reader and book",
+			name: "Success get reservation by reader and book",
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
 					AddRow(uuid.New(), args.readerID, args.bookID, time.Now(), time.Now().Add(14*24*time.Hour), "active")
@@ -143,7 +132,7 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: executing query",
+			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
 					WithArgs(args.readerID, args.bookID).WillReturnError(errors.New("query error"))
@@ -155,7 +144,7 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 			expected: func(t *testing.T, reservation *models.ReservationModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reservation)
-				expectedError := fmt.Errorf("error getting reservation by reader and book: %w", errors.New("query error"))
+				expectedError := errors.New("query error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
@@ -165,7 +154,8 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			reservation, err := rr.GetByReaderAndBook(context.Background(), testCase.args.readerID, testCase.args.bookID)
+			var reservation *models.ReservationModel
+			reservation, err = rr.GetByReaderAndBook(context.Background(), testCase.args.readerID, testCase.args.bookID)
 
 			testCase.expected(t, reservation, err)
 		})
@@ -177,14 +167,8 @@ func TestReservationRepo_GetByID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection: %v", err)
-		}
-	}(db)
 
-	rr := postgres.NewReservationRepo(db)
+	rr := postgres.NewReservationRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		id uuid.UUID
@@ -197,7 +181,7 @@ func TestReservationRepo_GetByID(t *testing.T) {
 		expected     func(t *testing.T, reservation *models.ReservationModel, err error)
 	}{
 		{
-			name: "Success: get reservation by reader and book",
+			name: "Success get reservation by reader and book",
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
 					AddRow(args.id, uuid.New(), uuid.New(), time.Now(), time.Now().Add(14*24*time.Hour), "active")
@@ -215,7 +199,7 @@ func TestReservationRepo_GetByID(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: executing query",
+			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
 					WithArgs(args.id).WillReturnError(errors.New("query error"))
@@ -226,7 +210,7 @@ func TestReservationRepo_GetByID(t *testing.T) {
 			expected: func(t *testing.T, reservation *models.ReservationModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reservation)
-				expectedError := fmt.Errorf("error getting reservation by id: %w", errors.New("query error"))
+				expectedError := errors.New("query error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
@@ -236,7 +220,8 @@ func TestReservationRepo_GetByID(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			reservation, err := rr.GetByID(context.Background(), testCase.args.id)
+			var reservation *models.ReservationModel
+			reservation, err = rr.GetByID(context.Background(), testCase.args.id)
 
 			testCase.expected(t, reservation, err)
 		})
@@ -248,14 +233,8 @@ func TestReservationRepo_Update(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer func(db *sqlx.DB) {
-		err = db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection: %v", err)
-		}
-	}(db)
 
-	rr := postgres.NewReservationRepo(db)
+	rr := postgres.NewReservationRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		reservation *models.ReservationModel
@@ -268,7 +247,7 @@ func TestReservationRepo_Update(t *testing.T) {
 		expected     func(t *testing.T, err error)
 	}{
 		{
-			name: "Success: update reservation",
+			name: "Success update reservation",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`UPDATE reservation SET (.+) WHERE (.+)`).
 					WithArgs(args.reservation.IssueDate, args.reservation.ReturnDate, args.reservation.State, args.reservation.ID).
@@ -279,7 +258,7 @@ func TestReservationRepo_Update(t *testing.T) {
 					ID:         uuid.New(),
 					IssueDate:  time.Now(),
 					ReturnDate: time.Now().AddDate(0, 0, 7),
-					State:      "Продлена",
+					State:      implServices.ReservationExtended,
 				},
 			},
 			expected: func(t *testing.T, err error) {
@@ -287,7 +266,7 @@ func TestReservationRepo_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "Error: updating reservation",
+			name: "Error updating reservation",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`UPDATE reservation SET (.+) WHERE (.+)`).
 					WithArgs(args.reservation.IssueDate, args.reservation.ReturnDate, args.reservation.State, args.reservation.ID).
@@ -298,12 +277,12 @@ func TestReservationRepo_Update(t *testing.T) {
 					ID:         uuid.New(),
 					IssueDate:  time.Now(),
 					ReturnDate: time.Now().AddDate(0, 0, 7),
-					State:      "Продлена",
+					State:      implServices.ReservationExtended,
 				},
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Error(t, err)
-				expectedError := fmt.Errorf("error updating reservation: %w", errors.New("update error"))
+				expectedError := errors.New("update error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
@@ -313,26 +292,20 @@ func TestReservationRepo_Update(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			err := rr.Update(context.Background(), testCase.args.reservation)
+			err = rr.Update(context.Background(), testCase.args.reservation)
 
 			testCase.expected(t, err)
 		})
 	}
 }
 
-func TestReservationRepo_GetOverdueByReaderID(t *testing.T) {
+func TestReservationRepo_GetExpiredByReaderID(t *testing.T) {
 	db, mock, err := sqlmock.Newx()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer func(db *sqlx.DB) {
-		err := db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection: %v", err)
-		}
-	}(db)
 
-	rr := postgres.NewReservationRepo(db)
+	rr := postgres.NewReservationRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		readerID   uuid.UUID
@@ -346,10 +319,10 @@ func TestReservationRepo_GetOverdueByReaderID(t *testing.T) {
 		expected     func(t *testing.T, reservations []*models.ReservationModel, err error)
 	}{
 		{
-			name: "Success: get overdue reservations",
+			name: "Success get overdue reservations",
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
-					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, -5), "overdue")
+					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, -5), "expired")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
 					WithArgs(args.readerID, time.Now()).WillReturnRows(rows)
@@ -362,11 +335,11 @@ func TestReservationRepo_GetOverdueByReaderID(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, reservations)
 				assert.Equal(t, 1, len(reservations))
-				assert.Equal(t, "overdue", reservations[0].State)
+				assert.Equal(t, "expired", reservations[0].State)
 			},
 		},
 		{
-			name: "Error: query execution fails",
+			name: "Error query execution fails",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
 					WithArgs(args.readerID, time.Now()).WillReturnError(errors.New("query error"))
@@ -378,12 +351,12 @@ func TestReservationRepo_GetOverdueByReaderID(t *testing.T) {
 			expected: func(t *testing.T, reservations []*models.ReservationModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reservations)
-				expectedError := fmt.Errorf("error querying overdue reservations: %w", errors.New("query error"))
+				expectedError := errors.New("query error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
 		{
-			name: "Error: row scan fails",
+			name: "Error row scan fails",
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
 					AddRow("invalid-uuid", args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, -5), "overdue")
@@ -398,7 +371,7 @@ func TestReservationRepo_GetOverdueByReaderID(t *testing.T) {
 			expected: func(t *testing.T, reservations []*models.ReservationModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reservations)
-				expectedError := fmt.Errorf("error scanning reservation: %v", "sql: Scan error on column index 0, name \"id\": Scan: invalid UUID length: 12")
+				expectedError := fmt.Errorf("sql: Scan error on column index 0, name \"id\": Scan: invalid UUID length: 12")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
@@ -408,7 +381,8 @@ func TestReservationRepo_GetOverdueByReaderID(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			reservations, err := rr.GetOverdueByReaderID(context.Background(), testCase.args.readerID)
+			var reservations []*models.ReservationModel
+			reservations, err = rr.GetExpiredByReaderID(context.Background(), testCase.args.readerID)
 
 			testCase.expected(t, reservations, err)
 		})
@@ -420,14 +394,8 @@ func TestReservationRepo_GetActiveByReaderID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	defer func(db *sqlx.DB) {
-		err := db.Close()
-		if err != nil {
-			fmt.Printf("error closing db connection: %v", err)
-		}
-	}(db)
 
-	rr := postgres.NewReservationRepo(db)
+	rr := postgres.NewReservationRepo(db, logging.GetLoggerForTests())
 
 	type args struct {
 		readerID uuid.UUID
@@ -440,11 +408,11 @@ func TestReservationRepo_GetActiveByReaderID(t *testing.T) {
 		expected     func(t *testing.T, reservations []*models.ReservationModel, err error)
 	}{
 		{
-			name: "Success: get active reservations",
+			name: "Success get active reservations",
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
 					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, 5), "active").
-					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -5), time.Now().AddDate(0, 0, 10), "overdue")
+					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -5), time.Now().AddDate(0, 0, 10), "expired")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
 					WithArgs(args.readerID).WillReturnRows(rows)
@@ -457,11 +425,11 @@ func TestReservationRepo_GetActiveByReaderID(t *testing.T) {
 				assert.NotNil(t, reservations)
 				assert.Equal(t, 2, len(reservations))
 				assert.Equal(t, "active", reservations[0].State)
-				assert.Equal(t, "overdue", reservations[1].State)
+				assert.Equal(t, "expired", reservations[1].State)
 			},
 		},
 		{
-			name: "Error: query execution fails",
+			name: "Error query execution fails",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
 					WithArgs(args.readerID).WillReturnError(errors.New("query error"))
@@ -472,12 +440,12 @@ func TestReservationRepo_GetActiveByReaderID(t *testing.T) {
 			expected: func(t *testing.T, reservations []*models.ReservationModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reservations)
-				expectedError := fmt.Errorf("error querying active reservations: %w", errors.New("query error"))
+				expectedError := errors.New("query error")
 				assert.Equal(t, expectedError.Error(), err.Error())
 			},
 		},
 		{
-			name: "Error: row scan fails",
+			name: "Error row scan fails",
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
 					AddRow("invalid-uuid", args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, 5), "active")
@@ -491,7 +459,7 @@ func TestReservationRepo_GetActiveByReaderID(t *testing.T) {
 			expected: func(t *testing.T, reservations []*models.ReservationModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reservations)
-				expectedError := fmt.Errorf("error scanning reservation: %v", "sql: Scan error on column index 0, name \"id\": Scan: invalid UUID length: 12")
+				expectedError := fmt.Errorf("sql: Scan error on column index 0, name \"id\": Scan: invalid UUID length: 12")
 				assert.Contains(t, err.Error(), expectedError.Error())
 			},
 		},
@@ -501,7 +469,8 @@ func TestReservationRepo_GetActiveByReaderID(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			reservations, err := rr.GetActiveByReaderID(context.Background(), testCase.args.readerID)
+			var reservations []*models.ReservationModel
+			reservations, err = rr.GetActiveByReaderID(context.Background(), testCase.args.readerID)
 
 			testCase.expected(t, reservations, err)
 		})

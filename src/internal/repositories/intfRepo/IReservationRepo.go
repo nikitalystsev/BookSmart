@@ -13,6 +13,6 @@ type IReservationRepo interface {
 	GetByReaderAndBook(ctx context.Context, readerID, bookID uuid.UUID) (*models.ReservationModel, error)
 	GetByID(ctx context.Context, reservationID uuid.UUID) (*models.ReservationModel, error)
 	Update(ctx context.Context, reservation *models.ReservationModel) error
-	GetOverdueByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error)
+	GetExpiredByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error)
 	GetActiveByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error)
 }
