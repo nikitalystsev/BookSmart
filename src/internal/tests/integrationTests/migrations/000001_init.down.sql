@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS reservation;
+DROP TABLE IF EXISTS favorite_books;
+DROP TABLE IF EXISTS lib_card;
+DROP TABLE IF EXISTS reader;
+DROP TABLE IF EXISTS book;
