@@ -48,7 +48,7 @@ type IntegrationTestSuite struct {
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
-	dsn := "postgres://postgres:postgres@localhost:5437/testdb?sslmode=disable"
+	dsn := "postgres://nikitalystsev:zhpiix69@localhost:5437/testdb?sslmode=disable&search_path=bs"
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {

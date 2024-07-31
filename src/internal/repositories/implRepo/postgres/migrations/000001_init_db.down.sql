@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS bs.reservation;
+DROP TABLE IF EXISTS bs.favorite_books;
+DROP TABLE IF EXISTS bs.lib_card;
+DROP TABLE IF EXISTS bs.reader;
+DROP TABLE IF EXISTS bs.book;
