@@ -1,6 +1,6 @@
 package dto
 
-type ReaderLoginDTO struct {
+type ReaderSignInDTO struct {
 	PhoneNumber string `json:"phone_number"`
 	Password    string `json:"password"`
 }

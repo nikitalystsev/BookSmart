@@ -20,6 +20,7 @@ import (
 const (
 	MaxBooksPerReader    = 5
 	ReaderPhoneNumberLen = 11
+	ReaderPasswordLen    = 10
 )
 
 var (
@@ -85,7 +86,7 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 }
 
 // SignIn Войти
-func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderLoginDTO) (intfServices.Tokens, error) {
+func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO) (intfServices.Tokens, error) {
 	rs.logger.Infof("attempting sign in with phoneNumber: %s", reader.PhoneNumber)
 
 	exitingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
@@ -187,6 +188,16 @@ func (rs *ReaderService) baseValidation(ctx context.Context, reader *models.Read
 	if reader.PhoneNumber == "" {
 		rs.logger.Warn("empty reader phoneNumber")
 		return errsService.ErrEmptyReaderPhoneNumber
+	}
+
+	if reader.Password == "" {
+		rs.logger.Warn("empty reader password")
+		return errsService.ErrEmptyReaderPassword
+	}
+
+	if len(reader.Password) != ReaderPasswordLen {
+		rs.logger.Warn("invalid reader password len")
+		return errsService.ErrInvalidReaderPasswordLen
 	}
 
 	if reader.Age <= 0 {

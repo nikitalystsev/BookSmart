@@ -121,7 +121,7 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 		{
 			name: "Success get libCard by readerID",
 			mockBehavior: func(args args) {
-				rows := sqlxmock.NewRows([]string{"id", "readerid", "libcardnum", "validity", "issuedate", "actionstatus"}).
+				rows := sqlxmock.NewRows([]string{"id", "reader_id", "lib_card_num", "validity", "issue_date", "action_status"}).
 					AddRow(uuid.New(), args.readerID, "1234567890123", 12, time.Now(), true)
 
 				mock.ExpectQuery(`SELECT (.+) FROM lib_card WHERE (.+)`).
@@ -212,7 +212,7 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 		{
 			name: "Success get libCard by num",
 			mockBehavior: func(args args) {
-				rows := sqlxmock.NewRows([]string{"id", "readerid", "libcardnum", "validity", "issuedate", "actionstatus"}).
+				rows := sqlxmock.NewRows([]string{"id", "reader_id", "lib_card_num", "validity", "issue_date", "action_status"}).
 					AddRow(uuid.New(), uuid.New(), args.libCardNum, 12, time.Now(), true)
 
 				mock.ExpectQuery(`SELECT (.+) FROM lib_card WHERE (.+)`).

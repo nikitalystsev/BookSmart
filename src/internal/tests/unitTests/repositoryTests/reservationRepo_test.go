@@ -115,7 +115,7 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 		{
 			name: "Success get reservation by reader and book",
 			mockBehavior: func(args args) {
-				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
+				rows := sqlmock.NewRows([]string{"id", "reader_id", "book_id", "issue_date", "return_date", "state"}).
 					AddRow(uuid.New(), args.readerID, args.bookID, time.Now(), time.Now().Add(14*24*time.Hour), "active")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
@@ -183,7 +183,7 @@ func TestReservationRepo_GetByID(t *testing.T) {
 		{
 			name: "Success get reservation by reader and book",
 			mockBehavior: func(args args) {
-				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
+				rows := sqlmock.NewRows([]string{"id", "reader_id", "book_id", "issue_date", "return_date", "state"}).
 					AddRow(args.id, uuid.New(), uuid.New(), time.Now(), time.Now().Add(14*24*time.Hour), "active")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
@@ -319,10 +319,10 @@ func TestReservationRepo_GetExpiredByReaderID(t *testing.T) {
 		expected     func(t *testing.T, reservations []*models.ReservationModel, err error)
 	}{
 		{
-			name: "Success get overdue reservations",
+			name: "Success get expired reservations",
 			mockBehavior: func(args args) {
-				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
-					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, -5), "expired")
+				rows := sqlmock.NewRows([]string{"id", "reader_id", "book_id", "issue_date", "return_date", "state"}).
+					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, -5), "Expired")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
 					WithArgs(args.readerID, time.Now()).WillReturnRows(rows)
@@ -335,7 +335,7 @@ func TestReservationRepo_GetExpiredByReaderID(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, reservations)
 				assert.Equal(t, 1, len(reservations))
-				assert.Equal(t, "expired", reservations[0].State)
+				assert.Equal(t, "Expired", reservations[0].State)
 			},
 		},
 		{
@@ -358,7 +358,7 @@ func TestReservationRepo_GetExpiredByReaderID(t *testing.T) {
 		{
 			name: "Error row scan fails",
 			mockBehavior: func(args args) {
-				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
+				rows := sqlmock.NewRows([]string{"id", "reader_id", "book_id", "issue_date", "return_date", "state"}).
 					AddRow("invalid-uuid", args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, -5), "overdue")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).
@@ -410,7 +410,7 @@ func TestReservationRepo_GetActiveByReaderID(t *testing.T) {
 		{
 			name: "Success get active reservations",
 			mockBehavior: func(args args) {
-				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
+				rows := sqlmock.NewRows([]string{"id", "reader_id", "book_id", "issue_date", "return_date", "state"}).
 					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, 5), "active").
 					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -5), time.Now().AddDate(0, 0, 10), "expired")
 
@@ -447,7 +447,7 @@ func TestReservationRepo_GetActiveByReaderID(t *testing.T) {
 		{
 			name: "Error row scan fails",
 			mockBehavior: func(args args) {
-				rows := sqlmock.NewRows([]string{"id", "readerid", "bookid", "issuedate", "returndate", "state"}).
+				rows := sqlmock.NewRows([]string{"id", "reader_id", "book_id", "issue_date", "return_date", "state"}).
 					AddRow("invalid-uuid", args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, 5), "active")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reservation WHERE (.+)`).

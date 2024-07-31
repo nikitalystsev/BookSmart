@@ -18,7 +18,7 @@ CREATE TABLE reader
     fio          TEXT             NOT NULL,
     phone_number VARCHAR(20)      NOT NULL UNIQUE,
     age          INT              NOT NULL,
-    password     VARCHAR(10)      NOT NULL
+    password     TEXT             NOT NULL
 );
 
 CREATE TABLE lib_card

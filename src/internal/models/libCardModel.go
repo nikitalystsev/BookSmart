@@ -6,10 +6,10 @@ import (
 )
 
 type LibCardModel struct {
-	ID           uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"id"`
-	ReaderID     uuid.UUID `gorm:"type:uuid" json:"reader_id"`
-	LibCardNum   string    `gorm:"type:varchar(13)" json:"lib_card_num"`
-	Validity     int       `json:"validity"` // Срок действия
-	IssueDate    time.Time `json:"issue_date"`
-	ActionStatus bool      `json:"action_status"`
+	ID           uuid.UUID `json:"id" db:"id" gorm:"type:uuid;default:uuid_generate_v4()"`
+	ReaderID     uuid.UUID `json:"reader_id" db:"reader_id" gorm:"type:uuid"`
+	LibCardNum   string    `json:"lib_card_num" db:"lib_card_num" gorm:"type:varchar(13)"`
+	Validity     int       `json:"validity" db:"validity"`
+	IssueDate    time.Time `json:"issue_date" db:"issue_date"`
+	ActionStatus bool      `json:"action_status" db:"action_status"`
 }

@@ -5,6 +5,8 @@ import "errors"
 var (
 	ErrReaderAlreadyExist             = errors.New("[!] readerService error! Reader already exists")
 	ErrEmptyReaderFio                 = errors.New("[!] readerService error! Empty Reader fio")
+	ErrEmptyReaderPassword            = errors.New("[!] readerService error! Empty Reader password")
+	ErrInvalidReaderPasswordLen       = errors.New("[!] readerService error! Invalid Reader password len")
 	ErrEmptyReaderPhoneNumber         = errors.New("[!] readerService error! Empty Reader phoneNumber")
 	ErrInvalidReaderPhoneNumberLen    = errors.New("[!] readerService error! Invalid Reader phoneNumber len")
 	ErrInvalidReaderPhoneNumberFormat = errors.New("[!] readerService error! Invalid Reader phoneNumber format")

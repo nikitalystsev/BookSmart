@@ -118,7 +118,7 @@ func TestReaderRepo_GetByPhoneNumber(t *testing.T) {
 		{
 			name: "Success get reader by phone number",
 			mockBehavior: func(args args) {
-				rows := sqlmock.NewRows([]string{"id", "fio", "phonenumber", "age", "password"}).
+				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(uuid.New(), "Test Reader", args.phoneNumber, 25, "password")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
@@ -192,7 +192,7 @@ func TestReaderRepo_GetByID(t *testing.T) {
 		{
 			name: "Success: get reader by phone number",
 			mockBehavior: func(args args) {
-				rows := sqlmock.NewRows([]string{"id", "fio", "phonenumber", "age", "password"}).
+				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(uuid.New(), "Test Reader", "1234567890", 25, "password")
 
 				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
@@ -514,7 +514,7 @@ func TestReaderRepo_GetByRefreshToken(t *testing.T) {
 				mr.Set(args.token, readerID.String())
 
 				// Mock database query
-				rows := sqlmock.NewRows([]string{"id", "fio", "phonenumber", "age", "password"}).
+				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(readerID, "Test Reader", "1234567890", 30, "password")
 				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
 					WithArgs(readerID).WillReturnRows(rows)

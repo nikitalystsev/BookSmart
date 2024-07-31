@@ -134,7 +134,7 @@ func TestBookRepo_GetByID(t *testing.T) {
 		{
 			name: "Success get book by ID",
 			mockBehavior: func(args args) {
-				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copiesnumber", "rarity", "genre", "publishingyear", "language", "agelimit"}).
+				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copies_number", "rarity", "genre", "publishing_year", "language", "age_limit"}).
 					AddRow(args.id, "Test Book", "Test Author", "Test Publisher", "10", "Common", "Fiction", 2021, "English", 12)
 
 				mock.ExpectQuery(`SELECT (.+) FROM book WHERE (.+)`).
@@ -231,7 +231,7 @@ func TestBookRepo_GetByTitle(t *testing.T) {
 		{
 			name: "Success get book by title",
 			mockBehavior: func(args args) {
-				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copiesnumber", "rarity", "genre", "publishingyear", "language", "agelimit"}).
+				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copies_number", "rarity", "genre", "publishing_year", "language", "age_limit"}).
 					AddRow(uuid.New(), args.title, "Test Author", "Test Publisher", "10", "Common", "Fiction", 2021, "English", 12)
 
 				mock.ExpectQuery(`SELECT (.+) FROM book WHERE (.+)`).
@@ -465,7 +465,7 @@ func TestBookRepo_GetByParams(t *testing.T) {
 		{
 			name: "Success get books by params",
 			mockBehavior: func(args args) {
-				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copiesnumber", "rarity", "genre", "publishingyear", "language", "agelimit"}).
+				rows := sqlxmock.NewRows([]string{"id", "title", "author", "publisher", "copies_number", "rarity", "genre", "publishing_year", "language", "age_limit"}).
 					AddRow(uuid.New(), "Test Book", "Test Author", "Test Publisher", 10, "Common", "Fiction", 2021, "English", 12)
 
 				mock.ExpectQuery(`SELECT (.+) FROM book WHERE (.+)`).

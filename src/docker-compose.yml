@@ -4,6 +4,22 @@ services:
   #    command: ["go", "test", "-v", "./internal/tests/unitTests/..."]
   #    container_name: unitTests-container
 
+  test-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+    volumes:
+      - ${DB_DATASETS_PATH}:/data
+        
+  test-redis:
+    image: redis:latest
+    ports:
+      - "6381:6379"
+
   postgres-db:
     image: postgres:latest
     environment:
