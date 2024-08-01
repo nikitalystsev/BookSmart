@@ -1,6 +1,8 @@
 package main
 
-import "BookSmart/internal/app"
+import (
+	"BookSmart/internal/app"
+)
 
 func main() {
 

@@ -54,6 +54,11 @@ func NewReaderService(
 
 // SignUp Зарегистрироваться
 func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel) error {
+	if reader == nil {
+		rs.logger.Warn("reader object is nil")
+		return errsService.ErrReaderObjectIsNil
+	}
+
 	rs.logger.Info("starting sign up process")
 
 	err := rs.baseValidation(ctx, reader)
@@ -87,6 +92,11 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 
 // SignIn Войти
 func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO) (intfServices.Tokens, error) {
+	if reader == nil {
+		rs.logger.Warn("reader object is nil")
+		return intfServices.Tokens{}, errsService.ErrReaderObjectIsNil
+	}
+
 	rs.logger.Infof("attempting sign in with phoneNumber: %s", reader.PhoneNumber)
 
 	exitingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)

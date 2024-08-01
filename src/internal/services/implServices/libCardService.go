@@ -71,6 +71,11 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 }
 
 func (lcs *LibCardService) Update(ctx context.Context, libCard *models.LibCardModel) error {
+	if libCard == nil {
+		lcs.logger.Warn("libCard object is nil")
+		return errsService.ErrLibCardObjectIsNil
+	}
+
 	lcs.logger.Infof("attempting to update libCard with ID: %s", libCard.ID)
 
 	existingLibCard, err := lcs.libCardRepo.GetByNum(ctx, libCard.LibCardNum)

@@ -11,4 +11,5 @@ var (
 	ErrInvalidBookCopiesNum  = errors.New("[!] bookService error! Invalid book copies number")
 	ErrBookDoesNotExists     = errors.New("[!] bookService error! Book does not exist")
 	ErrBookNoCopiesNum       = errors.New("[!] bookService error! Book no copies number")
+	ErrBookObjectIsNil       = errors.New("[!] bookService error! Book object is nil")
 )

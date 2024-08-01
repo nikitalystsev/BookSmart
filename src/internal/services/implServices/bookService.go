@@ -29,6 +29,11 @@ func NewBookService(bookRepo intfRepo.IBookRepo, logger *logrus.Entry) intfServi
 }
 
 func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error {
+	if book == nil {
+		bs.logger.Warn("book object is nil")
+		return errsService.ErrBookObjectIsNil
+	}
+
 	bs.logger.Info("starting book creation process")
 
 	err := bs.baseValidation(ctx, book)
@@ -51,6 +56,11 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 }
 
 func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error {
+	if book == nil {
+		bs.logger.Warn("book object is nil")
+		return errsService.ErrBookObjectIsNil
+	}
+
 	bs.logger.Infof("attempting to delete book with ID: %s", book.ID)
 
 	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)

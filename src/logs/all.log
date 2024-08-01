@@ -1,6 +1,0 @@
-{"file":"app.go:11","func":"BookSmart/internal/app.Run()","level":"info","msg":"Starting server","time":"2024-07-28T20:12:12+03:00"}
-{"file":"app.go:11","func":"BookSmart/internal/app.Run()","level":"info","msg":"Starting server","time":"2024-07-29T19:04:04+03:00"}
-{"file":"app.go:11","func":"BookSmart/internal/app.Run()","level":"info","msg":"Starting server","time":"2024-07-29T19:29:55+03:00"}
-{"file":"app.go:12","func":"BookSmart/internal/app.Run()","level":"info","msg":"Starting server","time":"2024-07-29T20:09:17+03:00"}
-{"file":"app.go:12","func":"BookSmart/internal/app.Run()","level":"info","msg":"Starting server","time":"2024-07-29T20:20:39+03:00"}
-{"file":"app.go:12","func":"BookSmart/internal/app.Run()","level":"info","msg":"Starting server","time":"2024-07-29T20:25:32+03:00"}

@@ -25,7 +25,7 @@ func NewPasswordHasher(salt string) IPasswordHasher {
 func (ph *PasswordHasher) Hash(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password+ph.salt), bcrypt.DefaultCost)
 	if err != nil {
-		return "", fmt.Errorf("[!] ERROR! Error hashing password: %v", err)
+		return "", fmt.Errorf("error hashing password: %v", err)
 	}
 
 	return string(hashedPassword), nil
@@ -35,7 +35,7 @@ func (ph *PasswordHasher) Hash(password string) (string, error) {
 func (ph *PasswordHasher) Compare(hashedPassword, password string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password+ph.salt))
 	if err != nil {
-		return fmt.Errorf("[!] ERROR! Wrong password")
+		return fmt.Errorf("wrong password")
 	}
 
 	return nil

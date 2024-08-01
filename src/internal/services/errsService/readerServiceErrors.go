@@ -13,4 +13,5 @@ var (
 	ErrInvalidReaderAge               = errors.New("[!] readerService error! Invalid Reader age")
 	ErrReaderDoesNotExists            = errors.New("[!] readerService error! Reader does not exist")
 	ErrReaderHasExpiredBooks          = errors.New("[!] readerService error! Reader has expired books")
+	ErrReaderObjectIsNil              = errors.New("[!] readerService error! Reader object is nil")
 )

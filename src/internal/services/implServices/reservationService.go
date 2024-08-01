@@ -83,6 +83,11 @@ func (rs *ReservationService) Create(ctx context.Context, readerID, bookID uuid.
 }
 
 func (rs *ReservationService) Update(ctx context.Context, reservation *models.ReservationModel) error {
+	if reservation == nil {
+		rs.logger.Warn("reservation object is nil")
+		return errsService.ErrReservationObjectIsNil
+	}
+
 	rs.logger.Info("attempting to update reservation")
 
 	err := rs.checkValidLibCard(ctx, reservation.ReaderID)
