@@ -2,17 +2,19 @@ package cli
 
 import (
 	"BookSmart/internal/ui/cli/handlers"
+	"BookSmart/internal/ui/cli/input"
 	"fmt"
+	"os"
 )
 
-const mainMenu = `Меню гостя:
-	1 -- зарегистрироваться
-	2 -- войти как читатель
-	3 -- войти как администратор
-	4 -- посмотреть информацию о книге
-	5 -- найти книгу
-	0 -- выйти
-Выберите пункт меню: `
+const mainMenu = `Main menu:
+	1 -- sign up
+	2 -- sign in as reader
+	3 -- sign in as administrator
+	4 -- view book information
+	5 -- find a book
+	0 -- exit program
+`
 
 type Server struct {
 	bookHandler        *handlers.BookHandler
@@ -36,16 +38,30 @@ func NewServer(
 }
 
 func (s *Server) Run() {
-
-	var menuItem int
-
 	for {
 		fmt.Printf("\n\n%s", mainMenu)
 
-		_, err := fmt.Scanf("%d", &menuItem)
+		menuItem, err := input.MenuItem()
 		if err != nil {
-			fmt.Printf("\nПункт меню введён некорректно!\n\n")
+			fmt.Println(err)
 			continue
+		}
+
+		switch menuItem {
+		case 1:
+			err = s.readerHandler.Create()
+			if err != nil {
+				fmt.Println(err)
+			}
+		case 2:
+			err = s.readerHandler.SignIn()
+			if err != nil {
+				fmt.Println(err)
+			}
+		case 0:
+			os.Exit(0)
+		default:
+			fmt.Printf("\n\nWrong menu item!\n")
 		}
 	}
 }

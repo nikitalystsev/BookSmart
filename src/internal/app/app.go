@@ -20,7 +20,7 @@ import (
 )
 
 func Run() {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load("../../.env"); err != nil {
 		log.Fatal(err)
 	}
 
@@ -37,7 +37,7 @@ func Run() {
 	}
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6381",
+		Addr:     "localhost:6380",
 		Username: os.Getenv("REDIS_USER"),
 		Password: os.Getenv("REDIS_USER_PASSWORD"),
 		DB:       0,
@@ -70,7 +70,7 @@ func Run() {
 
 	bookHandler := handlers.NewBookHandler(bookService, logger)
 	libCardHandler := handlers.NewLibCardHandler(libCardService, logger)
-	readerHandler := handlers.NewReaderHandler(readerService, logger)
+	readerHandler := handlers.NewReaderHandler(readerService, bookService, libCardService, reservationService, logger)
 	reservationHandler := handlers.NewReservationHandler(reservationService, logger)
 
 	server := cli.NewServer(bookHandler, libCardHandler, readerHandler, reservationHandler)
