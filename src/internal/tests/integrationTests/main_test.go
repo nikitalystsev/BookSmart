@@ -18,7 +18,9 @@ import (
 	migrations "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
+	"log"
 	"os"
 	"testing"
 )
@@ -48,7 +50,11 @@ type IntegrationTestSuite struct {
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
-	dsn := "postgres://nikitalystsev:zhpiix69@localhost:5437/testdb?sslmode=disable&search_path=bs"
+	if err := godotenv.Load("../../../.env"); err != nil {
+		log.Fatal(err)
+	}
+
+	dsn := os.Getenv("DB_DSN_TEST")
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
@@ -62,7 +68,8 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6381",
-		Password: "",
+		Username: os.Getenv("REDIS_USER"),
+		Password: os.Getenv("REDIS_USER_PASSWORD"),
 		DB:       0,
 	})
 
@@ -125,8 +132,9 @@ func (s *IntegrationTestSuite) migrateUpDB() error {
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://C:/Users/nikitalystsev/Documents/bmstu/ppo/BookSmart/src/internal/tests/integrationTests/migrations",
-		"postgres", driver)
+		os.Getenv("DB_MIGRATION_PATH_TEST"),
+		"postgres", driver,
+	)
 	if err != nil {
 		return err
 	}
@@ -146,8 +154,9 @@ func (s *IntegrationTestSuite) migrateDownDB() error {
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://C:/Users/nikitalystsev/Documents/bmstu/ppo/BookSmart/src/internal/tests/integrationTests/migrations",
-		"postgres", driver)
+		os.Getenv("DB_MIGRATION_PATH_TEST"),
+		"postgres", driver,
+	)
 	if err != nil {
 		return err
 	}

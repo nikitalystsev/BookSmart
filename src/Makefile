@@ -1,6 +1,11 @@
 
-migration_path := internal/repositories/implRepo/postgres/migrations/
-database_url := 'postgres://nikitalystsev:zhpiix69@localhost:5436/booksmart?sslmode=disable&search_path=bs'
+ifneq (,$(wildcard .env))
+    include .env
+    export $(shell sed 's/=.*//' .env)
+endif
+
+migration_path := $(DB_MIGRATION_PATH)
+database_url := '$(DB_DSN)'
 
 migration_up:
 	migrate -database $(database_url) -path $(migration_path) up
