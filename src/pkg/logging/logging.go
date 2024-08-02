@@ -104,18 +104,21 @@ func NewLogger() (*logrus.Entry, error) {
 		log.Fatal(err)
 	}
 
-	influxDBUrl := os.Getenv("INFLUXDB_URL")
-	influxDBToken := os.Getenv("INFLUXDB_INIT_CLIENT_TOKEN")
-	influxDBOrg := os.Getenv("INFLUXDB_INIT_ORG")
-	influxDBBucket := os.Getenv("INFLUXDB_INIT_BUCKET")
+	//influxDBUrl := os.Getenv("INFLUXDB_URL")
+	//influxDBToken := os.Getenv("INFLUXDB_INIT_CLIENT_TOKEN")
+	//influxDBOrg := os.Getenv("INFLUXDB_INIT_ORG")
+	//influxDBBucket := os.Getenv("INFLUXDB_INIT_BUCKET")
+	//
+	//client := influxdb2.NewClient(influxDBUrl, influxDBToken)
+	//writeAPI := client.WriteAPI(influxDBOrg, influxDBBucket)
+	//
+	//influxWriter := &InfluxDBWriter{writeAPI: writeAPI}
 
-	client := influxdb2.NewClient(influxDBUrl, influxDBToken)
-	writeAPI := client.WriteAPI(influxDBOrg, influxDBBucket)
-
-	influxWriter := &InfluxDBWriter{writeAPI: writeAPI}
+	writer := []io.Writer{allFile}
+	//writer := []io.Writer{allFile, os.Stdout, influxWriter}
 
 	l.AddHook(&writerHook{
-		Writer:    []io.Writer{allFile, os.Stdout, influxWriter},
+		Writer:    writer,
 		LogLevels: logrus.AllLevels,
 	})
 

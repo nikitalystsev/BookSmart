@@ -1,6 +1,7 @@
 package app
 
 import (
+	"BookSmart/internal/config"
 	"BookSmart/internal/repositories/implRepo/postgres"
 	"BookSmart/internal/services/implServices"
 	"BookSmart/internal/ui/cli"
@@ -9,53 +10,63 @@ import (
 	"BookSmart/pkg/hash"
 	"BookSmart/pkg/logging"
 	"BookSmart/pkg/transact"
+	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/go-redis/redis/v8"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"log"
-	"os"
 )
 
-func Run() {
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Fatal(err)
+func Run(configDir string) {
+	logger, err := logging.NewLogger()
+	if err != nil {
+		panic(err)
 	}
 
-	dsn := os.Getenv("DB_DSN")
+	cfg, err := config.Init(configDir)
+	if err != nil {
+		logger.Errorf("error initializing config: %v", err)
+		return
+	}
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
+		cfg.Postgres.Host, cfg.Postgres.Port, cfg.Postgres.Username, cfg.Postgres.DBName,
+		cfg.Postgres.Password, cfg.Postgres.SSLMode)
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
-		panic(err)
+		logger.Errorf("error connecting to database: %v", err)
+		return
 	}
 
 	err = db.Ping()
 	if err != nil {
-		panic(err)
+		logger.Errorf("error pinging database: %v", err)
+		return
 	}
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6380",
-		Username: os.Getenv("REDIS_USER"),
-		Password: os.Getenv("REDIS_USER_PASSWORD"),
-		DB:       0,
+		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
+		Username: cfg.Redis.Username,
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
 	})
 
-	logger := logging.GetLoggerForTests()
-
-	tokenManager, err := auth.NewTokenManager("signing_key")
+	tokenManager, err := auth.NewTokenManager(cfg.Auth.JWT.SigningKey)
 	if err != nil {
-		panic(err)
+		logger.Errorf("error initializing token manager: %v", err)
+		return
 	}
 
-	hasher := hash.NewPasswordHasher("salt_string")
+	hasher := hash.NewPasswordHasher(cfg.Auth.PasswordSalt)
 
 	_manager, err := manager.New(trmsqlx.NewDefaultFactory(db))
 	if err != nil {
-		panic(err)
+		logger.Errorf("error initializing manager: %v", err)
+		return
 	}
+
 	transactionManager := transact.NewTransactionManager(_manager)
 
 	bookRepo := postgres.NewBookRepo(db, logger)

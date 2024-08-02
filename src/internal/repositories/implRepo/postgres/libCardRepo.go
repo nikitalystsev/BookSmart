@@ -24,7 +24,7 @@ func NewLibCardRepo(db *sqlx.DB, logger *logrus.Entry) intfRepo.ILibCardRepo {
 func (lcr *LibCardRepo) Create(ctx context.Context, libCard *models.LibCardModel) error {
 	lcr.logger.Infof("inserting libCard with ID: %s", libCard.ID)
 
-	query := `INSERT INTO lib_card VALUES ($1, $2, $3, $4, $5, $6)`
+	query := `INSERT INTO bs.lib_card VALUES ($1, $2, $3, $4, $5, $6)`
 
 	lcr.logger.Infof("executing query: %s", query)
 
@@ -44,7 +44,7 @@ func (lcr *LibCardRepo) Create(ctx context.Context, libCard *models.LibCardModel
 func (lcr *LibCardRepo) GetByReaderID(ctx context.Context, readerID uuid.UUID) (*models.LibCardModel, error) {
 	lcr.logger.Infof("select libCard with readerID: %s", readerID)
 
-	query := `SELECT id, reader_id, lib_card_num, validity, issue_date, action_status FROM lib_card WHERE reader_id = $1`
+	query := `SELECT id, reader_id, lib_card_num, validity, issue_date, action_status FROM bs.lib_card WHERE reader_id = $1`
 
 	lcr.logger.Infof("executing query: %s", query)
 
@@ -67,7 +67,7 @@ func (lcr *LibCardRepo) GetByReaderID(ctx context.Context, readerID uuid.UUID) (
 func (lcr *LibCardRepo) GetByNum(ctx context.Context, libCardNum string) (*models.LibCardModel, error) {
 	lcr.logger.Infof("select libCard with libCardNum: %s", libCardNum)
 
-	query := `SELECT id, reader_id, lib_card_num, validity, issue_date, action_status FROM lib_card WHERE lib_card_num = $1`
+	query := `SELECT id, reader_id, lib_card_num, validity, issue_date, action_status FROM bs.lib_card WHERE lib_card_num = $1`
 
 	lcr.logger.Infof("executing query: %s", query)
 
@@ -90,7 +90,7 @@ func (lcr *LibCardRepo) GetByNum(ctx context.Context, libCardNum string) (*model
 func (lcr *LibCardRepo) Update(ctx context.Context, libCard *models.LibCardModel) error {
 	lcr.logger.Infof("updating libCard with ID: %s", libCard.ID)
 
-	query := `UPDATE lib_card SET issue_date = $1 WHERE id = $2`
+	query := `UPDATE bs.lib_card SET issue_date = $1 WHERE id = $2`
 
 	lcr.logger.Infof("executing query: %s", query)
 

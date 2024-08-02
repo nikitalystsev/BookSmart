@@ -27,7 +27,7 @@ func NewReservationRepo(db *sqlx.DB, logger *logrus.Entry) intfRepo.IReservation
 func (rr *ReservationRepo) Create(ctx context.Context, reservation *models.ReservationModel) error {
 	rr.logger.Infof("inserting reservation with ID: %s", reservation.ID)
 
-	query := `INSERT INTO reservation VALUES ($1, $2, $3, $4, $5, $6)`
+	query := `INSERT INTO bs.reservation VALUES ($1, $2, $3, $4, $5, $6)`
 
 	rr.logger.Infof("executing query: %s", query)
 
@@ -46,7 +46,7 @@ func (rr *ReservationRepo) Create(ctx context.Context, reservation *models.Reser
 func (rr *ReservationRepo) GetByReaderAndBook(ctx context.Context, readerID, bookID uuid.UUID) (*models.ReservationModel, error) {
 	rr.logger.Infof("selecting reservation")
 
-	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM reservation WHERE reader_id = $1 AND book_id = $2`
+	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM bs.reservation WHERE reader_id = $1 AND book_id = $2`
 
 	rr.logger.Infof("executing query: %s", query)
 
@@ -73,7 +73,7 @@ func (rr *ReservationRepo) GetByReaderAndBook(ctx context.Context, readerID, boo
 func (rr *ReservationRepo) GetByID(ctx context.Context, reservationID uuid.UUID) (*models.ReservationModel, error) {
 	rr.logger.Infof("select reservation with ID: %s", reservationID)
 
-	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM reservation WHERE id = $1`
+	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM bs.reservation WHERE id = $1`
 
 	rr.logger.Infof("executing query: %s", query)
 
@@ -100,7 +100,7 @@ func (rr *ReservationRepo) GetByID(ctx context.Context, reservationID uuid.UUID)
 func (rr *ReservationRepo) Update(ctx context.Context, reservation *models.ReservationModel) error {
 	rr.logger.Infof("updating reservation with readerID: %s", reservation.ID)
 
-	query := `UPDATE reservation SET issue_date = $1, return_date = $2, state = $3 WHERE id = $4`
+	query := `UPDATE bs.reservation SET issue_date = $1, return_date = $2, state = $3 WHERE id = $4`
 
 	rr.logger.Infof("executing query: %s", query)
 
@@ -118,7 +118,7 @@ func (rr *ReservationRepo) Update(ctx context.Context, reservation *models.Reser
 func (rr *ReservationRepo) GetExpiredByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
 	rr.logger.Infof("getting expired reservation with readerID: %s", readerID)
 
-	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM reservation WHERE reader_id = $1 AND return_date < $2`
+	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM bs.reservation WHERE reader_id = $1 AND return_date < $2`
 
 	rr.logger.Infof("executing query: %s", query)
 
@@ -166,7 +166,7 @@ func (rr *ReservationRepo) GetExpiredByReaderID(ctx context.Context, readerID uu
 func (rr *ReservationRepo) GetActiveByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
 	rr.logger.Infof("getting active reservation with readerID: %s", readerID)
 
-	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM reservation WHERE reader_id = $1 AND state != 'Closed'`
+	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM bs.reservation WHERE reader_id = $1 AND state != 'Closed'`
 
 	rr.logger.Infof("executing query: %s", query)
 
@@ -245,7 +245,7 @@ func (rr *ReservationRepo) isExpiredReservation(reservation *models.ReservationM
 func (rr *ReservationRepo) updateReservationStatus(ctx context.Context, reservation *models.ReservationModel) error {
 	rr.logger.Infof("updating reservation status: %s", reservation.ID)
 
-	query := `UPDATE reservation SET state = $1 WHERE id = $2`
+	query := `UPDATE bs.reservation SET state = $1 WHERE id = $2`
 
 	rr.logger.Infof("executing query: %s", query)
 

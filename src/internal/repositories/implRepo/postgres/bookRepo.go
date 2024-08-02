@@ -26,7 +26,7 @@ func NewBookRepo(db *sqlx.DB, logger *logrus.Entry) intfRepo.IBookRepo {
 func (br *BookRepo) Create(ctx context.Context, book *models.BookModel) error {
 	br.logger.Infof("inserting book with ID: %s", book.ID)
 
-	query := `INSERT INTO book VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+	query := `INSERT INTO bs.book VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	br.logger.Infof("executing query: %s", query)
 
@@ -45,7 +45,7 @@ func (br *BookRepo) Create(ctx context.Context, book *models.BookModel) error {
 func (br *BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel, error) {
 	br.logger.Infof("select book with ID: %s", id)
 
-	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE id = $1`
+	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM bs.book WHERE id = $1`
 
 	br.logger.Infof("executing query: %s", query)
 
@@ -68,7 +68,7 @@ func (br *BookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookMode
 func (br *BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookModel, error) {
 	br.logger.Infof("selected book by title: %s", title)
 
-	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM book WHERE title = $1`
+	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit FROM bs.book WHERE title = $1`
 
 	br.logger.Infof("executing query: %s", query)
 
@@ -91,7 +91,7 @@ func (br *BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookM
 func (br *BookRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	br.logger.Infof("deleting book with ID: %s", id)
 
-	query := `DELETE FROM book WHERE id = $1`
+	query := `DELETE FROM bs.book WHERE id = $1`
 
 	br.logger.Infof("executing query: %s", query)
 
@@ -109,7 +109,7 @@ func (br *BookRepo) Delete(ctx context.Context, id uuid.UUID) error {
 func (br *BookRepo) Update(ctx context.Context, book *models.BookModel) error {
 	br.logger.Infof("updating book with ID: %s", book.ID)
 
-	query := `UPDATE book SET copies_number = $1 WHERE id = $2`
+	query := `UPDATE bs.book SET copies_number = $1 WHERE id = $2`
 
 	br.logger.Infof("executing query: %s", query)
 
@@ -129,7 +129,7 @@ func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) 
 	br.logger.Infof("selecting books with params: %+v", params)
 
 	query := `SELECT id, title, author, publisher, copies_number, rarity, genre, publishing_year, language, age_limit 
-	          FROM book 
+	          FROM bs.book 
 	          WHERE ($1 = '' OR title ILIKE '%' || $1 || '%') AND 
 	                ($2 = '' OR author ILIKE '%' || $2 || '%') AND 
 	                ($3 = '' OR publisher ILIKE '%' || $3 || '%') AND 
