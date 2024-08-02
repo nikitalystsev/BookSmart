@@ -4,8 +4,9 @@ import (
 	"BookSmart/internal/config"
 	"BookSmart/internal/repositories/implRepo/postgres"
 	"BookSmart/internal/services/implServices"
-	"BookSmart/internal/ui/cli"
-	"BookSmart/internal/ui/cli/handlers"
+	"BookSmart/internal/ui/cliOnRoutes"
+	"BookSmart/internal/ui/cliOnRoutes/handlers"
+	"BookSmart/internal/ui/cliOnRoutes/requesters"
 	"BookSmart/pkg/auth"
 	"BookSmart/pkg/hash"
 	"BookSmart/pkg/logging"
@@ -76,15 +77,26 @@ func Run(configDir string) {
 
 	bookService := implServices.NewBookService(bookRepo, logger)
 	libCardService := implServices.NewLibCardService(libCardRepo, logger)
-	readerService := implServices.NewReaderService(readerRepo, bookRepo, tokenManager, hasher, logger)
+	readerService := implServices.NewReaderService(readerRepo, bookRepo, tokenManager, hasher, logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
 	reservationService := implServices.NewReservationService(reservationRepo, bookRepo, readerRepo, libCardRepo, transactionManager, logger)
 
-	bookHandler := handlers.NewBookHandler(bookService, logger)
-	libCardHandler := handlers.NewLibCardHandler(libCardService, logger)
-	readerHandler := handlers.NewReaderHandler(readerService, bookService, libCardService, reservationService, logger)
-	reservationHandler := handlers.NewReservationHandler(reservationService, logger)
+	handler := handlers.NewHandler(bookService, libCardService, readerService, reservationService, logger)
 
-	server := cli.NewServer(bookHandler, libCardHandler, readerHandler, reservationHandler)
+	router := handler.InitRoutes()
+
+	go func() {
+		err = router.Run(":8000")
+		if err != nil {
+			logger.Errorf("error running server: %v", err)
+			return
+		}
+	}()
+
+	bookRequester := requesters.NewBookRequester(logger)
+	libCardRequester := requesters.NewLibCardRequester(logger)
+	readerRequester := requesters.NewReaderRequester(logger)
+	reservationRequester := requesters.NewReservationRequester(logger)
+	server := cliOnRoutes.NewServer(bookRequester, libCardRequester, readerRequester, reservationRequester)
 
 	server.Run()
 }

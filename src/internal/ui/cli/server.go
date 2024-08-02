@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"BookSmart/internal/ui/cli/handlers"
 	"BookSmart/internal/ui/cli/input"
+	"BookSmart/internal/ui/cli/tmp"
 	"fmt"
 	"os"
 )
@@ -17,17 +17,17 @@ const mainMenu = `Main menu:
 `
 
 type Server struct {
-	bookHandler        *handlers.BookHandler
-	libCardHandler     *handlers.LibCardHandler
-	readerHandler      *handlers.ReaderHandler
-	reservationHandler *handlers.ReservationHandler
+	bookHandler        *tmp.BookHandler
+	libCardHandler     *tmp.LibCardHandler
+	readerHandler      *tmp.ReaderHandler
+	reservationHandler *tmp.ReservationHandler
 }
 
 func NewServer(
-	bookHandler *handlers.BookHandler,
-	libCardHandler *handlers.LibCardHandler,
-	readerHandler *handlers.ReaderHandler,
-	reservationHandler *handlers.ReservationHandler,
+	bookHandler *tmp.BookHandler,
+	libCardHandler *tmp.LibCardHandler,
+	readerHandler *tmp.ReaderHandler,
+	reservationHandler *tmp.ReservationHandler,
 ) *Server {
 	return &Server{
 		bookHandler:        bookHandler,

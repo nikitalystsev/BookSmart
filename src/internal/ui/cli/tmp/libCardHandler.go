@@ -1,4 +1,4 @@
-package handlers
+package tmp
 
 import (
 	"BookSmart/internal/services/intfServices"

@@ -23,17 +23,14 @@ const (
 	ReaderPasswordLen    = 10
 )
 
-var (
-	accessTokenTTL  = time.Hour * 2       // В минутах
-	refreshTokenTTL = time.Hour * 24 * 30 // В минутах (30 дней)
-)
-
 type ReaderService struct {
-	readerRepo   intfRepo.IReaderRepo
-	bookRepo     intfRepo.IBookRepo
-	tokenManager auth.ITokenManager
-	hasher       hash2.IPasswordHasher
-	logger       *logrus.Entry
+	readerRepo      intfRepo.IReaderRepo
+	bookRepo        intfRepo.IBookRepo
+	tokenManager    auth.ITokenManager
+	hasher          hash2.IPasswordHasher
+	logger          *logrus.Entry
+	accessTokenTTL  time.Duration
+	refreshTokenTTL time.Duration
 }
 
 func NewReaderService(
@@ -42,13 +39,17 @@ func NewReaderService(
 	tokenManager auth.ITokenManager,
 	hasher hash2.IPasswordHasher,
 	logger *logrus.Entry,
+	accessTokenTTL time.Duration,
+	refreshTokenTTL time.Duration,
 ) intfServices.IReaderService {
 	return &ReaderService{
-		readerRepo:   readerRepo,
-		bookRepo:     bookRepo,
-		tokenManager: tokenManager,
-		hasher:       hasher,
-		logger:       logger,
+		readerRepo:      readerRepo,
+		bookRepo:        bookRepo,
+		tokenManager:    tokenManager,
+		hasher:          hasher,
+		logger:          logger,
+		accessTokenTTL:  accessTokenTTL,
+		refreshTokenTTL: refreshTokenTTL,
 	}
 }
 
@@ -241,7 +242,7 @@ func (rs *ReaderService) createTokens(ctx context.Context, readerID uuid.UUID) (
 
 	rs.logger.Info("generate access token")
 
-	res.AccessToken, err = rs.tokenManager.NewJWT(readerID, accessTokenTTL)
+	res.AccessToken, err = rs.tokenManager.NewJWT(readerID, rs.accessTokenTTL)
 	if err != nil {
 		rs.logger.Errorf("error generating access token: %v", err)
 		return res, err
@@ -257,7 +258,7 @@ func (rs *ReaderService) createTokens(ctx context.Context, readerID uuid.UUID) (
 
 	rs.logger.Info("save refresh token")
 
-	err = rs.readerRepo.SaveRefreshToken(ctx, readerID, res.RefreshToken, refreshTokenTTL)
+	err = rs.readerRepo.SaveRefreshToken(ctx, readerID, res.RefreshToken, rs.refreshTokenTTL)
 	if err != nil {
 		rs.logger.Errorf("Error saving refresh token: %v", err)
 		return res, err
