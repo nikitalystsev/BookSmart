@@ -38,7 +38,7 @@ services:
     <<: *common-postgres
     container_name: test_postgres_db
     environment:
-      POSTGRES_DB: testdb
+      POSTGRES_DB: ${POSTGRES_DB_NAME_TEST}
     ports:
       - "${POSTGRES_DB_PORT_TEST}:5432"
 
