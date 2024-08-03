@@ -3,8 +3,8 @@ package requesters
 import (
 	"BookSmart/internal/dto"
 	"BookSmart/internal/models"
+	"BookSmart/internal/ui/cli/handlers"
 	"BookSmart/internal/ui/cli/input"
-	"BookSmart/internal/ui/cliOnRoutes/handlers"
 	"bytes"
 	"encoding/json"
 	"errors"

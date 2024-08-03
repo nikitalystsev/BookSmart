@@ -1,6 +1,6 @@
 package requesters
 
-import "BookSmart/internal/ui/cliOnRoutes/handlers"
+import "BookSmart/internal/ui/cli/handlers"
 
 func (r *Requester) CreateReservation(tokens handlers.TokenResponse) {
 

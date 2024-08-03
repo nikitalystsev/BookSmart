@@ -1,8 +1,8 @@
 package requesters
 
 import (
-	"BookSmart/internal/ui/cliOnRoutes/handlers"
-	"BookSmart/internal/ui/cliOnRoutes/input"
+	"BookSmart/internal/ui/cli/handlers"
+	"BookSmart/internal/ui/cli/input"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"
