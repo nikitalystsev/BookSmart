@@ -72,6 +72,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 			reservations.GET("/", h.getReservationsByReaderID)
 			reservations.PUT("/:id", h.updateReservation)
 		}
+
+		admin := api.Group("/admin")
+		{
+			admin.POST("/books/:id", h.deleteBook)
+		}
 	}
 
 	return router

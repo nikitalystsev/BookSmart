@@ -55,15 +55,10 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 	return nil
 }
 
-func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error {
-	if book == nil {
-		bs.logger.Warn("book object is nil")
-		return errsService.ErrBookObjectIsNil
-	}
+func (bs *BookService) Delete(ctx context.Context, bookID uuid.UUID) error {
+	bs.logger.Infof("attempting to delete book with ID: %s", bookID)
 
-	bs.logger.Infof("attempting to delete book with ID: %s", book.ID)
-
-	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
+	existingBook, err := bs.bookRepo.GetByID(ctx, bookID)
 	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		bs.logger.Errorf("error checking book existence: %v", err)
 		return err
@@ -74,13 +69,13 @@ func (bs *BookService) Delete(ctx context.Context, book *models.BookModel) error
 		return errsService.ErrBookDoesNotExists
 	}
 
-	err = bs.bookRepo.Delete(ctx, book.ID)
+	err = bs.bookRepo.Delete(ctx, bookID)
 	if err != nil {
-		bs.logger.Errorf("error deleting book with ID %s: %v", book.ID, err)
+		bs.logger.Errorf("error deleting book with ID %s: %v", bookID, err)
 		return err
 	}
 
-	bs.logger.Infof("successfully deleted book with ID: %s", book.ID)
+	bs.logger.Infof("successfully deleted book with ID: %s", bookID)
 
 	return nil
 }

@@ -27,7 +27,7 @@ func (r *Requester) ProcessReaderActions() error {
 	var tokens handlers.TokenResponse
 	stopRefresh := make(chan struct{})
 
-	if err := r.SignInAsReader(&tokens, stopRefresh); err != nil {
+	if err := r.SignIn(&tokens, stopRefresh); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -135,7 +135,7 @@ func (r *Requester) SignUp() error {
 	return nil
 }
 
-func (r *Requester) SignInAsReader(tokens *handlers.TokenResponse, stopRefresh <-chan struct{}) error {
+func (r *Requester) SignIn(tokens *handlers.TokenResponse, stopRefresh <-chan struct{}) error {
 	phoneNumber, err := input.PhoneNumber()
 	if err != nil {
 		return err

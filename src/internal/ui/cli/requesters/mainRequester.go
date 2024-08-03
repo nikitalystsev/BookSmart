@@ -48,6 +48,11 @@ func (r *Requester) Run() {
 			if err != nil {
 				fmt.Println(err)
 			}
+		case 3:
+			err = r.ProcessAdminActions()
+			if err != nil {
+				fmt.Println(err)
+			}
 		case 4:
 			err = r.ProcessBookCatalogActions(&handlers.TokenResponse{})
 			if err != nil {
