@@ -4,7 +4,6 @@ import (
 	"BookSmart/internal/config"
 	"BookSmart/internal/repositories/implRepo/postgres"
 	"BookSmart/internal/services/implServices"
-	"BookSmart/internal/ui/cliOnRoutes"
 	"BookSmart/internal/ui/cliOnRoutes/handlers"
 	"BookSmart/internal/ui/cliOnRoutes/requesters"
 	"BookSmart/pkg/auth"
@@ -80,7 +79,7 @@ func Run(configDir string) {
 	readerService := implServices.NewReaderService(readerRepo, bookRepo, tokenManager, hasher, logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
 	reservationService := implServices.NewReservationService(reservationRepo, bookRepo, readerRepo, libCardRepo, transactionManager, logger)
 
-	handler := handlers.NewHandler(bookService, libCardService, readerService, reservationService, logger)
+	handler := handlers.NewHandler(bookService, libCardService, readerService, reservationService, logger, tokenManager)
 
 	router := handler.InitRoutes()
 
@@ -92,11 +91,6 @@ func Run(configDir string) {
 		}
 	}()
 
-	bookRequester := requesters.NewBookRequester(logger)
-	libCardRequester := requesters.NewLibCardRequester(logger)
-	readerRequester := requesters.NewReaderRequester(logger)
-	reservationRequester := requesters.NewReservationRequester(logger)
-	server := cliOnRoutes.NewServer(bookRequester, libCardRequester, readerRequester, reservationRequester)
-
-	server.Run()
+	requester := requesters.NewRequester(logger)
+	requester.Run()
 }

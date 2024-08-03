@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"BookSmart/internal/services/intfServices"
+	"BookSmart/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -12,6 +13,7 @@ type Handler struct {
 	readerService      intfServices.IReaderService
 	reservationService intfServices.IReservationService
 	logger             *logrus.Entry
+	tokenManager       auth.ITokenManager
 }
 
 func NewHandler(
@@ -19,13 +21,16 @@ func NewHandler(
 	libCardService intfServices.ILibCardService,
 	readerService intfServices.IReaderService,
 	reservationService intfServices.IReservationService,
-	logger *logrus.Entry) *Handler {
+	logger *logrus.Entry,
+	tokenManager auth.ITokenManager,
+) *Handler {
 	return &Handler{
 		bookService:        bookService,
 		libCardService:     libCardService,
 		readerService:      readerService,
 		reservationService: reservationService,
 		logger:             logger,
+		tokenManager:       tokenManager,
 	}
 }
 
@@ -35,10 +40,23 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	router := gin.Default()
 
-	api := router.Group("/api")
+	authenticate := router.Group("/auth")
 	{
-		h.initReaderRoutes(api)
-		h.initAdminRoutes(api)
+		authenticate.POST("/sign-up", h.signUp)
+		authenticate.POST("/sign-in", h.signIn)
+		authenticate.POST("/refresh")
+	}
+
+	general := router.Group("/general")
+	{
+		general.GET("/books", h.getBooks)
+		general.GET("/books/:id", h.getBookByID)
+
+	}
+
+	api := router.Group("/api", h.readerIdentity)
+	{
+		api.POST("/favorites", h.addToFavorites)
 	}
 
 	return router

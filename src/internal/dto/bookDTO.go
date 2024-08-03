@@ -4,12 +4,12 @@ type BookParamsDTO struct {
 	Title          string
 	Author         string
 	Publisher      string
-	CopiesNumber   int
+	CopiesNumber   uint
 	Rarity         string
 	Genre          string
-	PublishingYear int
+	PublishingYear uint
 	Language       string
-	AgeLimit       int
-	Limit          int // Число элементов на странице
-	Offset         int // смещение
+	AgeLimit       uint
+	Limit          uint // Число элементов на странице
+	Offset         int  // смещение
 }

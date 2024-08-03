@@ -1,13 +1,7 @@
 package requesters
 
-import (
-	"github.com/sirupsen/logrus"
-)
+import "BookSmart/internal/ui/cliOnRoutes/handlers"
 
-type ReservationRequester struct {
-	logger *logrus.Entry
-}
+func (r *Requester) CreateReservation(tokens handlers.TokenResponse) {
 
-func NewReservationRequester(logger *logrus.Entry) *ReservationRequester {
-	return &ReservationRequester{logger: logger}
 }
