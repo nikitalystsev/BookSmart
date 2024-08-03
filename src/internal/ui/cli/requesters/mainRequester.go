@@ -28,8 +28,6 @@ func NewRequester(logger *logrus.Entry, accessTokenTTL time.Duration, refreshTok
 }
 
 func (r *Requester) Run() {
-	var tokens handlers.TokenResponse
-
 	for {
 		fmt.Printf("\n\n%s", mainMenu)
 
@@ -46,12 +44,12 @@ func (r *Requester) Run() {
 				fmt.Println(err)
 			}
 		case 2:
-			err = r.SignInAsReader(&tokens)
+			err = r.ProcessReaderActions()
 			if err != nil {
 				fmt.Println(err)
 			}
 		case 4:
-			err = r.ProcessBookCatalogActions(&tokens)
+			err = r.ProcessBookCatalogActions(&handlers.TokenResponse{})
 			if err != nil {
 				fmt.Println(err)
 			}

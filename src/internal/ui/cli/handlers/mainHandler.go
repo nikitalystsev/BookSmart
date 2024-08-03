@@ -58,6 +58,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	api := router.Group("/api", h.readerIdentity)
 	{
 		api.POST("/favorites", h.addToFavorites)
+		api.POST("/lib-cards", h.createLibCard)
+		api.PUT("/lib-cards", h.updateLibCard)
+		api.GET("/lib-cards", h.getLibCardByReaderID)
 	}
 
 	return router

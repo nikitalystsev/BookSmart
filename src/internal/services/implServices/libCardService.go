@@ -108,6 +108,25 @@ func (lcs *LibCardService) Update(ctx context.Context, libCard *models.LibCardMo
 	return nil
 }
 
+// GetByReaderID TODO добавить метод на схему
+func (lcs *LibCardService) GetByReaderID(ctx context.Context, readerID uuid.UUID) (*models.LibCardModel, error) {
+	lcs.logger.Infof("attempting to get libCard by readerID: %s", readerID)
+
+	libCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+		lcs.logger.Errorf("error checking libCard existence: %v", err)
+		return nil, err
+	}
+
+	if libCard == nil {
+		lcs.logger.Warn("reader has no library card")
+		return nil, errsService.ErrLibCardDoesNotExists
+	}
+
+	lcs.logger.Infof("successfully getting libCard by readerID: %s", readerID)
+
+	return libCard, nil
+}
 func (lcs *LibCardService) isValidLibCard(libCard *models.LibCardModel) bool {
 	if !libCard.ActionStatus {
 		return false

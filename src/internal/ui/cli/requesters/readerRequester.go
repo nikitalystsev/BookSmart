@@ -16,16 +16,49 @@ import (
 	"time"
 )
 
-const readerMenu = `Reader's menu:
-	1 -- view book information
-	2 -- find book
-	3 -- add book to favorites (now?)
-	4 -- reserve book
-	5 -- renew book
-	6 -- issue library card
-	7 -- renew library card
+const readerMainMenu = `Main menu:
+	1 -- view books catalog
+	2 -- library card menu
 	0 -- log out
 `
+
+func (r *Requester) ProcessReaderActions() error {
+	var tokens handlers.TokenResponse
+	stopRefresh := make(chan struct{})
+
+	if err := r.SignInAsReader(&tokens, stopRefresh); err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	for {
+		fmt.Printf("\n\n%s", readerMainMenu)
+
+		menuItem, err := input.MenuItem()
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		switch menuItem {
+		case 1:
+			err = r.ProcessBookCatalogActions(&tokens)
+			if err != nil {
+				fmt.Println(err)
+			}
+		case 2:
+			err = r.ProcessLibCardActions(&tokens)
+			if err != nil {
+				fmt.Println(err)
+			}
+		case 0:
+			close(stopRefresh)
+			return nil
+		default:
+			fmt.Printf("\n\nWrong menu item!\n")
+		}
+	}
+}
 
 func (r *Requester) SignUp() error {
 	fio, err := input.Fio()
@@ -96,7 +129,7 @@ func (r *Requester) SignUp() error {
 	return nil
 }
 
-func (r *Requester) SignInAsReader(tokens *handlers.TokenResponse) error {
+func (r *Requester) SignInAsReader(tokens *handlers.TokenResponse, stopRefresh <-chan struct{}) error {
 	phoneNumber, err := input.PhoneNumber()
 	if err != nil {
 		return err
@@ -151,7 +184,7 @@ func (r *Requester) SignInAsReader(tokens *handlers.TokenResponse) error {
 
 	fmt.Printf("\n\nAuthentication successful!\n")
 
-	go r.Refreshing(tokens, r.accessTokenTTL-time.Second)
+	go r.Refreshing(tokens, r.accessTokenTTL-time.Second, stopRefresh)
 
 	return nil
 }
@@ -194,7 +227,7 @@ func (r *Requester) Refresh(tokens *handlers.TokenResponse) error {
 	return nil
 }
 
-func (r *Requester) Refreshing(tokens *handlers.TokenResponse, interval time.Duration) {
+func (r *Requester) Refreshing(tokens *handlers.TokenResponse, interval time.Duration, stopRefresh <-chan struct{}) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
@@ -205,6 +238,8 @@ func (r *Requester) Refreshing(tokens *handlers.TokenResponse, interval time.Dur
 			if err != nil {
 				fmt.Printf("Error refreshing tokens: %v\n", err)
 			}
+		case <-stopRefresh:
+			return
 		}
 	}
 }
