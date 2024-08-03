@@ -91,6 +91,6 @@ func Run(configDir string) {
 		}
 	}()
 
-	requester := requesters.NewRequester(logger)
+	requester := requesters.NewRequester(logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
 	requester.Run()
 }

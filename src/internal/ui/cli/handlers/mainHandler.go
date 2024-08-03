@@ -5,6 +5,7 @@ import (
 	"BookSmart/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 )
 
 type Handler struct {
@@ -36,7 +37,7 @@ func NewHandler(
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
-	//gin.DefaultWriter = ioutil.Discard
+	gin.DefaultWriter = ioutil.Discard
 
 	router := gin.Default()
 
@@ -44,7 +45,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		authenticate.POST("/sign-up", h.signUp)
 		authenticate.POST("/sign-in", h.signIn)
-		authenticate.POST("/refresh")
+		authenticate.POST("/refresh", h.refresh)
 	}
 
 	general := router.Group("/general")

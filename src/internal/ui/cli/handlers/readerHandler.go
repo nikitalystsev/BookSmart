@@ -56,6 +56,25 @@ func (h *Handler) signIn(c *gin.Context) {
 	})
 }
 
+func (h *Handler) refresh(c *gin.Context) {
+	var inp string
+	if err := c.BindJSON(&inp); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
+		return
+	}
+
+	res, err := h.readerService.RefreshTokens(c.Request.Context(), inp)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, TokenResponse{
+		AccessToken:  res.AccessToken,
+		RefreshToken: res.RefreshToken,
+	})
+}
+
 func (h *Handler) addToFavorites(c *gin.Context) {
 	readerIDStr, err := getReaderID(c)
 	if err != nil {

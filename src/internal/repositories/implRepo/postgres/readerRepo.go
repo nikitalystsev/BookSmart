@@ -151,7 +151,7 @@ func (rr *ReaderRepo) GetByRefreshToken(ctx context.Context, token string) (*mod
 	}
 	if err != nil && errors.Is(err, redis.Nil) {
 		rr.logger.Errorf("no reader found by refresh token: %s", token)
-		return nil, err
+		return nil, errsRepo.ErrNotFound
 	}
 
 	readerID, err = uuid.Parse(readerIDStr)

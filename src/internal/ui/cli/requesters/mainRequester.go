@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"
+	"time"
 )
 
 const mainMenu = `Main menu:
@@ -17,11 +18,13 @@ const mainMenu = `Main menu:
 `
 
 type Requester struct {
-	logger *logrus.Entry
+	logger          *logrus.Entry
+	accessTokenTTL  time.Duration
+	refreshTokenTTL time.Duration
 }
 
-func NewRequester(logger *logrus.Entry) *Requester {
-	return &Requester{logger: logger}
+func NewRequester(logger *logrus.Entry, accessTokenTTL time.Duration, refreshTokenTTL time.Duration) *Requester {
+	return &Requester{logger: logger, accessTokenTTL: accessTokenTTL, refreshTokenTTL: refreshTokenTTL}
 }
 
 func (r *Requester) Run() {

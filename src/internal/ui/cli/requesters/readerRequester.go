@@ -13,6 +13,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 const readerMenu = `Reader's menu:
@@ -150,5 +151,60 @@ func (r *Requester) SignInAsReader(tokens *handlers.TokenResponse) error {
 
 	fmt.Printf("\n\nAuthentication successful!\n")
 
+	go r.Refreshing(tokens, r.accessTokenTTL-time.Second)
+
 	return nil
+}
+
+func (r *Requester) Refresh(tokens *handlers.TokenResponse) error {
+	url := "http://localhost:8000/auth/refresh"
+
+	refreshTokenJSON, err := json.Marshal(tokens.RefreshToken)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(refreshTokenJSON))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		var response string
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			return err
+		}
+		return errors.New(response)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(tokens)
+	if err != nil {
+		return err
+	}
+
+	//fmt.Printf("\n\nSuccessful refresh tokens!\n")
+
+	return nil
+}
+
+func (r *Requester) Refreshing(tokens *handlers.TokenResponse, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			err := r.Refresh(tokens)
+			if err != nil {
+				fmt.Printf("Error refreshing tokens: %v\n", err)
+			}
+		}
+	}
 }
