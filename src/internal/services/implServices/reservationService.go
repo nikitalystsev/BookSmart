@@ -125,6 +125,45 @@ func (rs *ReservationService) Update(ctx context.Context, reservation *models.Re
 	return nil
 }
 
+func (rs *ReservationService) GetAllReservationsByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
+	activeReservations, err := rs.reservationRepo.GetActiveByReaderID(ctx, readerID)
+	if err != nil {
+		rs.logger.Errorf("error checking active reservations: %v", err)
+		return nil, err
+	}
+
+	expiredReservations, err := rs.reservationRepo.GetExpiredByReaderID(ctx, readerID)
+	if err != nil {
+		rs.logger.Errorf("error checking expired book existence: %v", err)
+		return nil, err
+	}
+
+	rs.logger.Info("successfully get reservations")
+
+	allReservations := append(activeReservations, expiredReservations...)
+
+	return allReservations, nil
+}
+
+func (rs *ReservationService) GetByID(ctx context.Context, reservationID uuid.UUID) (*models.ReservationModel, error) {
+	rs.logger.Infof("attempting to get reservation with ID: %s", reservationID)
+
+	reservation, err := rs.reservationRepo.GetByID(ctx, reservationID)
+	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+		rs.logger.Errorf("error checking reservation existence: %v", err)
+		return nil, err
+	}
+
+	if reservation == nil {
+		rs.logger.Warn("reservation with this ID does not exist")
+		return nil, errsService.ErrReservationDoesNotExists
+	}
+
+	rs.logger.Infof("successfully getting reservation by ID: %s", reservationID)
+
+	return reservation, nil
+}
+
 func (rs *ReservationService) create(ctx context.Context, readerID, bookID uuid.UUID) error {
 	return rs.transactionManager.Do(ctx, func(ctx context.Context) error {
 		newReservation := &models.ReservationModel{
@@ -230,13 +269,13 @@ func (rs *ReservationService) checkReaderExists(ctx context.Context, readerID uu
 }
 
 func (rs *ReservationService) checkNoExpiredBooks(ctx context.Context, readerID uuid.UUID) error {
-	overdueBooks, err := rs.reservationRepo.GetExpiredByReaderID(ctx, readerID)
+	expiredReservations, err := rs.reservationRepo.GetExpiredByReaderID(ctx, readerID)
 	if err != nil {
 		rs.logger.Errorf("error checking expired book existence: %v", err)
 		return err
 	}
 
-	if len(overdueBooks) > 0 {
+	if len(expiredReservations) > 0 {
 		rs.logger.Warn("reader has expired books")
 		return errsService.ErrReaderHasExpiredBooks
 	}

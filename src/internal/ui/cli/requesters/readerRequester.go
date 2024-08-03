@@ -17,8 +17,9 @@ import (
 )
 
 const readerMainMenu = `Main menu:
-	1 -- view books catalog
-	2 -- library card menu
+	1 -- go to books catalog 
+	2 -- go to library card
+	3 -- go to your reservations
 	0 -- log out
 `
 
@@ -48,6 +49,11 @@ func (r *Requester) ProcessReaderActions() error {
 			}
 		case 2:
 			err = r.ProcessLibCardActions(&tokens)
+			if err != nil {
+				fmt.Println(err)
+			}
+		case 3:
+			err = r.ProcessReservationsActions(&tokens)
 			if err != nil {
 				fmt.Println(err)
 			}

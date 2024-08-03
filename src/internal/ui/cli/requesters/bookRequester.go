@@ -29,6 +29,7 @@ const catalogMenu = `Catalog's menu:
 	2 -- next page
 	3 -- view info about book
 	4 -- add book to favorites
+	5 -- reserve book
 	0 -- go to main menu
 `
 
@@ -65,6 +66,11 @@ func (r *Requester) ProcessBookCatalogActions(tokens *handlers.TokenResponse) er
 			}
 		case 4:
 			err = r.AddToFavorites(&bookPagesID, tokens.AccessToken)
+			if err != nil {
+				fmt.Println(err)
+			}
+		case 5:
+			err = r.ReserveBook(&bookPagesID, tokens.AccessToken)
 			if err != nil {
 				fmt.Println(err)
 			}
