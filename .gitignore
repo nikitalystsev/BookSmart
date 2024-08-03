@@ -27,3 +27,4 @@ diagrams/scheme_drawio/*.bkp
 src/.env
 src/docs/
 venv/
+logs/
