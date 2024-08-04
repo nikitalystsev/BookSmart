@@ -27,7 +27,7 @@ func (r *Requester) ProcessReservationsActions(tokens *handlers.TokenResponse) e
 
 		menuItem, err := input.MenuItem()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("\n\n%s\n", err.Error())
 			continue
 		}
 
@@ -162,6 +162,10 @@ func (r *Requester) ReserveBook(bookPagesID *[]uuid.UUID, accessToken string) er
 	response, err := SendRequest(request)
 	if err != nil {
 		return err
+	}
+
+	if response.StatusCode == http.StatusUnauthorized {
+		return errors.New("you are not authenticated")
 	}
 
 	if response.StatusCode != http.StatusCreated {

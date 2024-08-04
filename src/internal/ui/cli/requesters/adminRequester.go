@@ -81,39 +81,32 @@ func (r *Requester) ProcessAdminBookCatalogActions(tokens *handlers.TokenRespons
 
 		switch menuItem {
 		case 1:
-			err = r.viewFirstPage(&params, &bookPagesID)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.viewFirstPage(&params, &bookPagesID); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 2:
-			err = r.viewNextPage(&params, &bookPagesID)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.viewNextPage(&params, &bookPagesID); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 3:
-			err = r.ViewBook(&bookPagesID)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ViewBook(&bookPagesID); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 4:
-			err = r.AddToFavorites(&bookPagesID, tokens.AccessToken)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.AddToFavorites(&bookPagesID, tokens.AccessToken); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 5:
-			err = r.ReserveBook(&bookPagesID, tokens.AccessToken)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ReserveBook(&bookPagesID, tokens.AccessToken); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 6:
-			err = r.AddNewBook(tokens.AccessToken)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.AddNewBook(tokens.AccessToken); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 7:
-			err = r.DeleteBook(&bookPagesID, tokens.AccessToken)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.DeleteBook(&bookPagesID, tokens.AccessToken); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 0:
 			return nil

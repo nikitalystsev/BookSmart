@@ -22,7 +22,7 @@ func (r *Requester) ProcessReaderActions() error {
 	stopRefresh := make(chan struct{})
 
 	if err := r.SignIn(&tokens, stopRefresh); err != nil {
-		fmt.Println(err)
+		fmt.Printf("\n\n%s\n", err.Error())
 		return err
 	}
 
@@ -31,28 +31,26 @@ func (r *Requester) ProcessReaderActions() error {
 
 		menuItem, err := input.MenuItem()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("\n\n%s\n", err.Error())
 			continue
 		}
 
 		switch menuItem {
 		case 1:
-			err = r.ProcessBookCatalogActions(&tokens)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ProcessBookCatalogActions(&tokens); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 2:
-			err = r.ProcessLibCardActions(&tokens)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ProcessLibCardActions(&tokens); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 3:
-			err = r.ProcessReservationsActions(&tokens)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ProcessReservationsActions(&tokens); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 0:
 			close(stopRefresh)
+			fmt.Println("\n\nyou have successfully log out")
 			return nil
 		default:
 			fmt.Printf("\n\nWrong menu item!\n")
@@ -82,7 +80,11 @@ func (r *Requester) SignUp() error {
 	}
 
 	if response.StatusCode != http.StatusCreated {
-		return errors.New(response.Status)
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
+			return err
+		}
+		return errors.New(info)
 	}
 
 	fmt.Printf("\n\nRegistration completed successfully!\n")
@@ -112,17 +114,20 @@ func (r *Requester) SignIn(tokens *handlers.TokenResponse, stopRefresh <-chan st
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return errors.New(response.Status)
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
+			return err
+		}
+		return errors.New(info)
 	}
 
-	err = json.Unmarshal(response.Body, tokens)
-	if err != nil {
+	if err = json.Unmarshal(response.Body, tokens); err != nil {
 		return err
 	}
 
 	fmt.Printf("\n\nAuthentication successful!\n")
 
-	go r.Refreshing(tokens, r.accessTokenTTL-time.Second, stopRefresh)
+	go r.Refreshing(tokens, r.accessTokenTTL, stopRefresh)
 
 	return nil
 }
@@ -144,11 +149,14 @@ func (r *Requester) Refresh(tokens *handlers.TokenResponse) error {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return errors.New(response.Status)
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
+			return err
+		}
+		return errors.New(info)
 	}
 
-	err = json.Unmarshal(response.Body, tokens)
-	if err != nil {
+	if err = json.Unmarshal(response.Body, tokens); err != nil {
 		return err
 	}
 
@@ -164,9 +172,8 @@ func (r *Requester) Refreshing(tokens *handlers.TokenResponse, interval time.Dur
 	for {
 		select {
 		case <-ticker.C:
-			err := r.Refresh(tokens)
-			if err != nil {
-				fmt.Printf("Error refreshing tokens: %v\n", err)
+			if err := r.Refresh(tokens); err != nil {
+				fmt.Printf("\n\nerror refreshing tokens: %v\n", err)
 			}
 		case <-stopRefresh:
 			return

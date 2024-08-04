@@ -42,7 +42,7 @@ func (r *Requester) ProcessBookCatalogActions(tokens *handlers.TokenResponse) er
 
 		menuItem, err := input.MenuItem()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("\n\n%s\n", err.Error())
 			continue
 		}
 
@@ -238,6 +238,9 @@ func (r *Requester) AddToFavorites(bookPagesID *[]uuid.UUID, accessToken string)
 		return err
 	}
 
+	if response.StatusCode == http.StatusUnauthorized {
+		return errors.New("you are not authenticated")
+	}
 	if response.StatusCode != http.StatusCreated {
 		var info string
 		if err = json.Unmarshal(response.Body, &info); err != nil {

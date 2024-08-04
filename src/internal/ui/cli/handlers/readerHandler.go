@@ -11,7 +11,7 @@ import (
 )
 
 func (h *Handler) signUp(c *gin.Context) {
-	
+
 	var inp models.ReaderModel
 	if err := c.BindJSON(&inp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
@@ -34,7 +34,7 @@ func (h *Handler) signUp(c *gin.Context) {
 func (h *Handler) signIn(c *gin.Context) {
 	var inp dto.ReaderSignInDTO
 	if err := c.BindJSON(&inp); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 

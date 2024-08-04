@@ -27,25 +27,22 @@ func (r *Requester) ProcessLibCardActions(tokens *handlers.TokenResponse) error 
 
 		menuItem, err := input.MenuItem()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("\n\n%s\n", err.Error())
 			continue
 		}
 
 		switch menuItem {
 		case 1:
-			err = r.CreateLibCard(tokens)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.CreateLibCard(tokens); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 2:
-			err = r.UpdateLibCard(tokens)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.UpdateLibCard(tokens); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 3:
-			err = r.ViewLibCard(tokens)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ViewLibCard(tokens); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 0:
 			return nil

@@ -5,7 +5,7 @@ import (
 	"BookSmart-services/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
+	"io"
 )
 
 type Handler struct {
@@ -37,7 +37,7 @@ func NewHandler(
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
-	gin.DefaultWriter = ioutil.Discard
+	gin.DefaultWriter = io.Discard
 
 	router := gin.Default()
 

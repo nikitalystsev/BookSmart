@@ -33,30 +33,26 @@ func (r *Requester) Run() {
 
 		menuItem, err := input.MenuItem()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("\n\n%s\n", err.Error())
 			continue
 		}
 
 		switch menuItem {
 		case 1:
-			err = r.SignUp()
-			if err != nil {
-				fmt.Println(err)
+			if err = r.SignUp(); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 2:
-			err = r.ProcessReaderActions()
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ProcessReaderActions(); err != nil {
+				continue
 			}
 		case 3:
-			err = r.ProcessAdminActions()
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ProcessAdminActions(); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 4:
-			err = r.ProcessBookCatalogActions(&handlers.TokenResponse{})
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ProcessBookCatalogActions(&handlers.TokenResponse{}); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 0:
 			os.Exit(0)
