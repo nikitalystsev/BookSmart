@@ -10,6 +10,7 @@ type Config struct {
 	Auth     AuthConfig
 	Postgres PostgresConfig
 	Redis    RedisConfig
+	Port     string
 }
 
 type AuthConfig struct {
@@ -40,33 +41,24 @@ type RedisConfig struct {
 }
 
 func Init(configsDir string) (*Config, error) {
-	if err := parseConfigFile(configsDir); err != nil {
+	viper.AddConfigPath(configsDir)
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
 
 	var cfg Config
-	if err := unmarshal(&cfg); err != nil {
+	if err := viper.UnmarshalKey("auth", &cfg.Auth.JWT); err != nil {
+		return nil, err
+	}
+	if err := viper.UnmarshalKey("port", &cfg.Port); err != nil {
 		return nil, err
 	}
 
 	setFromEnv(&cfg)
 
 	return &cfg, nil
-}
-
-func parseConfigFile(folder string) error {
-	viper.AddConfigPath(folder)
-	viper.SetConfigName("config")
-
-	return viper.ReadInConfig()
-}
-
-func unmarshal(cfg *Config) error {
-	if err := viper.UnmarshalKey("auth", &cfg.Auth.JWT); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func setFromEnv(cfg *Config) {
@@ -84,5 +76,4 @@ func setFromEnv(cfg *Config) {
 
 	cfg.Auth.PasswordSalt = os.Getenv("PASSWORD_SALT")
 	cfg.Auth.JWT.SigningKey = os.Getenv("JWT_SIGNING_KEY")
-
 }

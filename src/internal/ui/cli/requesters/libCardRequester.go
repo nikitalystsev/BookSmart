@@ -1,9 +1,9 @@
 package requesters
 
 import (
-	"BookSmart/internal/models"
-	"BookSmart/internal/ui/cli/handlers"
-	"BookSmart/internal/ui/cli/input"
+	"BookSmart-services/models"
+	"BookSmart-ui/cli/handlers"
+	"BookSmart-ui/cli/input"
 	"encoding/json"
 	"errors"
 	"fmt"

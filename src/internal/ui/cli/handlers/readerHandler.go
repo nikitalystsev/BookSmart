@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"BookSmart/internal/dto"
-	"BookSmart/internal/models"
-	"BookSmart/internal/services/errsService"
+	"BookSmart-services/dto"
+	"BookSmart-services/errs"
+	"BookSmart-services/models"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -21,11 +21,11 @@ func (h *Handler) signUp(c *gin.Context) {
 	}
 
 	err := h.readerService.SignUp(c.Request.Context(), &inp)
-	if err != nil && !errors.Is(err, errsService.ErrReaderAlreadyExist) {
+	if err != nil && !errors.Is(err, errs.ErrReaderAlreadyExist) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-	if err != nil && errors.Is(err, errsService.ErrReaderAlreadyExist) {
+	if err != nil && errors.Is(err, errs.ErrReaderAlreadyExist) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -41,11 +41,11 @@ func (h *Handler) signIn(c *gin.Context) {
 	}
 
 	res, err := h.readerService.SignIn(c.Request.Context(), &inp)
-	if err != nil && !errors.Is(err, errsService.ErrReaderDoesNotExists) {
+	if err != nil && !errors.Is(err, errs.ErrReaderDoesNotExists) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-	if err != nil && errors.Is(err, errsService.ErrReaderDoesNotExists) {
+	if err != nil && errors.Is(err, errs.ErrReaderDoesNotExists) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}

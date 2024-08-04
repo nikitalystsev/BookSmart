@@ -1,10 +1,10 @@
 package requesters
 
 import (
-	"BookSmart/internal/dto"
-	"BookSmart/internal/models"
-	"BookSmart/internal/ui/cli/handlers"
-	"BookSmart/internal/ui/cli/input"
+	"BookSmart-services/dto"
+	"BookSmart-services/models"
+	"BookSmart-ui/cli/handlers"
+	"BookSmart-ui/cli/input"
 	"bytes"
 	"encoding/json"
 	"errors"

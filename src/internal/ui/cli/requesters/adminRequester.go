@@ -1,9 +1,9 @@
 package requesters
 
 import (
-	"BookSmart/internal/dto"
-	"BookSmart/internal/ui/cli/handlers"
-	"BookSmart/internal/ui/cli/input"
+	"BookSmart-services/dto"
+	"BookSmart-ui/cli/handlers"
+	"BookSmart-ui/cli/input"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -12,12 +12,6 @@ import (
 	"log"
 	"net/http"
 )
-
-const adminMainMenu = `Main menu:
-	1 -- go to books catalog 
-	2 -- go to library card 
-	0 -- log out
-`
 
 func (r *Requester) ProcessAdminActions() error {
 	var tokens handlers.TokenResponse

@@ -1,37 +1,37 @@
 package handlers
 
 import (
-	"BookSmart/internal/services/intfServices"
-	"BookSmart/pkg/auth"
+	"BookSmart-services/intf"
+	"BookSmart-services/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 )
 
 type Handler struct {
-	bookService        intfServices.IBookService
-	libCardService     intfServices.ILibCardService
-	readerService      intfServices.IReaderService
-	reservationService intfServices.IReservationService
-	logger             *logrus.Entry
+	bookService        intf.IBookService
+	libCardService     intf.ILibCardService
+	readerService      intf.IReaderService
+	reservationService intf.IReservationService
 	tokenManager       auth.ITokenManager
+	logger             *logrus.Entry
 }
 
 func NewHandler(
-	bookService intfServices.IBookService,
-	libCardService intfServices.ILibCardService,
-	readerService intfServices.IReaderService,
-	reservationService intfServices.IReservationService,
-	logger *logrus.Entry,
+	bookService intf.IBookService,
+	libCardService intf.ILibCardService,
+	readerService intf.IReaderService,
+	reservationService intf.IReservationService,
 	tokenManager auth.ITokenManager,
+	logger *logrus.Entry,
 ) *Handler {
 	return &Handler{
 		bookService:        bookService,
 		libCardService:     libCardService,
 		readerService:      readerService,
 		reservationService: reservationService,
-		logger:             logger,
 		tokenManager:       tokenManager,
+		logger:             logger,
 	}
 }
 

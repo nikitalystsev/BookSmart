@@ -1,15 +1,15 @@
 package app
 
 import (
-	"BookSmart/internal/config"
-	"BookSmart/internal/repositories/implRepo/postgres"
-	"BookSmart/internal/services/implServices"
-	"BookSmart/internal/ui/cli/handlers"
-	"BookSmart/internal/ui/cli/requesters"
-	"BookSmart/pkg/auth"
-	"BookSmart/pkg/hash"
-	"BookSmart/pkg/logging"
-	"BookSmart/pkg/transact"
+	"BookSmart-repositories/impl/postgres"
+	"BookSmart-services/impl"
+	"BookSmart-services/pkg/auth"
+	"BookSmart-services/pkg/hash"
+	"BookSmart-services/pkg/transact"
+	"BookSmart-ui/cli/handlers"
+	"BookSmart-ui/cli/requesters"
+	"Booksmart/internal/config"
+	"Booksmart/pkg/logging"
 	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
@@ -74,17 +74,17 @@ func Run(configDir string) {
 	readerRepo := postgres.NewReaderRepo(db, client, logger)
 	reservationRepo := postgres.NewReservationRepo(db, logger)
 
-	bookService := implServices.NewBookService(bookRepo, logger)
-	libCardService := implServices.NewLibCardService(libCardRepo, logger)
-	readerService := implServices.NewReaderService(readerRepo, bookRepo, tokenManager, hasher, logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
-	reservationService := implServices.NewReservationService(reservationRepo, bookRepo, readerRepo, libCardRepo, transactionManager, logger)
+	bookService := impl.NewBookService(bookRepo, logger)
+	libCardService := impl.NewLibCardService(libCardRepo, logger)
+	readerService := impl.NewReaderService(readerRepo, bookRepo, tokenManager, hasher, logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
+	reservationService := impl.NewReservationService(reservationRepo, bookRepo, readerRepo, libCardRepo, transactionManager, logger)
 
-	handler := handlers.NewHandler(bookService, libCardService, readerService, reservationService, logger, tokenManager)
+	handler := handlers.NewHandler(bookService, libCardService, readerService, reservationService, tokenManager, logger)
 
 	router := handler.InitRoutes()
 
 	go func() {
-		err = router.Run(":8000")
+		err = router.Run(":" + cfg.Port)
 		if err != nil {
 			logger.Errorf("error running server: %v", err)
 			return

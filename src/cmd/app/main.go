@@ -1,7 +1,7 @@
 package main
 
 import (
-	"BookSmart/internal/app"
+	"Booksmart/internal/app"
 )
 
 const configsDir = "configs"

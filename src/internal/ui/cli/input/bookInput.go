@@ -1,8 +1,8 @@
 package input
 
 import (
-	"BookSmart/internal/dto"
-	"BookSmart/internal/models"
+	"BookSmart-services/dto"
+	"BookSmart-services/models"
 	"bufio"
 	"fmt"
 	"os"

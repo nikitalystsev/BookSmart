@@ -1,8 +1,7 @@
 package handlers
 
 import (
-	"BookSmart/internal/models"
-	"fmt"
+	"BookSmart-services/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -32,7 +31,6 @@ func (h *Handler) addNewBook(c *gin.Context) {
 	}
 
 	if newBook.ID == uuid.Nil {
-		fmt.Println("значит ID по умолчанию uuid.Nil")
 		newBook.ID = uuid.New()
 	}
 
