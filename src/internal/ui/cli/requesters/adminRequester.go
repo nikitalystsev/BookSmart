@@ -112,6 +112,11 @@ func (r *Requester) ProcessAdminBookCatalogActions(tokens *handlers.TokenRespons
 			if err != nil {
 				fmt.Println(err)
 			}
+		case 6:
+			err = r.AddNewBook(tokens.AccessToken)
+			if err != nil {
+				fmt.Println(err)
+			}
 		case 7:
 			err = r.DeleteBook(&bookPagesID, tokens.AccessToken)
 			if err != nil {
@@ -125,20 +130,13 @@ func (r *Requester) ProcessAdminBookCatalogActions(tokens *handlers.TokenRespons
 	}
 }
 
-func (r *Requester) AddNewBook(bookPagesID *[]uuid.UUID, accessToken string) error {
-	num, err := input.BookPagesNumber()
+func (r *Requester) AddNewBook(accessToken string) error {
+	newBook, err := input.Book()
 	if err != nil {
 		return err
 	}
-
-	if num > len(*bookPagesID) || num < 0 {
-		return errors.New("book number out of range")
-	}
-
-	bookID := (*bookPagesID)[num]
-
 	// Кодирование тела запроса в JSON
-	jsonData, err := json.Marshal(bookID)
+	jsonData, err := json.Marshal(newBook)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -167,7 +165,7 @@ func (r *Requester) AddNewBook(bookPagesID *[]uuid.UUID, accessToken string) err
 		return errors.New(response)
 	}
 
-	fmt.Printf("\n\nBook successfully added to your favorites!\n")
+	fmt.Printf("\n\nBook successfully created!\n")
 
 	return nil
 }

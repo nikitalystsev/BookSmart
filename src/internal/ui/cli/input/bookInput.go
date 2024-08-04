@@ -2,6 +2,7 @@ package input
 
 import (
 	"BookSmart/internal/dto"
+	"BookSmart/internal/models"
 	"bufio"
 	"fmt"
 	"os"
@@ -161,6 +162,28 @@ func AgeLimit() (uint, error) {
 	return ageLimit, nil
 }
 
+func CopiesNumber() (uint, error) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Printf("Input book's copies number: ")
+
+	copiesNumStr, err := reader.ReadString('\n')
+	if err != nil {
+		return 0, err
+	}
+
+	copiesNumStr = strings.TrimSpace(copiesNumStr)
+
+	copiesNumInt, err := strconv.Atoi(copiesNumStr)
+	if err != nil {
+		return 0, err
+	}
+
+	copiesNum := uint(copiesNumInt)
+
+	return copiesNum, nil
+}
+
 func Params() (dto.BookParamsDTO, error) {
 	var params dto.BookParamsDTO
 	var err error
@@ -219,4 +242,48 @@ func BookPagesNumber() (int, error) {
 	}
 
 	return numInt, nil
+}
+
+func Book() (models.BookModel, error) {
+	var book models.BookModel
+	var err error
+
+	book.Title, err = Title()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+	book.Author, err = Author()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+	book.Publisher, err = Publisher()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+	book.CopiesNumber, err = CopiesNumber()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+	book.Rarity, err = Rarity()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+	book.Genre, err = Genre()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+	book.PublishingYear, err = PublishingYear()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+	book.Language, err = Language()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+	book.AgeLimit, err = AgeLimit()
+	if err != nil {
+		return models.BookModel{}, err
+	}
+
+	return book, nil
 }

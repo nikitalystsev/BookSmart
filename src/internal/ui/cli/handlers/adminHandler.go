@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"BookSmart/internal/models"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -20,4 +22,25 @@ func (h *Handler) deleteBook(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func (h *Handler) addNewBook(c *gin.Context) {
+	var newBook models.BookModel
+	if err := c.BindJSON(&newBook); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid input body"})
+		return
+	}
+
+	if newBook.ID == uuid.Nil {
+		fmt.Println("значит ID по умолчанию uuid.Nil")
+		newBook.ID = uuid.New()
+	}
+
+	err := h.bookService.Create(c.Request.Context(), &newBook)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	c.Status(http.StatusCreated)
 }

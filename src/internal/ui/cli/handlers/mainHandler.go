@@ -76,6 +76,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		admin := api.Group("/admin")
 		{
 			admin.POST("/books/:id", h.deleteBook)
+			admin.POST("/books", h.addNewBook)
 		}
 	}
 
