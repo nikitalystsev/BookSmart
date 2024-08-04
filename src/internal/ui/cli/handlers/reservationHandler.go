@@ -14,7 +14,7 @@ func (h *Handler) reserveBook(c *gin.Context) {
 		return
 	}
 
-	readerIDStr, err := getReaderID(c)
+	readerIDStr, _, err := getReaderData(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
@@ -25,6 +25,7 @@ func (h *Handler) reserveBook(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
+
 	err = h.reservationService.Create(c.Request.Context(), readerID, bookID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
@@ -58,7 +59,7 @@ func (h *Handler) updateReservation(c *gin.Context) {
 }
 
 func (h *Handler) getReservationsByReaderID(c *gin.Context) {
-	readerIDStr, err := getReaderID(c)
+	readerIDStr, _, err := getReaderData(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return

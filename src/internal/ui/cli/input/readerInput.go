@@ -1,6 +1,7 @@
 package input
 
 import (
+	"BookSmart-services/dto"
 	"bufio"
 	"fmt"
 	"github.com/howeyc/gopass"
@@ -73,6 +74,50 @@ func Password() (string, error) {
 	password = strings.TrimSpace(password)
 
 	return password, nil
+}
+
+func SignUpParams() (dto.ReaderSignUpDTO, error) {
+	var (
+		res dto.ReaderSignUpDTO
+		err error
+	)
+
+	res.Fio, err = Fio()
+	if err != nil {
+		return dto.ReaderSignUpDTO{}, err
+	}
+	res.Age, err = Age()
+	if err != nil {
+		return dto.ReaderSignUpDTO{}, err
+	}
+	res.PhoneNumber, err = PhoneNumber()
+	if err != nil {
+		return dto.ReaderSignUpDTO{}, err
+	}
+	res.Password, err = Password()
+	if err != nil {
+		return dto.ReaderSignUpDTO{}, err
+	}
+
+	return res, nil
+}
+
+func SignInParams() (dto.ReaderSignInDTO, error) {
+	var (
+		res dto.ReaderSignInDTO
+		err error
+	)
+
+	res.PhoneNumber, err = PhoneNumber()
+	if err != nil {
+		return dto.ReaderSignInDTO{}, err
+	}
+	res.Password, err = Password()
+	if err != nil {
+		return dto.ReaderSignInDTO{}, err
+	}
+
+	return res, nil
 }
 
 func MenuItem() (int, error) {

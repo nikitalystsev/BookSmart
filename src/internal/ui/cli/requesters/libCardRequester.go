@@ -7,10 +7,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const libCardMenu = `Library card menu:
@@ -56,33 +56,27 @@ func (r *Requester) ProcessLibCardActions(tokens *handlers.TokenResponse) error 
 }
 
 func (r *Requester) CreateLibCard(tokens *handlers.TokenResponse) error {
-	url := "http://localhost:8000/api/lib-cards"
-	req, err := http.NewRequest("POST", url, nil)
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    "http://localhost:8000/api/lib-cards",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", tokens.AccessToken),
+		},
+		Timeout: 10 * time.Second,
+	}
+
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
-	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			fmt.Println("error closing body")
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusCreated {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusCreated {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
 	fmt.Printf("\n\nSuccessfully created library card!\n")
@@ -91,33 +85,27 @@ func (r *Requester) CreateLibCard(tokens *handlers.TokenResponse) error {
 }
 
 func (r *Requester) UpdateLibCard(tokens *handlers.TokenResponse) error {
-	url := "http://localhost:8000/api/lib-cards"
-	req, err := http.NewRequest("PUT", url, nil)
+	request := HTTPRequest{
+		Method: "PUT",
+		URL:    "http://localhost:8000/api/lib-cards",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", tokens.AccessToken),
+		},
+		Timeout: 10 * time.Second,
+	}
+
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
-	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			fmt.Println("error closing body")
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
 	fmt.Printf("\n\nSuccessfully updated library card!\n")
@@ -126,44 +114,36 @@ func (r *Requester) UpdateLibCard(tokens *handlers.TokenResponse) error {
 }
 
 func (r *Requester) ViewLibCard(tokens *handlers.TokenResponse) error {
+	request := HTTPRequest{
+		Method: "GET",
+		URL:    "http://localhost:8000/api/lib-cards",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", tokens.AccessToken),
+		},
+		Timeout: 10 * time.Second,
+	}
 
-	url := "http://localhost:8000/api/lib-cards"
-
-	req, err := http.NewRequest("GET", url, nil)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
-	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			fmt.Println("error closing body")
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
-	var response *models.LibCardModel
-	err = json.NewDecoder(resp.Body).Decode(&response)
+	var libCard *models.LibCardModel
+	err = json.Unmarshal(response.Body, &libCard)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	printLibCard(response)
+	printLibCard(libCard)
 
 	return nil
 

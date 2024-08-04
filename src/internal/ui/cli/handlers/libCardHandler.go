@@ -8,7 +8,7 @@ import (
 )
 
 func (h *Handler) createLibCard(c *gin.Context) {
-	readerIDStr, err := getReaderID(c)
+	readerIDStr, _, err := getReaderData(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
@@ -30,7 +30,7 @@ func (h *Handler) createLibCard(c *gin.Context) {
 }
 
 func (h *Handler) updateLibCard(c *gin.Context) {
-	readerIDStr, err := getReaderID(c)
+	readerIDStr, _, err := getReaderData(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
@@ -59,7 +59,7 @@ func (h *Handler) updateLibCard(c *gin.Context) {
 }
 
 func (h *Handler) getLibCardByReaderID(c *gin.Context) {
-	readerIDStr, err := getReaderID(c)
+	readerIDStr, _, err := getReaderData(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return

@@ -5,15 +5,13 @@ import (
 	"BookSmart-services/models"
 	"BookSmart-ui/cli/handlers"
 	"BookSmart-ui/cli/input"
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"io"
-	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 /*
@@ -50,29 +48,24 @@ func (r *Requester) ProcessBookCatalogActions(tokens *handlers.TokenResponse) er
 
 		switch menuItem {
 		case 1:
-			params, err = r.viewFirstPage(&bookPagesID)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.viewFirstPage(&params, &bookPagesID); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 2:
-			err = r.viewNextPage(&params, &bookPagesID)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.viewNextPage(&params, &bookPagesID); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 3:
-			err = r.ViewBook(&bookPagesID)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ViewBook(&bookPagesID); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 4:
-			err = r.AddToFavorites(&bookPagesID, tokens.AccessToken)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.AddToFavorites(&bookPagesID, tokens.AccessToken); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 5:
-			err = r.ReserveBook(&bookPagesID, tokens.AccessToken)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ReserveBook(&bookPagesID, tokens.AccessToken); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 0:
 			return nil
@@ -81,69 +74,56 @@ func (r *Requester) ProcessBookCatalogActions(tokens *handlers.TokenResponse) er
 		}
 	}
 }
-func (r *Requester) viewFirstPage(bookPagesID *[]uuid.UUID) (dto.BookParamsDTO, error) {
+func (r *Requester) viewFirstPage(params *dto.BookParamsDTO, bookPagesID *[]uuid.UUID) error {
 	isWithParams, err := input.IsWithParams()
 	if err != nil {
-		return dto.BookParamsDTO{Limit: PageLimit, Offset: 0}, err
+		return err
 	}
 
 	*bookPagesID = make([]uuid.UUID, 0)
 
-	var params dto.BookParamsDTO
 	if !isWithParams {
-		params, err = input.Params()
-		if err != nil {
-			return dto.BookParamsDTO{Limit: PageLimit, Offset: 0}, err
+		if *params, err = input.Params(); err != nil {
+			return err
 		}
 		params.Limit = PageLimit
 		params.Offset = 0
 	} else {
-		params = dto.BookParamsDTO{Limit: PageLimit, Offset: 0}
+		*params = dto.BookParamsDTO{Limit: PageLimit, Offset: 0}
 	}
 
-	paramsJSON, err := json.Marshal(params)
+	request := HTTPRequest{
+		Method: "GET",
+		URL:    "http://localhost:8000/general/books",
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Body:    *params,
+		Timeout: 10 * time.Second,
+	}
+
+	response, err := SendRequest(request)
 	if err != nil {
-		return dto.BookParamsDTO{Limit: PageLimit, Offset: 0}, err
+		return err
 	}
 
-	url := "http://localhost:8000/general/books"
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(paramsJSON))
-	if err != nil {
-		return dto.BookParamsDTO{Limit: PageLimit, Offset: 0}, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return dto.BookParamsDTO{Limit: PageLimit, Offset: 0}, err
-	}
-
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			fmt.Println("error closing body")
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
+			return err
 		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			return dto.BookParamsDTO{Limit: PageLimit, Offset: 0}, err
-		}
-		return dto.BookParamsDTO{Limit: PageLimit, Offset: 0}, errors.New(response)
+		return errors.New(info)
 	}
 
-	var response []*models.BookModel
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		log.Fatal(err)
+	var books []*models.BookModel
+	if err = json.Unmarshal(response.Body, &books); err != nil {
+		return err
 	}
 
-	printBooks(response, 0)
-	updateParams(&params, bookPagesID, response)
+	printBooks(books, 0)
+	updateParams(params, bookPagesID, books)
 
-	return params, nil
+	return nil
 }
 
 func (r *Requester) viewNextPage(params *dto.BookParamsDTO, bookPagesID *[]uuid.UUID) error {
@@ -151,47 +131,36 @@ func (r *Requester) viewNextPage(params *dto.BookParamsDTO, bookPagesID *[]uuid.
 		params.Limit = PageLimit
 	}
 
-	paramsJSON, err := json.Marshal(params)
+	request := HTTPRequest{
+		Method: "GET",
+		URL:    "http://localhost:8000/general/books",
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Body:    *params,
+		Timeout: 10 * time.Second,
+	}
+
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	url := "http://localhost:8000/general/books"
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(paramsJSON))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			fmt.Println("error closing body")
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
-	var response []*models.BookModel
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		log.Fatal(err)
+	var books []*models.BookModel
+	if err = json.Unmarshal(response.Body, &books); err != nil {
+		return err
 	}
 
-	printBooks(response, params.Offset)
-	updateParams(params, bookPagesID, response)
+	printBooks(books, params.Offset)
+	updateParams(params, bookPagesID, books)
 
 	return nil
 }
@@ -208,42 +177,34 @@ func (r *Requester) ViewBook(bookPagesID *[]uuid.UUID) error {
 
 	bookID := (*bookPagesID)[num]
 
-	url := fmt.Sprintf("http://localhost:8000/general/books/%s", bookID.String())
+	request := HTTPRequest{
+		Method: "GET",
+		URL:    fmt.Sprintf("http://localhost:8000/general/books/%s", bookID.String()),
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Timeout: 10 * time.Second,
+	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			fmt.Println("error closing body")
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
-	var response *models.BookModel
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		log.Fatal(err)
+	var book *models.BookModel
+	if err = json.Unmarshal(response.Body, &book); err != nil {
+		return err
 	}
 
-	printBook(response, num)
+	printBook(book, num)
 
 	return nil
 
@@ -261,34 +222,28 @@ func (r *Requester) AddToFavorites(bookPagesID *[]uuid.UUID, accessToken string)
 
 	bookID := (*bookPagesID)[num]
 
-	// Кодирование тела запроса в JSON
-	jsonData, err := json.Marshal(bookID)
-	if err != nil {
-		log.Fatal(err)
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    "http://localhost:8000/api/favorites",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", accessToken),
+		},
+		Body:    bookID,
+		Timeout: 10 * time.Second,
 	}
 
-	url := "http://localhost:8000/api/favorites"
-	// Создание нового HTTP-запроса
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusCreated {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
 	fmt.Printf("\n\nBook successfully added to your favorites!\n")

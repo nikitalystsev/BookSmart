@@ -4,14 +4,13 @@ import (
 	"BookSmart-services/models"
 	"BookSmart-ui/cli/handlers"
 	"BookSmart-ui/cli/input"
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const reservationsMenu = `Reservations menu:
@@ -34,14 +33,12 @@ func (r *Requester) ProcessReservationsActions(tokens *handlers.TokenResponse) e
 
 		switch menuItem {
 		case 1:
-			err = r.ViewReservations(&reservationsID, tokens)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.ViewReservations(&reservationsID, tokens); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 2:
-			err = r.UpdateReservation(&reservationsID, tokens)
-			if err != nil {
-				fmt.Println(err)
+			if err = r.UpdateReservation(&reservationsID, tokens); err != nil {
+				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 0:
 			return nil
@@ -52,38 +49,37 @@ func (r *Requester) ProcessReservationsActions(tokens *handlers.TokenResponse) e
 }
 
 func (r *Requester) ViewReservations(reservationsID *[]uuid.UUID, tokens *handlers.TokenResponse) error {
-	url := "http://localhost:8000/api/reservations"
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatal(err)
+	request := HTTPRequest{
+		Method: "GET",
+		URL:    "http://localhost:8000/api/reservations",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", tokens.AccessToken),
+		},
+		Timeout: 10 * time.Second,
 	}
 
-	req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
-	var response []*models.ReservationModel
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		log.Fatal(err)
+	var reservations []*models.ReservationModel
+	if err = json.Unmarshal(response.Body, &reservations); err != nil {
+		return err
 	}
 
-	printReservations(response)
+	printReservations(reservations)
 
-	for _, reservation := range response {
+	for _, reservation := range reservations {
 		*reservationsID = append(*reservationsID, reservation.ID)
 	}
 
@@ -102,31 +98,28 @@ func (r *Requester) UpdateReservation(reservationsID *[]uuid.UUID, tokens *handl
 
 	reservationID := (*reservationsID)[num]
 
-	reservationIDJSON, err := json.Marshal(reservationID)
+	request := HTTPRequest{
+		Method: "PUT",
+		URL:    fmt.Sprintf("http://localhost:8000/api/reservations/%s", reservationID.String()),
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", tokens.AccessToken),
+		},
+		Body:    reservationID,
+		Timeout: 10 * time.Second,
+	}
+
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	url := fmt.Sprintf("http://localhost:8000/api/reservations/%s", reservationID.String())
-	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(reservationIDJSON))
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
 	fmt.Printf("\n\nReservation successfully updated!\n")
@@ -155,34 +148,28 @@ func (r *Requester) ReserveBook(bookPagesID *[]uuid.UUID, accessToken string) er
 
 	bookID := (*bookPagesID)[num]
 
-	// Кодирование тела запроса в JSON
-	jsonData, err := json.Marshal(bookID)
-	if err != nil {
-		log.Fatal(err)
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    "http://localhost:8000/api/reservations",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", accessToken),
+		},
+		Body:    bookID,
+		Timeout: 10 * time.Second,
 	}
 
-	url := "http://localhost:8000/api/reservations"
-	// Создание нового HTTP-запроса
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusCreated {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
 	fmt.Printf("\n\nBook successfully reserved!\n")

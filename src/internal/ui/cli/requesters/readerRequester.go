@@ -1,17 +1,11 @@
 package requesters
 
 import (
-	"BookSmart-services/dto"
-	"BookSmart-services/models"
 	"BookSmart-ui/cli/handlers"
 	"BookSmart-ui/cli/input"
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"io"
-	"log"
 	"net/http"
 	"time"
 )
@@ -67,67 +61,28 @@ func (r *Requester) ProcessReaderActions() error {
 }
 
 func (r *Requester) SignUp() error {
-	fio, err := input.Fio()
+	readerSignUpDTO, err := input.SignUpParams()
 	if err != nil {
 		return err
 	}
 
-	phoneNumber, err := input.PhoneNumber()
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    "http://localhost:8000/auth/sign-up",
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Body:    readerSignUpDTO,
+		Timeout: 10 * time.Second,
+	}
+
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	age, err := input.Age()
-	if err != nil {
-		return err
-	}
-
-	password, err := input.Password()
-	if err != nil {
-		return err
-	}
-
-	reader := &models.ReaderModel{
-		ID:          uuid.New(),
-		Fio:         fio,
-		PhoneNumber: phoneNumber,
-		Age:         age,
-		Password:    password,
-	}
-
-	readerJSON, err := json.Marshal(reader)
-	if err != nil {
-		return err
-	}
-
-	url := "http://localhost:8000/auth/sign-up"
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(readerJSON))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			fmt.Println("error closing body")
-		}
-	}(resp.Body)
-
-	// print the response
-	var response string
-	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if resp.StatusCode != http.StatusCreated {
-		return errors.New(response)
+	if response.StatusCode != http.StatusCreated {
+		return errors.New(response.Status)
 	}
 
 	fmt.Printf("\n\nRegistration completed successfully!\n")
@@ -136,54 +91,31 @@ func (r *Requester) SignUp() error {
 }
 
 func (r *Requester) SignIn(tokens *handlers.TokenResponse, stopRefresh <-chan struct{}) error {
-	phoneNumber, err := input.PhoneNumber()
-	if err != nil {
-		return err
-	}
-	password, err := input.Password()
+	readerSignInDTO, err := input.SignInParams()
 	if err != nil {
 		return err
 	}
 
-	readerDTO := &dto.ReaderSignInDTO{
-		PhoneNumber: phoneNumber,
-		Password:    password,
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    "http://localhost:8000/auth/sign-in",
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Body:    readerSignInDTO,
+		Timeout: 10 * time.Second,
 	}
 
-	readerDTOJSON, err := json.Marshal(readerDTO)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	url := "http://localhost:8000/auth/sign-in"
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(readerDTOJSON))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
+	if response.StatusCode != http.StatusOK {
+		return errors.New(response.Status)
 	}
 
-	defer func(Body io.ReadCloser) {
-		err = Body.Close()
-		if err != nil {
-			fmt.Println("error closing body")
-		}
-	}(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			return err
-		}
-		return errors.New(response)
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(tokens)
+	err = json.Unmarshal(response.Body, tokens)
 	if err != nil {
 		return err
 	}
@@ -196,34 +128,26 @@ func (r *Requester) SignIn(tokens *handlers.TokenResponse, stopRefresh <-chan st
 }
 
 func (r *Requester) Refresh(tokens *handlers.TokenResponse) error {
-	url := "http://localhost:8000/auth/refresh"
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    "http://localhost:8000/auth/refresh",
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Body:    tokens.RefreshToken,
+		Timeout: 10 * time.Second,
+	}
 
-	refreshTokenJSON, err := json.Marshal(tokens.RefreshToken)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(refreshTokenJSON))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
+	if response.StatusCode != http.StatusOK {
+		return errors.New(response.Status)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			return err
-		}
-		return errors.New(response)
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(tokens)
+	err = json.Unmarshal(response.Body, tokens)
 	if err != nil {
 		return err
 	}

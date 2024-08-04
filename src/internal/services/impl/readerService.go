@@ -21,6 +21,8 @@ const (
 	MaxBooksPerReader    = 5
 	ReaderPhoneNumberLen = 11
 	ReaderPasswordLen    = 10
+
+	ReaderRole = "Reader"
 )
 
 type ReaderService struct {
@@ -76,6 +78,7 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 		return err
 	}
 
+	reader.Role = ReaderRole
 	reader.Password = hashedPassword
 
 	rs.logger.Infof("creating reader in repository: %+v", reader)
@@ -86,7 +89,7 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 		return err
 	}
 
-	rs.logger.Info("book creation successful")
+	rs.logger.Info("reader successful creation")
 
 	return nil
 }
@@ -119,7 +122,7 @@ func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO
 		return intf.Tokens{}, err
 	}
 
-	return rs.createTokens(ctx, exitingReader.ID)
+	return rs.createTokens(ctx, exitingReader.ID, exitingReader.Role)
 }
 
 func (rs *ReaderService) RefreshTokens(ctx context.Context, refreshToken string) (intf.Tokens, error) {
@@ -131,7 +134,7 @@ func (rs *ReaderService) RefreshTokens(ctx context.Context, refreshToken string)
 		return intf.Tokens{}, err
 	}
 
-	return rs.createTokens(ctx, existingReader.ID)
+	return rs.createTokens(ctx, existingReader.ID, existingReader.Role)
 }
 
 func (rs *ReaderService) AddToFavorites(ctx context.Context, readerID, bookID uuid.UUID) error {
@@ -232,7 +235,7 @@ func (rs *ReaderService) baseValidation(ctx context.Context, reader *models.Read
 	return nil
 }
 
-func (rs *ReaderService) createTokens(ctx context.Context, readerID uuid.UUID) (intf.Tokens, error) {
+func (rs *ReaderService) createTokens(ctx context.Context, readerID uuid.UUID, readerRole string) (intf.Tokens, error) {
 	rs.logger.Info("attempting to create Tokens")
 
 	var (
@@ -242,7 +245,7 @@ func (rs *ReaderService) createTokens(ctx context.Context, readerID uuid.UUID) (
 
 	rs.logger.Info("generate access token")
 
-	res.AccessToken, err = rs.tokenManager.NewJWT(readerID, rs.accessTokenTTL)
+	res.AccessToken, err = rs.tokenManager.NewJWT(readerID, readerRole, rs.accessTokenTTL)
 	if err != nil {
 		rs.logger.Errorf("error generating access token: %v", err)
 		return res, err

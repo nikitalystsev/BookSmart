@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"BookSmart-services/dto"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -14,9 +15,10 @@ func (h *Handler) getBooks(c *gin.Context) {
 		return
 	}
 
+	fmt.Println(params)
 	books, err := h.bookService.GetByParams(c.Request.Context(), &params)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to get books"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 

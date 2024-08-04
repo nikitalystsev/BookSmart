@@ -134,7 +134,7 @@ func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) 
 	                ($2 = '' OR author ILIKE '%' || $2 || '%') AND 
 	                ($3 = '' OR publisher ILIKE '%' || $3 || '%') AND 
 	                ($4 = 0 OR copies_number = $4) AND 
-	                ($5 = '' OR rarity ILIKE '%' || $5 || '%') AND 
+	                ($5 = '' OR rarity::text = $5) AND 
 	                ($6 = '' OR genre ILIKE '%' || $6 || '%') AND 
 	                ($7 = 0 OR publishing_year = $7) AND 
 	                ($8 = '' OR language ILIKE '%' || $8 || '%') AND 

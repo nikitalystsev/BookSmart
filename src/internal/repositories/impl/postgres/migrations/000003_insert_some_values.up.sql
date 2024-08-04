@@ -1,14 +1,16 @@
 insert into bs.reader
 values ('75919792-c2d9-4685-92b2-e2a80b2ed5be', 'Randall C. Jernigan', '79314562376', 25,
-        '$2a$10$8APnhcfxoGxXGdNHSdBEaebuwcIkjwEnSHOIv.xu9bmROkpCRLTJS'), -- пароль: sdgdgsgsgd
+        '$2a$10$8APnhcfxoGxXGdNHSdBEaebuwcIkjwEnSHOIv.xu9bmROkpCRLTJS', 'Reader'), -- пароль: sdgdgsgsgd
        ('5818061a-662d-45bb-a67c-0d2873038e65', 'Jesse M. Flores', '72443564633', 20,
-        '$2a$10$2cYeMgl8fjH76HjIm54enOuHUiV3qzV81jdVJLLNCQbo2zXc9jija'), -- пароль: qwresdfdsf
+        '$2a$10$2cYeMgl8fjH76HjIm54enOuHUiV3qzV81jdVJLLNCQbo2zXc9jija', 'Reader'), -- пароль: qwresdfdsf
        ('3885b2d3-ef6e-4f62-8f86-d1454d108207', 'Mitrofan Bogdanov', '76867456521', 40,
-        '$2a$10$KxEprnJtxnL./4Zts.IP3uOQfGktXZXTp1BmvMKZxyDSJoIm4hmt6'), -- пароль: hghhfnnbdd
+        '$2a$10$KxEprnJtxnL./4Zts.IP3uOQfGktXZXTp1BmvMKZxyDSJoIm4hmt6', 'Reader'), -- пароль: hghhfnnbdd
        ('6800b3ee-9810-450e-9ca5-776aa1c6191d', 'Peter Zuev', '32534523451', 13,
-        '$2a$10$GjKIYnr6wRohYWkUhmlPhO5uza1zvudS9rWeydAv1yzEW0GfTOAme'), -- пароль: rtjhhhgffr
+        '$2a$10$GjKIYnr6wRohYWkUhmlPhO5uza1zvudS9rWeydAv1yzEW0GfTOAme', 'Reader'), -- пароль: rtjhhhgffr
        ('8d9b001f-5760-4c40-bc60-988e0ca54d18', 'Vasilisa Agapova', '73453562423', 36,
-        '$2a$10$sQZzp5BlhAvTMc/AIzAUS.PVuAxxH/rVmNfv.W73RhdxH7xSdbyQy'); -- пароль: gfjkjdgffy
+        '$2a$10$sQZzp5BlhAvTMc/AIzAUS.PVuAxxH/rVmNfv.W73RhdxH7xSdbyQy', 'Reader'), -- пароль: gfjkjdgffy
+       ('362b79f6-d671-404a-b1a0-5a655aebc1b6', 'Лысцев Никита Дмитриевич', '89314022581', 21,
+        '$2a$10$xDzRFS0ClhEcosyFVQEPCev8AXakZyYau4Hk8iN3dyTXJYXUj1coO', 'Admin');
 
 insert into bs.lib_card
 values ('e71af5a9-dd02-4f00-982e-ec58908ec5bd', '75919792-c2d9-4685-92b2-e2a80b2ed5be', '4654645456328', 365,

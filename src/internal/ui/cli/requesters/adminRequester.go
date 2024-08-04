@@ -4,13 +4,12 @@ import (
 	"BookSmart-services/dto"
 	"BookSmart-ui/cli/handlers"
 	"BookSmart-ui/cli/input"
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"log"
 	"net/http"
+	"time"
 )
 
 func (r *Requester) ProcessAdminActions() error {
@@ -82,7 +81,7 @@ func (r *Requester) ProcessAdminBookCatalogActions(tokens *handlers.TokenRespons
 
 		switch menuItem {
 		case 1:
-			params, err = r.viewFirstPage(&bookPagesID)
+			err = r.viewFirstPage(&params, &bookPagesID)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -129,34 +128,29 @@ func (r *Requester) AddNewBook(accessToken string) error {
 	if err != nil {
 		return err
 	}
-	// Кодирование тела запроса в JSON
-	jsonData, err := json.Marshal(newBook)
-	if err != nil {
-		log.Fatal(err)
+
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    "http://localhost:8000/api/admin/books",
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", accessToken),
+		},
+		Body:    newBook,
+		Timeout: 10 * time.Second,
 	}
 
-	url := "http://localhost:8000/api/admin/books"
-	// Создание нового HTTP-запроса
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusCreated {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
 	fmt.Printf("\n\nBook successfully created!\n")
@@ -176,28 +170,27 @@ func (r *Requester) DeleteBook(bookPagesID *[]uuid.UUID, accessToken string) err
 
 	bookID := (*bookPagesID)[num]
 
-	url := fmt.Sprintf("http://localhost:8000/api/admin/books/%s", bookID.String())
-	// Создание нового HTTP-запроса
-	req, err := http.NewRequest("POST", url, nil)
-	if err != nil {
-		log.Fatal(err)
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    fmt.Sprintf("http://localhost:8000/api/admin/books/%s", bookID.String()),
+		Headers: map[string]string{
+			"Content-Type":  "application/json",
+			"Authorization": fmt.Sprintf("Bearer %s", accessToken),
+		},
+		Timeout: 10 * time.Second,
 	}
 
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
+	response, err := SendRequest(request)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		var response string
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
 			return err
 		}
-		return errors.New(response)
+		return errors.New(info)
 	}
 
 	fmt.Printf("\n\nBook successfully deleted!\n")

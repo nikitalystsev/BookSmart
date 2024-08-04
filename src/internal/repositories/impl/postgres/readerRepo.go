@@ -27,11 +27,11 @@ func NewReaderRepo(db *sqlx.DB, client *redis.Client, logger *logrus.Entry) intf
 func (rr *ReaderRepo) Create(ctx context.Context, reader *models.ReaderModel) error {
 	rr.logger.Infof("inserting reader with ID: %s", reader.ID)
 
-	query := `INSERT INTO bs.reader VALUES ($1, $2, $3, $4, $5)`
+	query := `INSERT INTO bs.reader VALUES ($1, $2, $3, $4, $5, $6)`
 
 	rr.logger.Infof("executing query: %s", query)
 
-	_, err := rr.db.ExecContext(ctx, query, reader.ID, reader.Fio, reader.PhoneNumber, reader.Age, reader.Password)
+	_, err := rr.db.ExecContext(ctx, query, reader.ID, reader.Fio, reader.PhoneNumber, reader.Age, reader.Password, reader.Role)
 	if err != nil {
 		rr.logger.Errorf("error inserting reader: %v", err)
 		return err
@@ -45,7 +45,7 @@ func (rr *ReaderRepo) Create(ctx context.Context, reader *models.ReaderModel) er
 func (rr *ReaderRepo) GetByPhoneNumber(ctx context.Context, phoneNumber string) (*models.ReaderModel, error) {
 	rr.logger.Infof("selected reader by phoneNumber: %s", phoneNumber)
 
-	query := `SELECT id, fio, phone_number, age, password FROM bs.reader WHERE phone_number = $1`
+	query := `SELECT id, fio, phone_number, age, password, role FROM bs.reader WHERE phone_number = $1`
 
 	rr.logger.Infof("executing query: %s", query)
 
@@ -68,7 +68,7 @@ func (rr *ReaderRepo) GetByPhoneNumber(ctx context.Context, phoneNumber string) 
 func (rr *ReaderRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.ReaderModel, error) {
 	rr.logger.Infof("select reader with ID: %s", id)
 
-	query := `SELECT id, fio, phone_number, age, password FROM bs.reader WHERE id = $1`
+	query := `SELECT id, fio, phone_number, age, password, role FROM bs.reader WHERE id = $1`
 
 	rr.logger.Infof("executing query: %s", query)
 
@@ -162,7 +162,7 @@ func (rr *ReaderRepo) GetByRefreshToken(ctx context.Context, token string) (*mod
 
 	var reader models.ReaderModel
 
-	query := `SELECT id, fio, phone_number, age, password FROM bs.reader WHERE id = $1`
+	query := `SELECT id, fio, phone_number, age, password, role FROM bs.reader WHERE id = $1`
 
 	rr.logger.Infof("executing query: %s", query)
 

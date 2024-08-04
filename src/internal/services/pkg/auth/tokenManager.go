@@ -13,9 +13,14 @@ import (
 
 // ITokenManager provides logic for JWT & Refresh tokens generation and parsing.
 type ITokenManager interface {
-	NewJWT(userID uuid.UUID, ttl time.Duration) (string, error)
-	Parse(accessToken string) (string, error)
+	NewJWT(userID uuid.UUID, role string, ttl time.Duration) (string, error)
+	Parse(accessToken string) (string, string, error)
 	NewRefreshToken() (string, error)
+}
+
+type tokenClaims struct {
+	jwt.RegisteredClaims
+	Role string `json:"role"`
 }
 
 type TokenManager struct {
@@ -30,17 +35,20 @@ func NewTokenManager(signingKey string) (ITokenManager, error) {
 	return &TokenManager{signingKey: signingKey}, nil
 }
 
-func (m *TokenManager) NewJWT(readerID uuid.UUID, ttl time.Duration) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(ttl).Unix(),
-		Subject:   readerID.String(),
+func (m *TokenManager) NewJWT(readerID uuid.UUID, role string, ttl time.Duration) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
+			Subject:   readerID.String(),
+		},
+		Role: role,
 	})
 
 	return token.SignedString([]byte(m.signingKey))
 }
 
-func (m *TokenManager) Parse(accessToken string) (string, error) {
-	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (i interface{}, err error) {
+func (m *TokenManager) Parse(accessToken string) (string, string, error) {
+	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -48,15 +56,15 @@ func (m *TokenManager) Parse(accessToken string) (string, error) {
 		return []byte(m.signingKey), nil
 	})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
+	claims, ok := token.Claims.(*tokenClaims)
 	if !ok {
-		return "", fmt.Errorf("error get user claims from token")
+		return "", "", fmt.Errorf("error get user claims from token")
 	}
 
-	return claims["sub"].(string), nil
+	return claims.RegisteredClaims.Subject, claims.Role, nil
 }
 
 func (m *TokenManager) NewRefreshToken() (string, error) {

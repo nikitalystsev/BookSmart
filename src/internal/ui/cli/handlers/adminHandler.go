@@ -8,6 +8,17 @@ import (
 )
 
 func (h *Handler) deleteBook(c *gin.Context) {
+	_, readerRole, err := getReaderData(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if readerRole == "Reader" {
+		c.AbortWithStatusJSON(http.StatusForbidden, "reader not delete book")
+		return
+	}
+
 	bookID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
@@ -24,8 +35,19 @@ func (h *Handler) deleteBook(c *gin.Context) {
 }
 
 func (h *Handler) addNewBook(c *gin.Context) {
+	_, readerRole, err := getReaderData(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if readerRole == "Reader" {
+		c.AbortWithStatusJSON(http.StatusForbidden, "reader not delete book")
+		return
+	}
+
 	var newBook models.BookModel
-	if err := c.BindJSON(&newBook); err != nil {
+	if err = c.BindJSON(&newBook); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid input body"})
 		return
 	}
@@ -34,7 +56,7 @@ func (h *Handler) addNewBook(c *gin.Context) {
 		newBook.ID = uuid.New()
 	}
 
-	err := h.bookService.Create(c.Request.Context(), &newBook)
+	err = h.bookService.Create(c.Request.Context(), &newBook)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return

@@ -5,15 +5,13 @@ import (
 	"BookSmart-services/errs"
 	"BookSmart-services/models"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
 )
 
 func (h *Handler) signUp(c *gin.Context) {
-	fmt.Println("call readerSignUp")
-
+	
 	var inp models.ReaderModel
 	if err := c.BindJSON(&inp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
@@ -76,7 +74,7 @@ func (h *Handler) refresh(c *gin.Context) {
 }
 
 func (h *Handler) addToFavorites(c *gin.Context) {
-	readerIDStr, err := getReaderID(c)
+	readerIDStr, _, err := getReaderData(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
