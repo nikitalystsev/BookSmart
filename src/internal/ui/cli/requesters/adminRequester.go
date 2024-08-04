@@ -16,8 +16,7 @@ func (r *Requester) ProcessAdminActions() error {
 	var tokens handlers.TokenResponse
 	stopRefresh := make(chan struct{})
 
-	if err := r.SignIn(&tokens, stopRefresh); err != nil {
-		fmt.Println(err)
+	if err := r.SignInAsAdmin(&tokens, stopRefresh); err != nil {
 		return err
 	}
 
@@ -53,6 +52,46 @@ func (r *Requester) ProcessAdminActions() error {
 			fmt.Printf("\n\nWrong menu item!\n")
 		}
 	}
+}
+
+func (r *Requester) SignInAsAdmin(tokens *handlers.TokenResponse, stopRefresh <-chan struct{}) error {
+	readerSignInDTO, err := input.SignInParams()
+	if err != nil {
+		return err
+	}
+
+	request := HTTPRequest{
+		Method: "POST",
+		URL:    "http://localhost:8000/auth/admin/sign-in",
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Body:    readerSignInDTO,
+		Timeout: 10 * time.Second,
+	}
+
+	response, err := SendRequest(request)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		var info string
+		if err = json.Unmarshal(response.Body, &info); err != nil {
+			return err
+		}
+		return errors.New(info)
+	}
+
+	if err = json.Unmarshal(response.Body, tokens); err != nil {
+		return err
+	}
+
+	fmt.Printf("\n\nAuthentication successful!\n")
+
+	go r.Refreshing(tokens, r.accessTokenTTL, stopRefresh)
+
+	return nil
 }
 
 const adminCatalogMenu = `Admin's Catalog menu:

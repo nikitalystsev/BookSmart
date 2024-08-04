@@ -45,6 +45,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		authenticate.POST("/sign-up", h.signUp)
 		authenticate.POST("/sign-in", h.signIn)
+		authenticate.POST("/admin/sign-in", h.signInAsAdmin)
 		authenticate.POST("/refresh", h.refresh)
 	}
 
