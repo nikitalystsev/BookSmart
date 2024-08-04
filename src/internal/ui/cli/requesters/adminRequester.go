@@ -47,6 +47,7 @@ func (r *Requester) ProcessAdminActions() error {
 			}
 		case 0:
 			close(stopRefresh)
+			fmt.Println("\n\nyou have successfully log out")
 			return nil
 		default:
 			fmt.Printf("\n\nWrong menu item!\n")
