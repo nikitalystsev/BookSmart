@@ -1,13 +1,13 @@
 package app
 
 import (
-	"BookSmart-repositories/impl/postgres"
+	implRepo "BookSmart-repositories/impl"
 	"BookSmart-services/impl"
 	"BookSmart-services/pkg/auth"
 	"BookSmart-services/pkg/hash"
 	"BookSmart-services/pkg/transact"
-	"BookSmart-ui/cli/handlers"
-	"BookSmart-ui/cli/requesters"
+	"BookSmart-techUI/handlers"
+	"BookSmart-techUI/requesters"
 	"Booksmart/internal/config"
 	"Booksmart/pkg/logging"
 	"fmt"
@@ -69,10 +69,10 @@ func Run(configDir string) {
 
 	transactionManager := transact.NewTransactionManager(_manager)
 
-	bookRepo := postgres.NewBookRepo(db, logger)
-	libCardRepo := postgres.NewLibCardRepo(db, logger)
-	readerRepo := postgres.NewReaderRepo(db, client, logger)
-	reservationRepo := postgres.NewReservationRepo(db, logger)
+	bookRepo := implRepo.NewBookRepo(db, logger)
+	libCardRepo := implRepo.NewLibCardRepo(db, logger)
+	readerRepo := implRepo.NewReaderRepo(db, client, logger)
+	reservationRepo := implRepo.NewReservationRepo(db, logger)
 
 	bookService := impl.NewBookService(bookRepo, logger)
 	libCardService := impl.NewLibCardService(libCardRepo, logger)

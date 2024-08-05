@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.0-rc9.2
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.6.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.25.0

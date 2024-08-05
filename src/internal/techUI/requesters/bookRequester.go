@@ -3,8 +3,8 @@ package requesters
 import (
 	"BookSmart-services/dto"
 	"BookSmart-services/models"
-	"BookSmart-ui/cli/handlers"
-	"BookSmart-ui/cli/input"
+	"BookSmart-techUI/handlers"
+	"BookSmart-techUI/input"
 	"encoding/json"
 	"errors"
 	"fmt"

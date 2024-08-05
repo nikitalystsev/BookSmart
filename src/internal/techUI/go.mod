@@ -1,4 +1,4 @@
-module BookSmart-ui
+module BookSmart-techUI
 
 go 1.22.5
 
