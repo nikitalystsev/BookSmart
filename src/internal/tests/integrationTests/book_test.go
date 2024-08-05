@@ -1,8 +1,8 @@
 package integrationTests
 
 import (
+	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
-	"BookSmart-services/models"
 	"context"
 	"github.com/google/uuid"
 )

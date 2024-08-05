@@ -2,9 +2,9 @@ package impl
 
 import (
 	"BookSmart-repositories/errs"
-	"BookSmart-repositories/intf"
+	"BookSmart-services/core/models"
 	"BookSmart-services/impl"
-	"BookSmart-services/models"
+	"BookSmart-services/intfRepo"
 	"context"
 	"database/sql"
 	"errors"
@@ -20,7 +20,7 @@ type ReservationRepo struct {
 	logger *logrus.Entry
 }
 
-func NewReservationRepo(db *sqlx.DB, logger *logrus.Entry) intf.IReservationRepo {
+func NewReservationRepo(db *sqlx.DB, logger *logrus.Entry) intfRepo.IReservationRepo {
 	return &ReservationRepo{db: db, logger: logger}
 }
 
@@ -136,7 +136,7 @@ func (rr *ReservationRepo) GetActiveByReaderID(ctx context.Context, readerID uui
 		return nil, errs.ErrNotFound
 	}
 
-	rr.logger.Infof("successfully found %d active reservations", len(reservations))
+	rr.logger.Infof("found %d active reservations with readerID %s", len(reservations), readerID)
 
 	return reservations, nil
 }

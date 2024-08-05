@@ -3,7 +3,7 @@ package repositoryTests
 import (
 	errsRepo "BookSmart-repositories/errs"
 	"BookSmart-repositories/impl"
-	"BookSmart-services/models"
+	"BookSmart-services/core/models"
 	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"

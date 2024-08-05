@@ -5,7 +5,7 @@
 package mocks
 
 import (
-	models "BookSmart-services/models"
+	models "BookSmart-services/core/models"
 	context "context"
 	reflect "reflect"
 

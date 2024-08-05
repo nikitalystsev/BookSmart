@@ -2,11 +2,11 @@ package impl
 
 import (
 	errsRepo "BookSmart-repositories/errs"
-	intfRepo "BookSmart-repositories/intf"
-	"BookSmart-services/dto"
+	"BookSmart-services/core/dto"
+	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"BookSmart-services/intf"
-	"BookSmart-services/models"
+	"BookSmart-services/intfRepo"
 	"context"
 	"errors"
 	"github.com/google/uuid"
@@ -34,7 +34,7 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 		return errs.ErrBookObjectIsNil
 	}
 
-	bs.logger.Info("starting book creation process")
+	bs.logger.Info("attempting to create book")
 
 	err := bs.baseValidation(ctx, book)
 	if err != nil {
@@ -50,7 +50,7 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 		return err
 	}
 
-	bs.logger.Info("book creation successful")
+	bs.logger.Info("successfully created book")
 
 	return nil
 }
@@ -85,10 +85,10 @@ func (bs *BookService) Delete(ctx context.Context, bookID uuid.UUID) error {
 	return nil
 }
 
-func (bs *BookService) GetByID(ctx context.Context, bookID uuid.UUID) (*models.BookModel, error) {
-	bs.logger.Infof("attempting to get book with ID: %s", bookID)
+func (bs *BookService) GetByID(ctx context.Context, ID uuid.UUID) (*models.BookModel, error) {
+	bs.logger.Infof("attempting to get book with ID: %s", ID)
 
-	book, err := bs.bookRepo.GetByID(ctx, bookID)
+	book, err := bs.bookRepo.GetByID(ctx, ID)
 	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
 		bs.logger.Errorf("error checking book existence: %v", err)
 		return nil, err
@@ -99,13 +99,13 @@ func (bs *BookService) GetByID(ctx context.Context, bookID uuid.UUID) (*models.B
 		return nil, errs.ErrBookDoesNotExists
 	}
 
-	bs.logger.Infof("successfully getting book by ID: %s", bookID)
+	bs.logger.Infof("successfully getting book by ID: %s", ID)
 
 	return book, nil
 }
 
 func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error) {
-	bs.logger.Infof("attempting to search for books with params: %+v", params)
+	bs.logger.Infof("attempting to search for books with params")
 
 	books, err := bs.bookRepo.GetByParams(ctx, params)
 	if err != nil {
@@ -113,7 +113,7 @@ func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDT
 		return nil, err
 	}
 
-	bs.logger.Infof("successfully found %d books with params: %+v", len(books), params)
+	bs.logger.Infof("successfully found %d books with params", len(books))
 
 	return books, nil
 }

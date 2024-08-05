@@ -2,8 +2,8 @@ package impl
 
 import (
 	"BookSmart-repositories/errs"
-	"BookSmart-repositories/intf"
-	"BookSmart-services/models"
+	"BookSmart-services/core/models"
+	"BookSmart-services/intfRepo"
 	"context"
 	"database/sql"
 	"errors"
@@ -17,7 +17,7 @@ type LibCardRepo struct {
 	logger *logrus.Entry
 }
 
-func NewLibCardRepo(db *sqlx.DB, logger *logrus.Entry) intf.ILibCardRepo {
+func NewLibCardRepo(db *sqlx.DB, logger *logrus.Entry) intfRepo.ILibCardRepo {
 	return &LibCardRepo{db: db, logger: logger}
 }
 

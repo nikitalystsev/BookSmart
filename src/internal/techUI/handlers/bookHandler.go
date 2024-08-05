@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"BookSmart-services/dto"
+	"BookSmart-services/core/dto"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

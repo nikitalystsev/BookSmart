@@ -2,10 +2,10 @@ package impl
 
 import (
 	errsRepo "BookSmart-repositories/errs"
-	intfRepo "BookSmart-repositories/intf"
+	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"BookSmart-services/intf"
-	"BookSmart-services/models"
+	intfRepo "BookSmart-services/intfRepo"
 	"context"
 	"crypto/rand"
 	"errors"
@@ -17,7 +17,7 @@ import (
 
 const (
 	libCardNumLength = 13
-	charset          = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	charset          = "0123456789"
 
 	LibCardValidityPeriod = 365
 )
@@ -32,7 +32,7 @@ func NewLibCardService(libCardRepo intfRepo.ILibCardRepo, logger *logrus.Entry) 
 }
 
 func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error {
-	lcs.logger.Info("starting libCard creation process")
+	lcs.logger.Infof("attempting to create libCard by readerID: %s", readerID)
 
 	existingLibCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
 
@@ -65,7 +65,7 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 		return err
 	}
 
-	lcs.logger.Info("libCard creation successful")
+	lcs.logger.Info("successfully created libCard")
 
 	return nil
 }
@@ -108,7 +108,6 @@ func (lcs *LibCardService) Update(ctx context.Context, libCard *models.LibCardMo
 	return nil
 }
 
-// GetByReaderID TODO добавить метод на схему
 func (lcs *LibCardService) GetByReaderID(ctx context.Context, readerID uuid.UUID) (*models.LibCardModel, error) {
 	lcs.logger.Infof("attempting to get libCard by readerID: %s", readerID)
 
@@ -127,6 +126,7 @@ func (lcs *LibCardService) GetByReaderID(ctx context.Context, readerID uuid.UUID
 
 	return libCard, nil
 }
+
 func (lcs *LibCardService) isValidLibCard(libCard *models.LibCardModel) bool {
 	if !libCard.ActionStatus {
 		return false

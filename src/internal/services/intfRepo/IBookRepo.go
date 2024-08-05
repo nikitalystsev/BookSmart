@@ -1,8 +1,8 @@
-package intf
+package intfRepo
 
 import (
-	"BookSmart-services/dto"
-	"BookSmart-services/models"
+	"BookSmart-services/core/dto"
+	"BookSmart-services/core/models"
 	"context"
 	"github.com/google/uuid"
 )

@@ -1,7 +1,7 @@
 package input
 
 import (
-	"BookSmart-services/dto"
+	"BookSmart-services/core/dto"
 	"bufio"
 	"fmt"
 	"github.com/howeyc/gopass"

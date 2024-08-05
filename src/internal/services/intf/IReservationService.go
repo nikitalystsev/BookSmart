@@ -1,7 +1,7 @@
 package intf
 
 import (
-	"BookSmart-services/models"
+	"BookSmart-services/core/models"
 	"context"
 	"github.com/google/uuid"
 )

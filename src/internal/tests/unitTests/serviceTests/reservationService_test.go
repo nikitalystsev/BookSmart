@@ -1,9 +1,9 @@
 package serviceTests
 
 import (
+	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"BookSmart-services/impl"
-	"BookSmart-services/models"
 	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
 	"Booksmart/pkg/logging"
 	"context"

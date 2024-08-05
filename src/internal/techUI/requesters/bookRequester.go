@@ -1,8 +1,8 @@
 package requesters
 
 import (
-	"BookSmart-services/dto"
-	"BookSmart-services/models"
+	"BookSmart-services/core/dto"
+	"BookSmart-services/core/models"
 	"BookSmart-techUI/handlers"
 	"BookSmart-techUI/input"
 	"encoding/json"

@@ -2,11 +2,11 @@ package impl
 
 import (
 	errsRepo "BookSmart-repositories/errs"
-	intfRepo "BookSmart-repositories/intf"
-	"BookSmart-services/dto"
+	"BookSmart-services/core/dto"
+	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"BookSmart-services/intf"
-	"BookSmart-services/models"
+	intfRepo "BookSmart-services/intfRepo"
 	"BookSmart-services/pkg/auth"
 	"BookSmart-services/pkg/hash"
 	"context"
@@ -62,7 +62,7 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 		return errs.ErrReaderObjectIsNil
 	}
 
-	rs.logger.Info("starting sign up process")
+	rs.logger.Info("attempting to sign up")
 
 	err := rs.baseValidation(ctx, reader)
 	if err != nil {
@@ -89,7 +89,7 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 		return err
 	}
 
-	rs.logger.Info("reader successful creation")
+	rs.logger.Info("successfully created reader")
 
 	return nil
 }

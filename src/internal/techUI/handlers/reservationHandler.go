@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"BookSmart-services/models"
+	"BookSmart-services/core/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"

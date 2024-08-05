@@ -2,8 +2,8 @@ package impl
 
 import (
 	"BookSmart-repositories/errs"
-	"BookSmart-repositories/intf"
-	"BookSmart-services/models"
+	"BookSmart-services/core/models"
+	"BookSmart-services/intfRepo"
 	"context"
 	"database/sql"
 	"errors"
@@ -20,7 +20,7 @@ type ReaderRepo struct {
 	logger *logrus.Entry
 }
 
-func NewReaderRepo(db *sqlx.DB, client *redis.Client, logger *logrus.Entry) intf.IReaderRepo {
+func NewReaderRepo(db *sqlx.DB, client *redis.Client, logger *logrus.Entry) intfRepo.IReaderRepo {
 	return &ReaderRepo{db: db, client: client, logger: logger}
 }
 
