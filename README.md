@@ -152,4 +152,4 @@ __Администратор__:
 
 ### UML диаграмма классов:
 
-![uml](./diagrams/uml.drawio.png)
+![uml](./diagrams/uml_new.drawio.png)
