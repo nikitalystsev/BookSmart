@@ -1,10 +1,10 @@
 package repositoryTests
 
 import (
-	"BookSmart/internal/models"
-	"BookSmart/internal/repositories/errsRepo"
-	"BookSmart/internal/repositories/implRepo/postgres"
-	"BookSmart/pkg/logging"
+	errsRepo "BookSmart-repositories/errs"
+	"BookSmart-repositories/impl"
+	"BookSmart-services/models"
+	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
 	"errors"
@@ -24,7 +24,7 @@ func TestReaderRepo_Create(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	rr := postgres.NewReaderRepo(db, nil, logging.GetLoggerForTests())
+	rr := impl.NewReaderRepo(db, nil, logging.GetLoggerForTests())
 
 	type args struct {
 		reader *models.ReaderModel
@@ -41,8 +41,8 @@ func TestReaderRepo_Create(t *testing.T) {
 		{
 			name: "Success create reader",
 			mockBehavior: func(args args) {
-				mock.ExpectExec(`INSERT INTO reader VALUES`).
-					WithArgs(args.reader.ID, args.reader.Fio, args.reader.PhoneNumber, args.reader.Age, args.reader.Password).
+				mock.ExpectExec(`INSERT INTO bs.reader VALUES`).
+					WithArgs(args.reader.ID, args.reader.Fio, args.reader.PhoneNumber, args.reader.Age, args.reader.Password, args.reader.Role).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			args: args{
@@ -63,8 +63,8 @@ func TestReaderRepo_Create(t *testing.T) {
 		{
 			name: "Error executing query",
 			mockBehavior: func(args args) {
-				mock.ExpectExec(`INSERT INTO reader VALUES`).
-					WithArgs(args.reader.ID, args.reader.Fio, args.reader.PhoneNumber, args.reader.Age, args.reader.Password).
+				mock.ExpectExec(`INSERT INTO bs.reader VALUES`).
+					WithArgs(args.reader.ID, args.reader.Fio, args.reader.PhoneNumber, args.reader.Age, args.reader.Password, args.reader.Role).
 					WillReturnError(errors.New("insert error"))
 			},
 			args: args{
@@ -101,7 +101,7 @@ func TestReaderRepo_GetByPhoneNumber(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	rr := postgres.NewReaderRepo(db, nil, logging.GetLoggerForTests())
+	rr := impl.NewReaderRepo(db, nil, logging.GetLoggerForTests())
 
 	type args struct {
 		phoneNumber string
@@ -121,7 +121,7 @@ func TestReaderRepo_GetByPhoneNumber(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(uuid.New(), "Test Reader", args.phoneNumber, 25, "password")
 
-				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
 					WithArgs(args.phoneNumber).WillReturnRows(rows)
 			},
 			args: args{
@@ -141,7 +141,7 @@ func TestReaderRepo_GetByPhoneNumber(t *testing.T) {
 		{
 			name: "Error reader not found",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
 					WithArgs(args.phoneNumber).WillReturnError(sql.ErrNoRows)
 			},
 			args: args{
@@ -174,7 +174,7 @@ func TestReaderRepo_GetByID(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	rr := postgres.NewReaderRepo(db, nil, logging.GetLoggerForTests())
+	rr := impl.NewReaderRepo(db, nil, logging.GetLoggerForTests())
 
 	type args struct {
 		id uuid.UUID
@@ -195,7 +195,7 @@ func TestReaderRepo_GetByID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(uuid.New(), "Test Reader", "1234567890", 25, "password")
 
-				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
 					WithArgs(args.id).WillReturnRows(rows)
 			},
 			args: args{
@@ -215,7 +215,7 @@ func TestReaderRepo_GetByID(t *testing.T) {
 		{
 			name: "Error reader not found",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
 					WithArgs(args.id).WillReturnError(errors.New("sql: no rows in result set"))
 			},
 			args: args{
@@ -247,7 +247,7 @@ func TestReaderRepo_IsFavorite(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	rr := postgres.NewReaderRepo(db, nil, logging.GetLoggerForTests())
+	rr := impl.NewReaderRepo(db, nil, logging.GetLoggerForTests())
 
 	type args struct {
 		readerID uuid.UUID
@@ -267,7 +267,7 @@ func TestReaderRepo_IsFavorite(t *testing.T) {
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"count"}).AddRow(1)
 
-				mock.ExpectQuery(`SELECT (.+) FROM favorite_books WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.favorite_books WHERE (.+)`).
 					WithArgs(args.readerID, args.bookID).WillReturnRows(rows)
 			},
 			args: args{
@@ -286,7 +286,7 @@ func TestReaderRepo_IsFavorite(t *testing.T) {
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"count"}).AddRow(0)
 
-				mock.ExpectQuery(`SELECT (.+) FROM favorite_books WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.favorite_books WHERE (.+)`).
 					WithArgs(args.readerID, args.bookID).WillReturnRows(rows)
 			},
 			args: args{
@@ -303,7 +303,7 @@ func TestReaderRepo_IsFavorite(t *testing.T) {
 		{
 			name: "Error query execution",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM favorite_books WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.favorite_books WHERE (.+)`).
 					WithArgs(args.readerID, args.bookID).WillReturnError(errors.New("query error"))
 			},
 			args: args{
@@ -337,7 +337,7 @@ func TestReaderRepo_AddToFavorites(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	rr := postgres.NewReaderRepo(db, nil, logging.GetLoggerForTests())
+	rr := impl.NewReaderRepo(db, nil, logging.GetLoggerForTests())
 
 	type args struct {
 		readerID uuid.UUID
@@ -355,7 +355,7 @@ func TestReaderRepo_AddToFavorites(t *testing.T) {
 		{
 			name: "Success add book to favorites",
 			mockBehavior: func(args args) {
-				mock.ExpectExec(`INSERT INTO favorite_books`).
+				mock.ExpectExec(`INSERT INTO bs.favorite_books`).
 					WithArgs(args.readerID, args.bookID).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			args: args{
@@ -371,7 +371,7 @@ func TestReaderRepo_AddToFavorites(t *testing.T) {
 		{
 			name: "Error executing query",
 			mockBehavior: func(args args) {
-				mock.ExpectExec(`INSERT INTO favorite_books`).
+				mock.ExpectExec(`INSERT INTO bs.favorite_books`).
 					WithArgs(args.readerID, args.bookID).WillReturnError(errors.New("insert error"))
 			},
 			args: args{
@@ -408,7 +408,7 @@ func TestReaderRepo_SaveRefreshToken(t *testing.T) {
 		Addr: mr.Addr(),
 	})
 
-	rr := postgres.NewReaderRepo(nil, rdb, logging.GetLoggerForTests())
+	rr := impl.NewReaderRepo(nil, rdb, logging.GetLoggerForTests())
 
 	type args struct {
 		id    uuid.UUID
@@ -495,7 +495,7 @@ func TestReaderRepo_GetByRefreshToken(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	rr := postgres.NewReaderRepo(db, rdb, logging.GetLoggerForTests())
+	rr := impl.NewReaderRepo(db, rdb, logging.GetLoggerForTests())
 
 	type args struct {
 		token string
@@ -516,7 +516,7 @@ func TestReaderRepo_GetByRefreshToken(t *testing.T) {
 				// Mock database query
 				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(readerID, "Test Reader", "1234567890", 30, "password")
-				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
 					WithArgs(readerID).WillReturnRows(rows)
 			},
 			args: args{
@@ -543,7 +543,7 @@ func TestReaderRepo_GetByRefreshToken(t *testing.T) {
 			},
 			expected: func(t *testing.T, reader *models.ReaderModel, err error) {
 				assert.Error(t, err)
-				expectedError := redis.Nil
+				expectedError := errsRepo.ErrNotFound
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -552,7 +552,7 @@ func TestReaderRepo_GetByRefreshToken(t *testing.T) {
 			mockBehavior: func(args args, readerID uuid.UUID) {
 				mr.Set(args.token, readerID.String())
 
-				mock.ExpectQuery(`SELECT (.+) FROM reader WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
 					WithArgs(readerID).WillReturnError(errors.New("database error"))
 			},
 			args: args{

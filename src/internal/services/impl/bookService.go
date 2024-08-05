@@ -56,6 +56,11 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 }
 
 func (bs *BookService) Delete(ctx context.Context, bookID uuid.UUID) error {
+	if bookID == uuid.Nil {
+		bs.logger.Warn("book object is nil")
+		return errs.ErrBookObjectIsNil
+	}
+
 	bs.logger.Infof("attempting to delete book with ID: %s", bookID)
 
 	existingBook, err := bs.bookRepo.GetByID(ctx, bookID)

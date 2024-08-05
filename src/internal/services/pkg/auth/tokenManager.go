@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-//go:generate mockgen -source=tokenManager.go -destination=../../internal/tests/unitTests/serviceTests/mocks/mockTokenManager.go --package=mocks
+//go:generate mockgen -source=tokenManager.go -destination=../../../tests/unitTests/serviceTests/mocks/mockTokenManager.go --package=mocks
 
 // ITokenManager provides logic for JWT & Refresh tokens generation and parsing.
 type ITokenManager interface {

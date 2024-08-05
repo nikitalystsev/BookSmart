@@ -5,8 +5,8 @@
 package mocks
 
 import (
-	dto "BookSmart/internal/dto"
-	models "BookSmart/internal/models"
+	dto "BookSmart-services/dto"
+	models "BookSmart-services/models"
 	context "context"
 	reflect "reflect"
 

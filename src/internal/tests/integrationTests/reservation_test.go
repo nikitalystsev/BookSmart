@@ -1,9 +1,9 @@
 package integrationTests
 
 import (
-	"BookSmart/internal/dto"
-	"BookSmart/internal/models"
-	"BookSmart/internal/services/errsService"
+	"BookSmart-services/dto"
+	"BookSmart-services/errs"
+	"BookSmart-services/models"
 	"context"
 	"github.com/google/uuid"
 )
@@ -56,7 +56,7 @@ func (s *IntegrationTestSuite) TestReservation_Create_Error() {
 
 	err = s.reservationService.Create(context.Background(), readerID, books[0].ID)
 	s.Error(err)
-	s.Equal(errsService.ErrLibCardIsInvalid, err)
+	s.Equal(errs.ErrLibCardIsInvalid, err)
 }
 
 func (s *IntegrationTestSuite) TestReservation_Update_Success() {
@@ -97,5 +97,5 @@ func (s *IntegrationTestSuite) TestReservation_Update_Error() {
 
 	err = s.reservationService.Update(context.Background(), reservation)
 	s.Error(err)
-	s.Error(errsService.ErrRareAndUniqueBookNotExtended, err)
+	s.Error(errs.ErrRareAndUniqueBookNotExtended, err)
 }

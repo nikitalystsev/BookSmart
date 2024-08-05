@@ -1,14 +1,14 @@
 package integrationTests
 
 import (
-	"BookSmart/internal/repositories/implRepo/postgres"
-	"BookSmart/internal/repositories/intfRepo"
-	"BookSmart/internal/services/implServices"
-	"BookSmart/internal/services/intfServices"
-	"BookSmart/pkg/auth"
-	"BookSmart/pkg/hash"
-	"BookSmart/pkg/logging"
-	"BookSmart/pkg/transact"
+	implRepo "BookSmart-repositories/impl"
+	intfRepo "BookSmart-repositories/intf"
+	"BookSmart-services/impl"
+	"BookSmart-services/intf"
+	"BookSmart-services/pkg/auth"
+	"BookSmart-services/pkg/hash"
+	"BookSmart-services/pkg/transact"
+	"Booksmart/pkg/logging"
 	"errors"
 	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
@@ -18,11 +18,10 @@ import (
 	migrations "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
-	"log"
 	"os"
 	"testing"
+	"time"
 )
 
 type IntegrationTestSuite struct {
@@ -33,10 +32,10 @@ type IntegrationTestSuite struct {
 	client *redis.Client
 
 	// services
-	bookService        intfServices.IBookService
-	libCardService     intfServices.ILibCardService
-	readerService      intfServices.IReaderService
-	reservationService intfServices.IReservationService
+	bookService        intf.IBookService
+	libCardService     intf.ILibCardService
+	readerService      intf.IReaderService
+	reservationService intf.IReservationService
 
 	// repositories
 	bookRepo        intfRepo.IBookRepo
@@ -47,14 +46,15 @@ type IntegrationTestSuite struct {
 	hasher             hash.IPasswordHasher
 	tokenManager       auth.ITokenManager
 	transactionManager transact.ITransactionManager
+
+	accessTokenTTL  time.Duration
+	refreshTokenTTL time.Duration
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
-	if err := godotenv.Load("../../../.env"); err != nil {
-		log.Fatal(err)
-	}
-
 	dsn := os.Getenv("DB_DSN_TEST")
+
+	fmt.Printf("%s", dsn)
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
@@ -97,16 +97,19 @@ func (s *IntegrationTestSuite) initDeps() {
 		panic(err)
 	}
 
-	transactionManager := transact.NewTransactionManager(_manager)
-	s.bookRepo = postgres.NewBookRepo(s.db, logger)
-	s.libCardRepo = postgres.NewLibCardRepo(s.db, logger)
-	s.readerRepo = postgres.NewReaderRepo(s.db, s.client, logger)
-	s.reservationRepo = postgres.NewReservationRepo(s.db, logger)
+	s.accessTokenTTL = time.Hour
+	s.refreshTokenTTL = time.Hour * 24
 
-	s.bookService = implServices.NewBookService(s.bookRepo, logger)
-	s.libCardService = implServices.NewLibCardService(s.libCardRepo, logger)
-	s.readerService = implServices.NewReaderService(s.readerRepo, s.bookRepo, tokenManager, hasher, logger)
-	s.reservationService = implServices.NewReservationService(s.reservationRepo, s.bookRepo, s.readerRepo, s.libCardRepo, transactionManager, logger)
+	transactionManager := transact.NewTransactionManager(_manager)
+	s.bookRepo = implRepo.NewBookRepo(s.db, logger)
+	s.libCardRepo = implRepo.NewLibCardRepo(s.db, logger)
+	s.readerRepo = implRepo.NewReaderRepo(s.db, s.client, logger)
+	s.reservationRepo = implRepo.NewReservationRepo(s.db, logger)
+
+	s.bookService = impl.NewBookService(s.bookRepo, logger)
+	s.libCardService = impl.NewLibCardService(s.libCardRepo, logger)
+	s.readerService = impl.NewReaderService(s.readerRepo, s.bookRepo, tokenManager, hasher, logger, s.accessTokenTTL, s.refreshTokenTTL)
+	s.reservationService = impl.NewReservationService(s.reservationRepo, s.bookRepo, s.readerRepo, s.libCardRepo, transactionManager, logger)
 
 	s.hasher = hasher
 	s.tokenManager = tokenManager

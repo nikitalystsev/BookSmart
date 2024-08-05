@@ -36,18 +36,18 @@ func (m *MockITokenManager) EXPECT() *MockITokenManagerMockRecorder {
 }
 
 // NewJWT mocks base method.
-func (m *MockITokenManager) NewJWT(userID uuid.UUID, ttl time.Duration) (string, error) {
+func (m *MockITokenManager) NewJWT(userID uuid.UUID, role string, ttl time.Duration) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewJWT", userID, ttl)
+	ret := m.ctrl.Call(m, "NewJWT", userID, role, ttl)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NewJWT indicates an expected call of NewJWT.
-func (mr *MockITokenManagerMockRecorder) NewJWT(userID, ttl interface{}) *gomock.Call {
+func (mr *MockITokenManagerMockRecorder) NewJWT(userID, role, ttl interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewJWT", reflect.TypeOf((*MockITokenManager)(nil).NewJWT), userID, ttl)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewJWT", reflect.TypeOf((*MockITokenManager)(nil).NewJWT), userID, role, ttl)
 }
 
 // NewRefreshToken mocks base method.
@@ -66,12 +66,13 @@ func (mr *MockITokenManagerMockRecorder) NewRefreshToken() *gomock.Call {
 }
 
 // Parse mocks base method.
-func (m *MockITokenManager) Parse(accessToken string) (string, error) {
+func (m *MockITokenManager) Parse(accessToken string) (string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Parse", accessToken)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // Parse indicates an expected call of Parse.

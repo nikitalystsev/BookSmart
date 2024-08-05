@@ -23,17 +23,7 @@ x-common-redis: &common-redis
       echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
       redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
     '
-#  deploy:
-#    resources:
-#      limits:
-#        memory: 1024M
-
 services:
-  # unit-tests:
-  #   build: ./
-  #   command: ["go", "test", "-v", "./internal/tests/unitTests/..."]
-  #   container_name: unitTests-container
-
   test-postgres-db:
     <<: *common-postgres
     container_name: test_postgres_db

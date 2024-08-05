@@ -1,11 +1,11 @@
 package serviceTests
 
 import (
-	"BookSmart/internal/models"
-	"BookSmart/internal/services/errsService"
-	"BookSmart/internal/services/implServices"
-	"BookSmart/internal/tests/unitTests/serviceTests/mocks"
-	"BookSmart/pkg/logging"
+	"BookSmart-services/errs"
+	"BookSmart-services/impl"
+	"BookSmart-services/models"
+	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
+	"Booksmart/pkg/logging"
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
@@ -15,13 +15,12 @@ import (
 )
 
 func TestReservationService_Create(t *testing.T) {
-	type mockBehaviour func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID)
-	type expectedFunc func(t *testing.T, err error)
-
 	type args struct {
 		readerID uuid.UUID
 		bookID   uuid.UUID
 	}
+	type mockBehaviour func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args)
+	type expectedFunc func(t *testing.T, err error)
 
 	testTable := []struct {
 		name          string
@@ -35,15 +34,15 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(&models.BookModel{CopiesNumber: 1}, nil)
-				l.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				res.EXPECT().GetActiveByReaderID(gomock.Any(), readerID).Return(nil, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 1}, nil)
+				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
 				res.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 				b.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(&models.BookModel{CopiesNumber: 1}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 1}, nil)
 				trm.EXPECT().Do(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
 					return fn(ctx)
 				})
@@ -58,8 +57,8 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(nil, fmt.Errorf("reader not found"))
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(nil, fmt.Errorf("reader not found"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("reader not found")
@@ -72,12 +71,12 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				res.EXPECT().GetActiveByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				l.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(nil, fmt.Errorf("book not found"))
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(nil, fmt.Errorf("book not found"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("book not found")
@@ -90,14 +89,14 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				res.EXPECT().GetActiveByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				l.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(&models.LibCardModel{ActionStatus: false}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: false}, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrLibCardIsInvalid
+				expectedError := errs.ErrLibCardIsInvalid
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -107,12 +106,12 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), readerID).Return([]*models.ReservationModel{{}}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return([]*models.ReservationModel{{}}, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrReaderHasExpiredBooks
+				expectedError := errs.ErrReaderHasExpiredBooks
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -122,13 +121,13 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				res.EXPECT().GetActiveByReaderID(gomock.Any(), readerID).Return(make([]*models.ReservationModel, implServices.MaxBooksPerReader), nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(make([]*models.ReservationModel, impl.MaxBooksPerReader), nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrReservationsLimitExceeded
+				expectedError := errs.ErrReservationsLimitExceeded
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -138,15 +137,15 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				res.EXPECT().GetActiveByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				l.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(&models.BookModel{CopiesNumber: 0}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 0}, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrBookNoCopiesNum
+				expectedError := errs.ErrBookNoCopiesNum
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -156,15 +155,15 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{Age: 10}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				res.EXPECT().GetActiveByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				l.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(&models.BookModel{AgeLimit: 18, CopiesNumber: 1}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{Age: 10}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{AgeLimit: 18, CopiesNumber: 1}, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrReservationAgeLimit
+				expectedError := errs.ErrReservationAgeLimit
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -174,15 +173,15 @@ func TestReservationService_Create(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, trm *mocks.MockITransactionManager, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				res.EXPECT().GetActiveByReaderID(gomock.Any(), readerID).Return(nil, nil)
-				l.EXPECT().GetByReaderID(gomock.Any(), readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(&models.BookModel{Rarity: implServices.BookRarityUnique, CopiesNumber: 1}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{Rarity: impl.BookRarityUnique, CopiesNumber: 1}, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrUniqueBookNotReserved
+				expectedError := errs.ErrUniqueBookNotReserved
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -192,12 +191,12 @@ func TestReservationService_Create(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
-			mockBookRepo := mocks.NewMockIBookRepo(ctrl)
-			mockLibCardRepo := mocks.NewMockILibCardRepo(ctrl)
-			mockReservationRepo := mocks.NewMockIReservationRepo(ctrl)
-			mockTransactionManager := mocks.NewMockITransactionManager(ctrl)
-			reservationService := implServices.NewReservationService(
+			mockReaderRepo := mockrepo.NewMockIReaderRepo(ctrl)
+			mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+			mockLibCardRepo := mockrepo.NewMockILibCardRepo(ctrl)
+			mockReservationRepo := mockrepo.NewMockIReservationRepo(ctrl)
+			mockTransactionManager := mockrepo.NewMockITransactionManager(ctrl)
+			reservationService := impl.NewReservationService(
 				mockReservationRepo,
 				mockBookRepo,
 				mockReaderRepo,
@@ -206,7 +205,7 @@ func TestReservationService_Create(t *testing.T) {
 				logging.GetLoggerForTests(),
 			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, mockLibCardRepo, mockReservationRepo, mockTransactionManager, testCase.args.readerID, testCase.args.bookID)
+			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, mockLibCardRepo, mockReservationRepo, mockTransactionManager, testCase.args)
 
 			err := reservationService.Create(context.Background(), testCase.args.readerID, testCase.args.bookID)
 			testCase.expected(t, err)
@@ -215,11 +214,11 @@ func TestReservationService_Create(t *testing.T) {
 }
 
 func TestReservationService_Update(t *testing.T) {
-	type mockBehaviour func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, reservation *models.ReservationModel)
-	type expectedFunc func(t *testing.T, err error)
 	type args struct {
 		reservation *models.ReservationModel
 	}
+	type mockBehaviour func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, args args)
+	type expectedFunc func(t *testing.T, err error)
 
 	testTable := []struct {
 		name          string
@@ -233,13 +232,13 @@ func TestReservationService_Update(t *testing.T) {
 				reservation: &models.ReservationModel{
 					ReaderID: uuid.New(),
 					BookID:   uuid.New(),
-					State:    implServices.ReservationIssued,
+					State:    impl.ReservationIssued,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, reservation *models.ReservationModel) {
-				l.EXPECT().GetByReaderID(gomock.Any(), reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), reservation.ReaderID).Return(nil, nil)
-				b.EXPECT().GetByID(gomock.Any(), reservation.BookID).Return(&models.BookModel{Rarity: implServices.BookRarityCommon}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, args args) {
+				l.EXPECT().GetByReaderID(gomock.Any(), args.reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.reservation.ReaderID).Return(nil, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.reservation.BookID).Return(&models.BookModel{Rarity: impl.BookRarityCommon}, nil)
 				res.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
@@ -252,14 +251,14 @@ func TestReservationService_Update(t *testing.T) {
 				reservation: &models.ReservationModel{
 					ReaderID: uuid.New(),
 					BookID:   uuid.New(),
-					State:    implServices.ReservationIssued,
+					State:    impl.ReservationIssued,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, reservation *models.ReservationModel) {
-				l.EXPECT().GetByReaderID(gomock.Any(), reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: false}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, args args) {
+				l.EXPECT().GetByReaderID(gomock.Any(), args.reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: false}, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expiredError := errsService.ErrLibCardIsInvalid
+				expiredError := errs.ErrLibCardIsInvalid
 				assert.Equal(t, expiredError, err)
 			},
 		},
@@ -269,15 +268,15 @@ func TestReservationService_Update(t *testing.T) {
 				reservation: &models.ReservationModel{
 					ReaderID: uuid.New(),
 					BookID:   uuid.New(),
-					State:    implServices.ReservationIssued,
+					State:    impl.ReservationIssued,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, reservation *models.ReservationModel) {
-				l.EXPECT().GetByReaderID(gomock.Any(), reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), reservation.ReaderID).Return([]*models.ReservationModel{{}}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, args args) {
+				l.EXPECT().GetByReaderID(gomock.Any(), args.reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.reservation.ReaderID).Return([]*models.ReservationModel{{}}, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expiredError := errsService.ErrReaderHasExpiredBooks
+				expiredError := errs.ErrReaderHasExpiredBooks
 				assert.Equal(t, expiredError, err)
 			},
 		},
@@ -287,15 +286,15 @@ func TestReservationService_Update(t *testing.T) {
 				reservation: &models.ReservationModel{
 					ReaderID: uuid.New(),
 					BookID:   uuid.New(),
-					State:    implServices.ReservationExtended,
+					State:    impl.ReservationExtended,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, reservation *models.ReservationModel) {
-				l.EXPECT().GetByReaderID(gomock.Any(), reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), reservation.ReaderID).Return(nil, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, args args) {
+				l.EXPECT().GetByReaderID(gomock.Any(), args.reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.reservation.ReaderID).Return(nil, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expiredError := errsService.ErrReservationIsAlreadyExtended
+				expiredError := errs.ErrReservationIsAlreadyExtended
 				assert.Equal(t, expiredError, err)
 			},
 		},
@@ -305,16 +304,16 @@ func TestReservationService_Update(t *testing.T) {
 				reservation: &models.ReservationModel{
 					ReaderID: uuid.New(),
 					BookID:   uuid.New(),
-					State:    implServices.ReservationIssued,
+					State:    impl.ReservationIssued,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, l *mocks.MockILibCardRepo, res *mocks.MockIReservationRepo, reservation *models.ReservationModel) {
-				l.EXPECT().GetByReaderID(gomock.Any(), reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), reservation.ReaderID).Return(nil, nil)
-				b.EXPECT().GetByID(gomock.Any(), reservation.BookID).Return(&models.BookModel{Rarity: implServices.BookRarityUnique}, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, args args) {
+				l.EXPECT().GetByReaderID(gomock.Any(), args.reservation.ReaderID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.reservation.ReaderID).Return(nil, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.reservation.BookID).Return(&models.BookModel{Rarity: impl.BookRarityUnique}, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expiredError := errsService.ErrRareAndUniqueBookNotExtended
+				expiredError := errs.ErrRareAndUniqueBookNotExtended
 				assert.Equal(t, expiredError, err)
 			},
 		},
@@ -325,12 +324,12 @@ func TestReservationService_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
-			mockBookRepo := mocks.NewMockIBookRepo(ctrl)
-			mockLibCardRepo := mocks.NewMockILibCardRepo(ctrl)
-			mockReservationRepo := mocks.NewMockIReservationRepo(ctrl)
+			mockReaderRepo := mockrepo.NewMockIReaderRepo(ctrl)
+			mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+			mockLibCardRepo := mockrepo.NewMockILibCardRepo(ctrl)
+			mockReservationRepo := mockrepo.NewMockIReservationRepo(ctrl)
 
-			reservationService := implServices.NewReservationService(
+			reservationService := impl.NewReservationService(
 				mockReservationRepo,
 				mockBookRepo,
 				mockReaderRepo,
@@ -339,7 +338,7 @@ func TestReservationService_Update(t *testing.T) {
 				logging.GetLoggerForTests(),
 			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, mockLibCardRepo, mockReservationRepo, testCase.args.reservation)
+			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, mockLibCardRepo, mockReservationRepo, testCase.args)
 
 			err := reservationService.Update(context.Background(), testCase.args.reservation)
 			testCase.expected(t, err)

@@ -1,13 +1,13 @@
 package serviceTests
 
 import (
-	"BookSmart/internal/dto"
-	"BookSmart/internal/models"
-	"BookSmart/internal/repositories/errsRepo"
-	"BookSmart/internal/services/errsService"
-	"BookSmart/internal/services/implServices"
-	"BookSmart/internal/tests/unitTests/serviceTests/mocks"
-	"BookSmart/pkg/logging"
+	errsRepo "BookSmart-repositories/errs"
+	"BookSmart-services/dto"
+	"BookSmart-services/errs"
+	"BookSmart-services/impl"
+	"BookSmart-services/models"
+	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
+	"Booksmart/pkg/logging"
 	"context"
 	"fmt"
 	"github.com/golang/mock/gomock"
@@ -18,11 +18,11 @@ import (
 )
 
 func TestReaderService_SignUp(t *testing.T) {
-	type mockBehaviour func(m *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel)
-	type expectedFunc func(t *testing.T, err error)
 	type args struct {
 		reader *models.ReaderModel
 	}
+	type mockBehaviour func(m *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args)
+	type expectedFunc func(t *testing.T, err error)
 
 	testTable := []struct {
 		name          string
@@ -41,9 +41,9 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
-				h.EXPECT().Hash(reader.Password).Return(gomock.Any().String(), nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+				h.EXPECT().Hash(args.reader.Password).Return(gomock.Any().String(), nil)
 				r.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
@@ -61,8 +61,8 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, fmt.Errorf("database error"))
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, fmt.Errorf("database error"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("database error")
@@ -80,11 +80,11 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(reader, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(args.reader, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrReaderAlreadyExist
+				expectedError := errs.ErrReaderAlreadyExist
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -98,11 +98,11 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrEmptyReaderFio
+				expectedError := errs.ErrEmptyReaderFio
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -116,11 +116,11 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:      25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrEmptyReaderPhoneNumber
+				expectedError := errs.ErrEmptyReaderPhoneNumber
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -135,11 +135,11 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         0,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrInvalidReaderAge
+				expectedError := errs.ErrInvalidReaderAge
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -154,11 +154,11 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrInvalidReaderPhoneNumberLen
+				expectedError := errs.ErrInvalidReaderPhoneNumberLen
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -173,11 +173,11 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrInvalidReaderPhoneNumberFormat
+				expectedError := errs.ErrInvalidReaderPhoneNumberFormat
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -192,11 +192,11 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrInvalidReaderPasswordLen
+				expectedError := errs.ErrInvalidReaderPasswordLen
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -211,9 +211,9 @@ func TestReaderService_SignUp(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
-				h.EXPECT().Hash(reader.Password).Return(gomock.Any().String(), nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.reader.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+				h.EXPECT().Hash(args.reader.Password).Return(gomock.Any().String(), nil)
 				r.EXPECT().Create(gomock.Any(), gomock.Any()).Return(fmt.Errorf("database error"))
 			},
 			expected: func(t *testing.T, err error) {
@@ -227,14 +227,15 @@ func TestReaderService_SignUp(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
-			mockHasher := mocks.NewMockIPasswordHasher(ctrl)
-			readerService := implServices.NewReaderService(
+			mockReaderRepo := mockrepo.NewMockIReaderRepo(ctrl)
+			mockHasher := mockrepo.NewMockIPasswordHasher(ctrl)
+			readerService := impl.NewReaderService(
 				mockReaderRepo, nil, nil,
 				mockHasher, logging.GetLoggerForTests(),
+				1, 2,
 			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockHasher, testCase.args.reader)
+			testCase.mockBehaviour(mockReaderRepo, mockHasher, testCase.args)
 
 			err := readerService.SignUp(context.Background(), testCase.args.reader)
 
@@ -244,18 +245,16 @@ func TestReaderService_SignUp(t *testing.T) {
 }
 
 func TestReaderService_SignIn(t *testing.T) {
-	type mockBehaviour func(
-		r *mocks.MockIReaderRepo,
-		h *mocks.MockIPasswordHasher,
-		t *mocks.MockITokenManager,
-		readerDTO *dto.ReaderSignInDTO,
-		reader *models.ReaderModel,
-	)
-	type expectedFunc func(t *testing.T, err error)
 	type args struct {
 		readerDTO *dto.ReaderSignInDTO
 		reader    *models.ReaderModel
 	}
+	type mockBehaviour func(
+		r *mockrepo.MockIReaderRepo,
+		h *mockrepo.MockIPasswordHasher,
+		t *mockrepo.MockITokenManager, args args,
+	)
+	type expectedFunc func(t *testing.T, err error)
 
 	var (
 		accessTokenTTL  = time.Hour * 2       // В минутах
@@ -283,12 +282,12 @@ func TestReaderService_SignIn(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, t *mocks.MockITokenManager, readerDTO *dto.ReaderSignInDTO, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), readerDTO.PhoneNumber).Return(reader, nil)
-				h.EXPECT().Compare(reader.Password, readerDTO.Password).Return(nil)
-				t.EXPECT().NewJWT(reader.ID, accessTokenTTL).Return("accessToken", nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.readerDTO.PhoneNumber).Return(args.reader, nil)
+				h.EXPECT().Compare(args.reader.Password, args.readerDTO.Password).Return(nil)
+				t.EXPECT().NewJWT(args.reader.ID, args.reader.Role, accessTokenTTL).Return("accessToken", nil)
 				t.EXPECT().NewRefreshToken().Return("refreshToken", nil)
-				r.EXPECT().SaveRefreshToken(gomock.Any(), reader.ID, "refreshToken", refreshTokenTTL).Return(nil)
+				r.EXPECT().SaveRefreshToken(gomock.Any(), args.reader.ID, "refreshToken", refreshTokenTTL).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Equal(t, nil, err)
@@ -302,11 +301,11 @@ func TestReaderService_SignIn(t *testing.T) {
 					Password:    "password",
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, t *mocks.MockITokenManager, readerDTO *dto.ReaderSignInDTO, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), readerDTO.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.readerDTO.PhoneNumber).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrReaderDoesNotExists
+				expectedError := errs.ErrReaderDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -325,9 +324,9 @@ func TestReaderService_SignIn(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, t *mocks.MockITokenManager, readerDTO *dto.ReaderSignInDTO, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), readerDTO.PhoneNumber).Return(reader, nil)
-				h.EXPECT().Compare(reader.Password, readerDTO.Password).Return(fmt.Errorf("[!] ERROR! Wrong password"))
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.readerDTO.PhoneNumber).Return(args.reader, nil)
+				h.EXPECT().Compare(args.reader.Password, args.readerDTO.Password).Return(fmt.Errorf("[!] ERROR! Wrong password"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("[!] ERROR! Wrong password")
@@ -349,10 +348,10 @@ func TestReaderService_SignIn(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, t *mocks.MockITokenManager, readerDTO *dto.ReaderSignInDTO, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), readerDTO.PhoneNumber).Return(reader, nil)
-				h.EXPECT().Compare(reader.Password, readerDTO.Password).Return(nil)
-				t.EXPECT().NewJWT(reader.ID, accessTokenTTL).Return("accessToken", fmt.Errorf("some error"))
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.readerDTO.PhoneNumber).Return(args.reader, nil)
+				h.EXPECT().Compare(args.reader.Password, args.readerDTO.Password).Return(nil)
+				t.EXPECT().NewJWT(args.reader.ID, args.reader.Role, accessTokenTTL).Return("accessToken", fmt.Errorf("some error"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("some error")
@@ -374,10 +373,10 @@ func TestReaderService_SignIn(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, t *mocks.MockITokenManager, readerDTO *dto.ReaderSignInDTO, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), readerDTO.PhoneNumber).Return(reader, nil)
-				h.EXPECT().Compare(reader.Password, readerDTO.Password).Return(nil)
-				t.EXPECT().NewJWT(reader.ID, accessTokenTTL).Return("accessToken", nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.readerDTO.PhoneNumber).Return(args.reader, nil)
+				h.EXPECT().Compare(args.reader.Password, args.readerDTO.Password).Return(nil)
+				t.EXPECT().NewJWT(args.reader.ID, args.reader.Role, accessTokenTTL).Return("accessToken", nil)
 				t.EXPECT().NewRefreshToken().Return("refreshToken", fmt.Errorf("some error"))
 			},
 			expected: func(t *testing.T, err error) {
@@ -400,12 +399,12 @@ func TestReaderService_SignIn(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, h *mocks.MockIPasswordHasher, t *mocks.MockITokenManager, readerDTO *dto.ReaderSignInDTO, reader *models.ReaderModel) {
-				r.EXPECT().GetByPhoneNumber(gomock.Any(), readerDTO.PhoneNumber).Return(reader, nil)
-				h.EXPECT().Compare(reader.Password, readerDTO.Password).Return(nil)
-				t.EXPECT().NewJWT(reader.ID, accessTokenTTL).Return("accessToken", nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, h *mockrepo.MockIPasswordHasher, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByPhoneNumber(gomock.Any(), args.readerDTO.PhoneNumber).Return(args.reader, nil)
+				h.EXPECT().Compare(args.reader.Password, args.readerDTO.Password).Return(nil)
+				t.EXPECT().NewJWT(args.reader.ID, args.reader.Role, accessTokenTTL).Return("accessToken", nil)
 				t.EXPECT().NewRefreshToken().Return("refreshToken", nil)
-				r.EXPECT().SaveRefreshToken(gomock.Any(), reader.ID, "refreshToken", refreshTokenTTL).Return(fmt.Errorf("some error"))
+				r.EXPECT().SaveRefreshToken(gomock.Any(), args.reader.ID, "refreshToken", refreshTokenTTL).Return(fmt.Errorf("some error"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("some error")
@@ -418,15 +417,16 @@ func TestReaderService_SignIn(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
-			mockHasher := mocks.NewMockIPasswordHasher(ctrl)
-			mockTokenManager := mocks.NewMockITokenManager(ctrl)
-			readerService := implServices.NewReaderService(
+			mockReaderRepo := mockrepo.NewMockIReaderRepo(ctrl)
+			mockHasher := mockrepo.NewMockIPasswordHasher(ctrl)
+			mockTokenManager := mockrepo.NewMockITokenManager(ctrl)
+			readerService := impl.NewReaderService(
 				mockReaderRepo, nil, mockTokenManager,
 				mockHasher, logging.GetLoggerForTests(),
+				accessTokenTTL, refreshTokenTTL,
 			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockHasher, mockTokenManager, testCase.args.readerDTO, testCase.args.reader)
+			testCase.mockBehaviour(mockReaderRepo, mockHasher, mockTokenManager, testCase.args)
 
 			_, err := readerService.SignIn(context.Background(), testCase.args.readerDTO)
 
@@ -436,17 +436,16 @@ func TestReaderService_SignIn(t *testing.T) {
 }
 
 func TestReaderService_RefreshTokens(t *testing.T) {
-	type mockBehaviour func(
-		m *mocks.MockIReaderRepo,
-		t *mocks.MockITokenManager,
-		refreshToken string,
-		existingReader *models.ReaderModel,
-	)
-	type expectedFunc func(t *testing.T, err error)
 	type args struct {
 		refreshToken   string
 		existingReader *models.ReaderModel
 	}
+	type mockBehaviour func(
+		m *mockrepo.MockIReaderRepo,
+		t *mockrepo.MockITokenManager,
+		args args,
+	)
+	type expectedFunc func(t *testing.T, err error)
 
 	const (
 		accessTokenTTL  = time.Hour * 2
@@ -471,11 +470,11 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, t *mocks.MockITokenManager, refreshToken string, existingReader *models.ReaderModel) {
-				r.EXPECT().GetByRefreshToken(gomock.Any(), refreshToken).Return(existingReader, nil)
-				t.EXPECT().NewJWT(existingReader.ID, accessTokenTTL).Return("newAccessToken", nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByRefreshToken(gomock.Any(), args.refreshToken).Return(args.existingReader, nil)
+				t.EXPECT().NewJWT(args.existingReader.ID, args.existingReader.Role, accessTokenTTL).Return("newAccessToken", nil)
 				t.EXPECT().NewRefreshToken().Return("newRefreshToken", nil)
-				r.EXPECT().SaveRefreshToken(gomock.Any(), existingReader.ID, "newRefreshToken", refreshTokenTTL).Return(nil)
+				r.EXPECT().SaveRefreshToken(gomock.Any(), args.existingReader.ID, "newRefreshToken", refreshTokenTTL).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Equal(t, nil, err)
@@ -487,8 +486,8 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 				refreshToken:   "invalidRefreshToken",
 				existingReader: nil,
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, t *mocks.MockITokenManager, refreshToken string, existingReader *models.ReaderModel) {
-				r.EXPECT().GetByRefreshToken(gomock.Any(), refreshToken).Return(nil, errsRepo.ErrNotFound)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByRefreshToken(gomock.Any(), args.refreshToken).Return(nil, errsRepo.ErrNotFound)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errsRepo.ErrNotFound
@@ -507,9 +506,9 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 					Age:         25,
 				},
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, t *mocks.MockITokenManager, refreshToken string, existingReader *models.ReaderModel) {
-				r.EXPECT().GetByRefreshToken(gomock.Any(), refreshToken).Return(existingReader, nil)
-				t.EXPECT().NewJWT(existingReader.ID, accessTokenTTL).Return("", fmt.Errorf("error generating JWT"))
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, t *mockrepo.MockITokenManager, args args) {
+				r.EXPECT().GetByRefreshToken(gomock.Any(), args.refreshToken).Return(args.existingReader, nil)
+				t.EXPECT().NewJWT(args.existingReader.ID, args.existingReader.Role, accessTokenTTL).Return("", fmt.Errorf("error generating JWT"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("error generating JWT")
@@ -522,14 +521,15 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
-			mockTokenManager := mocks.NewMockITokenManager(ctrl)
-			readerService := implServices.NewReaderService(
+			mockReaderRepo := mockrepo.NewMockIReaderRepo(ctrl)
+			mockTokenManager := mockrepo.NewMockITokenManager(ctrl)
+			readerService := impl.NewReaderService(
 				mockReaderRepo, nil, mockTokenManager,
 				nil, logging.GetLoggerForTests(),
+				accessTokenTTL, refreshTokenTTL,
 			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockTokenManager, testCase.args.refreshToken, testCase.args.existingReader)
+			testCase.mockBehaviour(mockReaderRepo, mockTokenManager, testCase.args)
 
 			_, err := readerService.RefreshTokens(context.Background(), testCase.args.refreshToken)
 
@@ -539,13 +539,13 @@ func TestReaderService_RefreshTokens(t *testing.T) {
 }
 
 func TestReaderService_AddToFavorites(t *testing.T) {
-	type mockBehaviour func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, readerID, bookID uuid.UUID)
-
-	type expectedFunc func(t *testing.T, err error)
 	type args struct {
 		readerID uuid.UUID
 		bookID   uuid.UUID
 	}
+	type mockBehaviour func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, args args)
+
+	type expectedFunc func(t *testing.T, err error)
 
 	testTable := []struct {
 		name          string
@@ -559,11 +559,11 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(&models.BookModel{}, nil)
-				r.EXPECT().IsFavorite(gomock.Any(), readerID, bookID).Return(false, nil)
-				r.EXPECT().AddToFavorites(gomock.Any(), readerID, bookID).Return(nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{}, nil)
+				r.EXPECT().IsFavorite(gomock.Any(), args.readerID, args.bookID).Return(false, nil)
+				r.EXPECT().AddToFavorites(gomock.Any(), args.readerID, args.bookID).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
 				assert.Equal(t, nil, err)
@@ -575,11 +575,11 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(nil, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(nil, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrReaderDoesNotExists
+				expectedError := errs.ErrReaderDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -589,12 +589,12 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(nil, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(nil, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrBookDoesNotExists
+				expectedError := errs.ErrBookDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -604,13 +604,13 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(&models.BookModel{}, nil)
-				r.EXPECT().IsFavorite(gomock.Any(), readerID, bookID).Return(true, nil)
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{}, nil)
+				r.EXPECT().IsFavorite(gomock.Any(), args.readerID, args.bookID).Return(true, nil)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsService.ErrBookAlreadyIsFavorite
+				expectedError := errs.ErrBookAlreadyIsFavorite
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -620,11 +620,11 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			mockBehaviour: func(r *mocks.MockIReaderRepo, b *mocks.MockIBookRepo, readerID, bookID uuid.UUID) {
-				r.EXPECT().GetByID(gomock.Any(), readerID).Return(&models.ReaderModel{}, nil)
-				b.EXPECT().GetByID(gomock.Any(), bookID).Return(&models.BookModel{}, nil)
-				r.EXPECT().IsFavorite(gomock.Any(), readerID, bookID).Return(false, nil)
-				r.EXPECT().AddToFavorites(gomock.Any(), readerID, bookID).Return(fmt.Errorf("error add"))
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{}, nil)
+				r.EXPECT().IsFavorite(gomock.Any(), args.readerID, args.bookID).Return(false, nil)
+				r.EXPECT().AddToFavorites(gomock.Any(), args.readerID, args.bookID).Return(fmt.Errorf("error add"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("error add")
@@ -637,14 +637,15 @@ func TestReaderService_AddToFavorites(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
-			mockReaderRepo := mocks.NewMockIReaderRepo(ctrl)
-			mockBookRepo := mocks.NewMockIBookRepo(ctrl)
-			readerService := implServices.NewReaderService(
+			mockReaderRepo := mockrepo.NewMockIReaderRepo(ctrl)
+			mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+			readerService := impl.NewReaderService(
 				mockReaderRepo, mockBookRepo, nil,
 				nil, logging.GetLoggerForTests(),
+				1, 2,
 			)
 
-			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, testCase.args.readerID, testCase.args.bookID)
+			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, testCase.args)
 
 			err := readerService.AddToFavorites(context.Background(), testCase.args.readerID, testCase.args.bookID)
 

@@ -1,7 +1,7 @@
 package integrationTests
 
 import (
-	"BookSmart/internal/services/errsService"
+	"BookSmart-services/errs"
 	"context"
 	"github.com/google/uuid"
 )
@@ -20,13 +20,13 @@ func (s *IntegrationTestSuite) TestLibCard_Create_Error() {
 
 	err := s.libCardService.Create(context.Background(), readerID)
 	s.Error(err)
-	s.Equal(errsService.ErrLibCardAlreadyExist, err)
+	s.Equal(errs.ErrLibCardAlreadyExist, err)
 }
 
 func (s *IntegrationTestSuite) TestLibCard_Update_Success() {
+	readerID, err := uuid.Parse("3885b2d3-ef6e-4f62-8f86-d1454d108207")
 
-	// чит (так нельзя)
-	libCard, err := s.libCardRepo.GetByNum(context.Background(), "7945544456734")
+	libCard, err := s.libCardRepo.GetByReaderID(context.Background(), readerID)
 	s.NoError(err)
 	s.NotNil(libCard)
 
@@ -35,13 +35,13 @@ func (s *IntegrationTestSuite) TestLibCard_Update_Success() {
 }
 
 func (s *IntegrationTestSuite) TestLibCard_Update_Error() {
+	readerID, err := uuid.Parse("75919792-c2d9-4685-92b2-e2a80b2ed5be")
 
-	// чит (так нельзя)
-	libCard, err := s.libCardRepo.GetByNum(context.Background(), "4654645456328")
+	libCard, err := s.libCardService.GetByReaderID(context.Background(), readerID)
 	s.NoError(err)
 	s.NotNil(libCard)
 
 	err = s.libCardService.Update(context.Background(), libCard)
 	s.Error(err)
-	s.Equal(errsService.ErrLibCardIsValid, err)
+	s.Equal(errs.ErrLibCardIsValid, err)
 }

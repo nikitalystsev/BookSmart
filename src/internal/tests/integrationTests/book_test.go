@@ -1,8 +1,8 @@
 package integrationTests
 
 import (
-	"BookSmart/internal/models"
-	"BookSmart/internal/services/errsService"
+	"BookSmart-services/errs"
+	"BookSmart-services/models"
 	"context"
 	"github.com/google/uuid"
 )
@@ -40,7 +40,7 @@ func (s *IntegrationTestSuite) TestBook_Create_Error() {
 
 	err := s.bookService.Create(context.Background(), book)
 	s.Error(err)
-	s.Equal(errsService.ErrEmptyBookRarity, err)
+	s.Equal(errs.ErrEmptyBookRarity, err)
 }
 
 func (s *IntegrationTestSuite) TestBook_Delete_Success() {
@@ -50,7 +50,7 @@ func (s *IntegrationTestSuite) TestBook_Delete_Success() {
 	book, err := s.bookService.GetByID(context.Background(), id)
 	s.NoError(err)
 
-	err = s.bookService.Delete(context.Background(), book)
+	err = s.bookService.Delete(context.Background(), book.ID)
 	s.NoError(err)
 }
 
@@ -60,10 +60,10 @@ func (s *IntegrationTestSuite) TestBook_Delete_Error() {
 
 	book, err := s.bookService.GetByID(context.Background(), id)
 	s.Error(err)
-	s.Equal(errsService.ErrBookDoesNotExists, err)
+	s.Equal(errs.ErrBookDoesNotExists, err)
 	s.Nil(book)
 
-	err = s.bookService.Delete(context.Background(), book)
+	err = s.bookService.Delete(context.Background(), uuid.Nil)
 	s.Error(err)
-	s.Equal(errsService.ErrBookObjectIsNil, err)
+	s.Equal(errs.ErrBookObjectIsNil, err)
 }

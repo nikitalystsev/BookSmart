@@ -1,9 +1,9 @@
 package integrationTests
 
 import (
-	"BookSmart/internal/dto"
-	"BookSmart/internal/models"
-	"BookSmart/internal/services/errsService"
+	"BookSmart-services/dto"
+	"BookSmart-services/errs"
+	"BookSmart-services/models"
 	"context"
 	"errors"
 	"github.com/google/uuid"
@@ -33,7 +33,7 @@ func (s *IntegrationTestSuite) TestReader_SignUp_Error() {
 
 	err := s.readerService.SignUp(context.Background(), reader)
 	s.Error(err)
-	s.Equal(errsService.ErrInvalidReaderPasswordLen, err)
+	s.Equal(errs.ErrInvalidReaderPasswordLen, err)
 }
 
 func (s *IntegrationTestSuite) TestReader_SignIn_Success() {
