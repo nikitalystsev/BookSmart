@@ -29,8 +29,6 @@ func (rr *ReservationRepo) Create(ctx context.Context, reservation *models.Reser
 
 	query := `INSERT INTO bs.reservation VALUES ($1, $2, $3, $4, $5, $6)`
 
-	rr.logger.Infof("executing query: %s", query)
-
 	_, err := rr.db.ExecContext(ctx, query, reservation.ID, reservation.ReaderID, reservation.BookID,
 		reservation.IssueDate, reservation.ReturnDate, reservation.State)
 	if err != nil {
@@ -38,224 +36,107 @@ func (rr *ReservationRepo) Create(ctx context.Context, reservation *models.Reser
 		return err
 	}
 
-	rr.logger.Infof("reservation with ID: %s inserted successfully", reservation.ID)
+	rr.logger.Infof("inserted reservation with ID: %s", reservation.ID)
 
 	return nil
 }
 
 func (rr *ReservationRepo) GetByReaderAndBook(ctx context.Context, readerID, bookID uuid.UUID) (*models.ReservationModel, error) {
-	rr.logger.Infof("selecting reservation")
+	rr.logger.Infof("selecting reservation with readerID и bookID: %s и %s", readerID, bookID)
 
-	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM bs.reservation WHERE reader_id = $1 AND book_id = $2`
-
-	rr.logger.Infof("executing query: %s", query)
+	query := `SELECT * FROM bs.reservation_view WHERE reader_id = $1 AND book_id = $2`
 
 	var reservation models.ReservationModel
 	err := rr.db.GetContext(ctx, &reservation, query, readerID, bookID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Errorf("error selected reservation")
+		rr.logger.Errorf("error selecting reservation: %v", err)
 		return nil, err
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Warnf("no reservation found")
+		rr.logger.Warnf("reservation with this readerID и bookID not found: %s и %s", readerID, bookID)
 		return nil, errs.ErrNotFound
 	}
 
-	if err = rr.checkExpiredReservation(ctx, &reservation); err != nil {
-		return nil, err
-	}
-
-	rr.logger.Infof("successfully selected reservation: %v", reservation)
+	rr.logger.Infof("selected reservation with readerID и bookID: %s и %s", readerID, bookID)
 
 	return &reservation, nil
 }
 
-func (rr *ReservationRepo) GetByID(ctx context.Context, reservationID uuid.UUID) (*models.ReservationModel, error) {
-	rr.logger.Infof("select reservation with ID: %s", reservationID)
+func (rr *ReservationRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.ReservationModel, error) {
+	rr.logger.Infof("selecting reservation with ID: %s", ID)
 
-	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM bs.reservation WHERE id = $1`
-
-	rr.logger.Infof("executing query: %s", query)
+	query := `SELECT * FROM bs.reservation_view WHERE id = $1`
 
 	var reservation models.ReservationModel
-	err := rr.db.GetContext(ctx, &reservation, query, reservationID)
+	err := rr.db.GetContext(ctx, &reservation, query, ID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Errorf("error selected reservation by ID: %v", err)
+		rr.logger.Errorf("error selecting reservation with ID: %v", err)
 		return nil, err
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Warnf("no reservation found")
+		rr.logger.Warnf("rewservation with this ID not found: %s", ID)
 		return nil, errs.ErrNotFound
 	}
 
-	if err = rr.checkExpiredReservation(ctx, &reservation); err != nil {
-		return nil, err
-	}
-
-	rr.logger.Infof("successfully selected reservation: %v", reservation)
+	rr.logger.Infof("selected reservation with ID: %s", ID)
 
 	return &reservation, nil
 }
 
 func (rr *ReservationRepo) Update(ctx context.Context, reservation *models.ReservationModel) error {
-	rr.logger.Infof("updating reservation with readerID: %s", reservation.ID)
+	rr.logger.Infof("updating reservation with ID: %s", reservation.ID)
 
 	query := `UPDATE bs.reservation SET issue_date = $1, return_date = $2, state = $3 WHERE id = $4`
 
-	rr.logger.Infof("executing query: %s", query)
-
 	_, err := rr.db.ExecContext(ctx, query, reservation.IssueDate, reservation.ReturnDate, reservation.State, reservation.ID)
 	if err != nil {
-		rr.logger.Errorf("error updating reservation")
+		rr.logger.Errorf("error updating reservation with ID: %v", err)
 		return err
 	}
 
-	rr.logger.Infof("successfully updated reservation with ID: %s", reservation.ID)
+	rr.logger.Infof("updated reservation with ID: %s", reservation.ID)
 
 	return nil
 }
 
 func (rr *ReservationRepo) GetExpiredByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
-	rr.logger.Infof("getting expired reservation with readerID: %s", readerID)
+	rr.logger.Infof("selecting expired reservations with readerID: %s", readerID)
 
-	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM bs.reservation WHERE reader_id = $1 AND return_date < $2`
+	query := `SELECT * FROM bs.reservation_view WHERE reader_id = $1 AND return_date < $2`
 
-	rr.logger.Infof("executing query: %s", query)
-
-	rows, err := rr.db.QueryxContext(ctx, query, readerID, time.Now())
+	var reservations []*models.ReservationModel
+	err := rr.db.SelectContext(ctx, &reservations, query, readerID, time.Now())
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Errorf("error selecting expired books: %v", err)
+		rr.logger.Errorf("error selecting expired reservations: %v", err)
 		return nil, err
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Warnf("no found expired books")
+		rr.logger.Warnf("expired reservations with this readerID not found: %s", readerID)
 		return nil, errs.ErrNotFound
 	}
 
-	defer func(rows *sqlx.Rows) {
-		err = rows.Close()
-		if err != nil {
-			rr.logger.Errorf("error closing rows: %v", err)
-			fmt.Printf("error closing rows: %v", err)
-		}
-	}(rows)
-
-	var reservations []*models.ReservationModel
-	for rows.Next() {
-		var reservation models.ReservationModel
-		if err = rows.StructScan(&reservation); err != nil {
-			rr.logger.Errorf("error scanning reservations row: %v", err)
-			return nil, err
-		}
-		if err = rr.checkExpiredReservation(ctx, &reservation); err != nil {
-			return nil, err
-		}
-		reservations = append(reservations, &reservation)
-	}
-
-	if err = rows.Err(); err != nil {
-		rr.logger.Errorf("rows iteration error: %v", err)
-		return nil, err
-	}
-
-	rr.logger.Infof("successfully found %d expired reservations", len(reservations))
+	rr.logger.Infof("found %d expired reservations with readerID %s", len(reservations), readerID)
 
 	return reservations, nil
 }
 
 func (rr *ReservationRepo) GetActiveByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
-	rr.logger.Infof("getting active reservation with readerID: %s", readerID)
+	rr.logger.Infof("selecting active reservations with readerID: %s", readerID)
 
-	query := `SELECT id, reader_id, book_id, issue_date, return_date, state FROM bs.reservation WHERE reader_id = $1 AND state != 'Closed'`
+	query := fmt.Sprintf(`SELECT * FROM bs.reservation_view WHERE reader_id = $1 AND state != '%s' AND state != '%s'`, impl.ReservationClosed, impl.ReservationExpired)
 
-	rr.logger.Infof("executing query: %s", query)
-
-	rows, err := rr.db.QueryxContext(ctx, query, readerID)
+	var reservations []*models.ReservationModel
+	err := rr.db.SelectContext(ctx, &reservations, query, readerID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Errorf("error selecting active books: %v", err)
+		rr.logger.Errorf("error selecting active reservations: %v", err)
 		return nil, err
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Warnf("no found active books")
+		rr.logger.Warnf("active reservations with this readerID not found: %s", readerID)
 		return nil, errs.ErrNotFound
-	}
-
-	defer func(rows *sqlx.Rows) {
-		err = rows.Close()
-		if err != nil {
-			rr.logger.Errorf("error closing rows: %v", err)
-			fmt.Printf("error closing rows: %v", err)
-		}
-	}(rows)
-
-	var reservations []*models.ReservationModel
-	for rows.Next() {
-		var reservation models.ReservationModel
-		if err = rows.StructScan(&reservation); err != nil {
-			rr.logger.Errorf("error scanning reservations row: %v", err)
-			return nil, err
-		}
-		if err = rr.checkExpiredReservation(ctx, &reservation); err != nil {
-			return nil, err
-		}
-		reservations = append(reservations, &reservation)
-	}
-
-	if err = rows.Err(); err != nil {
-		rr.logger.Errorf("rows iteration error: %v", err)
-		return nil, err
 	}
 
 	rr.logger.Infof("successfully found %d active reservations", len(reservations))
 
 	return reservations, nil
-}
-
-func (rr *ReservationRepo) checkExpiredReservation(ctx context.Context, reservation *models.ReservationModel) error {
-	if !rr.isExpiredReservation(reservation) {
-		return nil
-	}
-
-	if reservation.State == impl.ReservationExpired {
-		rr.logger.Infof("reservation is already expired")
-		return nil
-	}
-
-	reservation.State = impl.ReservationExpired
-	if err := rr.updateReservationStatus(ctx, reservation); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (rr *ReservationRepo) isExpiredReservation(reservation *models.ReservationModel) bool {
-	rr.logger.Infof("check reservation status: %s", reservation.ID)
-
-	if reservation.State == impl.ReservationClosed || !time.Now().After(reservation.ReturnDate) {
-		rr.logger.Infof("reservation does not expired")
-		return false
-	}
-
-	rr.logger.Infof("reservation is expired")
-
-	return true
-}
-
-func (rr *ReservationRepo) updateReservationStatus(ctx context.Context, reservation *models.ReservationModel) error {
-	rr.logger.Infof("updating reservation status: %s", reservation.ID)
-
-	query := `UPDATE bs.reservation SET state = $1 WHERE id = $2`
-
-	rr.logger.Infof("executing query: %s", query)
-
-	_, err := rr.db.ExecContext(ctx, query, reservation.State, reservation.ID)
-	if err != nil {
-		rr.logger.Printf("error updating reservation status: %v", err)
-		return err
-	}
-
-	rr.logger.Infof("successfully updated reservation status")
-
-	return nil
 }

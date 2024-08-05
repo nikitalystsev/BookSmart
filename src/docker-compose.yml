@@ -50,6 +50,19 @@ services:
     ports:
       - "${REDIS_PORT}:6379"
 
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    logging:
+      options:
+        max-size: 1g
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: bdung
+    ports:
+      - '27017:27017'
+
   log-influxdb:
     image: influxdb:latest
     environment:

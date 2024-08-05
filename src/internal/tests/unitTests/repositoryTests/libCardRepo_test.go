@@ -124,7 +124,7 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 				rows := sqlxmock.NewRows([]string{"id", "reader_id", "lib_card_num", "validity", "issue_date", "action_status"}).
 					AddRow(uuid.New(), args.readerID, "1234567890123", 12, time.Now(), true)
 
-				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card_view WHERE (.+)`).
 					WithArgs(args.readerID).WillReturnRows(rows)
 			},
 			args: args{
@@ -143,7 +143,7 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 		{
 			name: "Error no rows found",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card_view WHERE (.+)`).
 					WithArgs(args.readerID).WillReturnError(sql.ErrNoRows)
 			},
 			args: args{
@@ -159,7 +159,7 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 		{
 			name: "Error query execution",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card_view WHERE (.+)`).
 					WithArgs(args.readerID).WillReturnError(errors.New("query error"))
 			},
 			args: args{
@@ -215,7 +215,7 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 				rows := sqlxmock.NewRows([]string{"id", "reader_id", "lib_card_num", "validity", "issue_date", "action_status"}).
 					AddRow(uuid.New(), uuid.New(), args.libCardNum, 12, time.Now(), true)
 
-				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card_view WHERE (.+)`).
 					WithArgs(args.libCardNum).WillReturnRows(rows)
 			},
 			args: args{
@@ -234,7 +234,7 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 		{
 			name: "Error no rows found",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card_view WHERE (.+)`).
 					WithArgs(args.libCardNum).WillReturnError(sql.ErrNoRows)
 			},
 			args: args{
@@ -250,7 +250,7 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 		{
 			name: "Error: query execution",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card WHERE (.+)`).
+				mock.ExpectQuery(`SELECT (.+) FROM bs.lib_card_view WHERE (.+)`).
 					WithArgs(args.libCardNum).
 					WillReturnError(errors.New("query error"))
 			},
