@@ -1,8 +1,8 @@
 package requesters
 
 import (
-	"BookSmart-techUI/handlers"
-	"BookSmart-techUI/input"
+	"BookSmart-ui/handlers"
+	"BookSmart-ui/input"
 	"encoding/json"
 	"errors"
 	"fmt"
