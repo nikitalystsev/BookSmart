@@ -1,9 +1,9 @@
 package impl
 
 import (
-	"BookSmart-repositories/errs"
 	"BookSmart-services/core/dto"
 	"BookSmart-services/core/models"
+	"BookSmart-services/errs"
 	"BookSmart-services/intfRepo"
 	"context"
 	"database/sql"
@@ -52,7 +52,7 @@ func (br *BookRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.BookMode
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		br.logger.Warnf("book with this ID not found %s", ID)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrBookDoesNotExists
 	}
 
 	br.logger.Infof("selected book with ID: %s", ID)
@@ -73,7 +73,7 @@ func (br *BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookM
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		br.logger.Warnf("book with this title not found: %s", title)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrBookDoesNotExists
 	}
 
 	br.logger.Infof("selected book with title: %s", title)
@@ -151,7 +151,7 @@ func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) 
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		br.logger.Warnf("books not found with this params")
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrBookDoesNotExists
 	}
 
 	br.logger.Infof("found %d books", len(books))

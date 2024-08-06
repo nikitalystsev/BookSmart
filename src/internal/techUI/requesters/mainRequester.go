@@ -1,8 +1,8 @@
 package requesters
 
 import (
-	"BookSmart-ui/handlers"
-	"BookSmart-ui/input"
+	"BookSmart-techUI/handlers"
+	"BookSmart-techUI/input"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"os"

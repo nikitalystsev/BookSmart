@@ -1,10 +1,10 @@
 package repositoryTests
 
 import (
-	errsRepo "BookSmart-repositories/errs"
-	"BookSmart-repositories/impl"
+	"BookSmart-postgres/impl"
 	"BookSmart-services/core/dto"
 	"BookSmart-services/core/models"
+	"BookSmart-services/errs"
 	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
@@ -171,7 +171,7 @@ func TestBookRepo_GetByID(t *testing.T) {
 			expected: func(t *testing.T, book *models.BookModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, book)
-				expectedError := errsRepo.ErrNotFound
+				expectedError := errs.ErrBookDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -268,7 +268,7 @@ func TestBookRepo_GetByTitle(t *testing.T) {
 			expected: func(t *testing.T, book *models.BookModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, book)
-				expectedError := errsRepo.ErrNotFound
+				expectedError := errs.ErrBookDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -561,7 +561,7 @@ func TestBookRepo_GetByParams(t *testing.T) {
 			expected: func(t *testing.T, books []*models.BookModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, books)
-				expectedError := errsRepo.ErrNotFound
+				expectedError := errs.ErrBookDoesNotExists
 				assert.Equal(t, expectedError.Error(), err.Error())
 				err = mock.ExpectationsWereMet()
 				assert.NoError(t, err)

@@ -1,7 +1,6 @@
 package impl
 
 import (
-	errsRepo "BookSmart-repositories/errs"
 	"BookSmart-services/core/dto"
 	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
@@ -64,7 +63,7 @@ func (bs *BookService) Delete(ctx context.Context, bookID uuid.UUID) error {
 	bs.logger.Infof("attempting to delete book with ID: %s", bookID)
 
 	existingBook, err := bs.bookRepo.GetByID(ctx, bookID)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrBookDoesNotExists) {
 		bs.logger.Errorf("error checking book existence: %v", err)
 		return err
 	}
@@ -89,7 +88,7 @@ func (bs *BookService) GetByID(ctx context.Context, ID uuid.UUID) (*models.BookM
 	bs.logger.Infof("attempting to get book with ID: %s", ID)
 
 	book, err := bs.bookRepo.GetByID(ctx, ID)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrBookDoesNotExists) {
 		bs.logger.Errorf("error checking book existence: %v", err)
 		return nil, err
 	}
@@ -121,7 +120,7 @@ func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDT
 func (bs *BookService) baseValidation(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
 
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrBookDoesNotExists) {
 		bs.logger.Errorf("error checking book existence: %v", err)
 		return err
 	}

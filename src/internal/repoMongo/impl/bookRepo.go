@@ -15,8 +15,8 @@ type BookRepo struct {
 	logger *logrus.Entry
 }
 
-func NewBookRepo(db *mongo.Collection, logger *logrus.Entry) intfRepo.IBookRepo {
-	return &BookRepo{db: db, logger: logger}
+func NewBookRepo(db *mongo.Database, logger *logrus.Entry) intfRepo.IBookRepo {
+	return &BookRepo{db: db.Collection("book"), logger: logger}
 }
 
 func (b *BookRepo) Create(ctx context.Context, book *models.BookModel) error {

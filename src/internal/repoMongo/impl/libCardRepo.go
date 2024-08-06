@@ -14,8 +14,8 @@ type LibCardRepo struct {
 	logger *logrus.Entry
 }
 
-func NewLibCardRepo(db *mongo.Collection, logger *logrus.Entry) intfRepo.ILibCardRepo {
-	return &LibCardRepo{db: db, logger: logger}
+func NewLibCardRepo(db *mongo.Database, logger *logrus.Entry) intfRepo.ILibCardRepo {
+	return &LibCardRepo{db: db.Collection("lib_card"), logger: logger}
 }
 
 func (l *LibCardRepo) Create(ctx context.Context, libCard *models.LibCardModel) error {

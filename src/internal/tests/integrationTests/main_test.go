@@ -1,10 +1,10 @@
 package integrationTests
 
 import (
-	implRepo "BookSmart-repositories/impl"
+	implRepo "BookSmart-postgres/impl"
 	"BookSmart-services/impl"
 	"BookSmart-services/intf"
-	intfRepo "BookSmart-services/intfRepo"
+	"BookSmart-services/intfRepo"
 	"BookSmart-services/pkg/auth"
 	"BookSmart-services/pkg/hash"
 	"BookSmart-services/pkg/transact"

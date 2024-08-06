@@ -14,8 +14,8 @@ type ReservationRepo struct {
 	logger *logrus.Entry
 }
 
-func NewReservationRepo(db *mongo.Collection, logger *logrus.Entry) intfRepo.IReservationRepo {
-	return &ReservationRepo{db: db, logger: logger}
+func NewReservationRepo(db *mongo.Database, logger *logrus.Entry) intfRepo.IReservationRepo {
+	return &ReservationRepo{db: db.Collection("reservation"), logger: logger}
 }
 
 func (r ReservationRepo) Create(ctx context.Context, reservation *models.ReservationModel) error {

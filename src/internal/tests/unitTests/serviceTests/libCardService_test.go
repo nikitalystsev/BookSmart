@@ -1,7 +1,6 @@
 package serviceTests
 
 import (
-	errsRepo "BookSmart-repositories/errs"
 	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"BookSmart-services/impl"
@@ -33,7 +32,7 @@ func TestLibCardService_Create(t *testing.T) {
 			name: "Success successful creation",
 			args: args{readerID: uuid.New()},
 			mockBehavior: func(m *mockrepo.MockILibCardRepo, args args) {
-				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(nil, errs.ErrLibCardDoesNotExists)
 				m.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
@@ -74,7 +73,7 @@ func TestLibCardService_Create(t *testing.T) {
 			name: "Error error creating library card",
 			args: args{readerID: uuid.New()},
 			mockBehavior: func(m *mockrepo.MockILibCardRepo, args args) {
-				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(nil, errs.ErrLibCardDoesNotExists)
 				m.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("create error"))
 			},
 			expected: func(t *testing.T, err error) {
@@ -168,7 +167,7 @@ func TestLibCardService_Update(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockILibCardRepo, args args) {
-				m.EXPECT().GetByNum(gomock.Any(), args.libCard.LibCardNum).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByNum(gomock.Any(), args.libCard.LibCardNum).Return(nil, errs.ErrLibCardDoesNotExists)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errs.ErrLibCardDoesNotExists

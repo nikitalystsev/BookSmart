@@ -1,7 +1,6 @@
 package serviceTests
 
 import (
-	errsRepo "BookSmart-repositories/errs"
 	"BookSmart-services/core/dto"
 	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
@@ -42,7 +41,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, args args) {
-				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errs.ErrBookDoesNotExists)
 				m.EXPECT().Create(gomock.Any(), args.book).Return(nil)
 			},
 			expected: func(t *testing.T, err error) {
@@ -98,7 +97,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, args args) {
-				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errs.ErrBookDoesNotExists)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errs.ErrEmptyBookTitle
@@ -116,7 +115,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, args args) {
-				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errs.ErrBookDoesNotExists)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errs.ErrEmptyBookAuthor
@@ -134,7 +133,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, args args) {
-				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errs.ErrBookDoesNotExists)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errs.ErrEmptyBookRarity
@@ -152,7 +151,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, args args) {
-				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errs.ErrBookDoesNotExists)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errs.ErrInvalidBookCopiesNum
@@ -171,7 +170,7 @@ func TestBookService_Create(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, args args) {
-				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errs.ErrBookDoesNotExists)
 				m.EXPECT().Create(gomock.Any(), args.book).Return(errors.New("create error"))
 			},
 			expected: func(t *testing.T, err error) {
@@ -260,7 +259,7 @@ func TestBookService_Delete(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, args args) {
-				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errs.ErrBookDoesNotExists)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errs.ErrBookDoesNotExists
@@ -367,7 +366,7 @@ func TestBookService_GetByID(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, args args) {
-				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByID(gomock.Any(), args.book.ID).Return(nil, errs.ErrBookDoesNotExists)
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errs.ErrBookDoesNotExists
@@ -475,10 +474,10 @@ func TestBookService_GetByParams(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mockrepo.MockIBookRepo, params *dto.BookParamsDTO) {
-				m.EXPECT().GetByParams(gomock.Any(), params).Return(nil, errsRepo.ErrNotFound)
+				m.EXPECT().GetByParams(gomock.Any(), params).Return(nil, errs.ErrBookDoesNotExists)
 			},
 			expected: func(t *testing.T, err error) {
-				expectedError := errsRepo.ErrNotFound
+				expectedError := errs.ErrBookDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},

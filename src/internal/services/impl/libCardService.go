@@ -1,7 +1,6 @@
 package impl
 
 import (
-	errsRepo "BookSmart-repositories/errs"
 	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"BookSmart-services/intf"
@@ -36,7 +35,7 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 
 	existingLibCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
 
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrLibCardDoesNotExists) {
 		lcs.logger.Errorf("error checking libCard existence: %v", err)
 		return err
 	}
@@ -79,7 +78,7 @@ func (lcs *LibCardService) Update(ctx context.Context, libCard *models.LibCardMo
 	lcs.logger.Infof("attempting to update libCard with ID: %s", libCard.ID)
 
 	existingLibCard, err := lcs.libCardRepo.GetByNum(ctx, libCard.LibCardNum)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrLibCardDoesNotExists) {
 		lcs.logger.Errorf("error checking libCard existence: %v", err)
 		return err
 	}
@@ -112,7 +111,7 @@ func (lcs *LibCardService) GetByReaderID(ctx context.Context, readerID uuid.UUID
 	lcs.logger.Infof("attempting to get libCard by readerID: %s", readerID)
 
 	libCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrLibCardDoesNotExists) {
 		lcs.logger.Errorf("error checking libCard existence: %v", err)
 		return nil, err
 	}

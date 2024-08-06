@@ -1,8 +1,8 @@
 package impl
 
 import (
-	"BookSmart-repositories/errs"
 	"BookSmart-services/core/models"
+	"BookSmart-services/errs"
 	"BookSmart-services/impl"
 	"BookSmart-services/intfRepo"
 	"context"
@@ -54,7 +54,7 @@ func (rr *ReservationRepo) GetByReaderAndBook(ctx context.Context, readerID, boo
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		rr.logger.Warnf("reservation with this readerID и bookID not found: %s и %s", readerID, bookID)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrReservationDoesNotExists
 	}
 
 	rr.logger.Infof("selected reservation with readerID и bookID: %s и %s", readerID, bookID)
@@ -75,7 +75,7 @@ func (rr *ReservationRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.R
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		rr.logger.Warnf("rewservation with this ID not found: %s", ID)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrReservationDoesNotExists
 	}
 
 	rr.logger.Infof("selected reservation with ID: %s", ID)
@@ -112,7 +112,7 @@ func (rr *ReservationRepo) GetExpiredByReaderID(ctx context.Context, readerID uu
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		rr.logger.Warnf("expired reservations with this readerID not found: %s", readerID)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrReservationDoesNotExists
 	}
 
 	rr.logger.Infof("found %d expired reservations with readerID %s", len(reservations), readerID)
@@ -133,7 +133,7 @@ func (rr *ReservationRepo) GetActiveByReaderID(ctx context.Context, readerID uui
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		rr.logger.Warnf("active reservations with this readerID not found: %s", readerID)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrReservationDoesNotExists
 	}
 
 	rr.logger.Infof("found %d active reservations with readerID %s", len(reservations), readerID)

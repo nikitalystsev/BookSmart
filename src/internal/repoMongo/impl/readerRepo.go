@@ -15,8 +15,8 @@ type ReaderRepo struct {
 	logger *logrus.Entry
 }
 
-func NewReaderRepo(db *mongo.Collection, logger *logrus.Entry) intfRepo.IReaderRepo {
-	return &ReaderRepo{db: db, logger: logger}
+func NewReaderRepo(db *mongo.Database, logger *logrus.Entry) intfRepo.IReaderRepo {
+	return &ReaderRepo{db: db.Collection("reader"), logger: logger}
 }
 
 func (r *ReaderRepo) Create(ctx context.Context, reader *models.ReaderModel) error {

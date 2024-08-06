@@ -1,4 +1,4 @@
-module BookSmart-repositories
+module BookSmart-postgres
 
 go 1.22.5
 

@@ -1,9 +1,9 @@
 package repositoryTests
 
 import (
-	errsRepo "BookSmart-repositories/errs"
-	"BookSmart-repositories/impl"
+	"BookSmart-postgres/impl"
 	"BookSmart-services/core/models"
+	"BookSmart-services/errs"
 	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
@@ -150,7 +150,7 @@ func TestReaderRepo_GetByPhoneNumber(t *testing.T) {
 			expected: func(t *testing.T, reader *models.ReaderModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reader)
-				expectedError := errsRepo.ErrNotFound
+				expectedError := errs.ErrReaderDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -543,7 +543,7 @@ func TestReaderRepo_GetByRefreshToken(t *testing.T) {
 			},
 			expected: func(t *testing.T, reader *models.ReaderModel, err error) {
 				assert.Error(t, err)
-				expectedError := errsRepo.ErrNotFound
+				expectedError := errs.ErrReaderDoesNotExists
 				assert.Equal(t, expectedError, err)
 			},
 		},

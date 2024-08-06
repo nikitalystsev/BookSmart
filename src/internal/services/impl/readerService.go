@@ -1,7 +1,6 @@
 package impl
 
 import (
-	errsRepo "BookSmart-repositories/errs"
 	"BookSmart-services/core/dto"
 	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
@@ -104,7 +103,7 @@ func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO
 	rs.logger.Infof("attempting sign in with phoneNumber: %s", reader.PhoneNumber)
 
 	exitingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrReaderDoesNotExists) {
 		rs.logger.Errorf("error checking reader existence: %v", err)
 		return intf.Tokens{}, err
 	}
@@ -141,7 +140,7 @@ func (rs *ReaderService) AddToFavorites(ctx context.Context, readerID, bookID uu
 	rs.logger.Info("attempting to add book to favorites")
 
 	existingReader, err := rs.readerRepo.GetByID(ctx, readerID)
-	if err != nil {
+	if err != nil && !errors.Is(err, errs.ErrReaderDoesNotExists) {
 		rs.logger.Errorf("error checking reader existence: %v", err)
 		return err
 	}
@@ -184,7 +183,7 @@ func (rs *ReaderService) AddToFavorites(ctx context.Context, readerID, bookID uu
 func (rs *ReaderService) baseValidation(ctx context.Context, reader *models.ReaderModel) error {
 	existingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
 
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrReaderDoesNotExists) {
 		rs.logger.Errorf("error checking reader existence: %v", err)
 		return err
 	}

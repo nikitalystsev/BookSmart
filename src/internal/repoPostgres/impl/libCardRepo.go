@@ -1,8 +1,8 @@
 package impl
 
 import (
-	"BookSmart-repositories/errs"
 	"BookSmart-services/core/models"
+	"BookSmart-services/errs"
 	"BookSmart-services/intfRepo"
 	"context"
 	"database/sql"
@@ -52,7 +52,7 @@ func (lcr *LibCardRepo) GetByReaderID(ctx context.Context, readerID uuid.UUID) (
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		lcr.logger.Warnf("libCard with this readerID not found: %v", readerID)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrLibCardDoesNotExists
 	}
 
 	lcr.logger.Infof("selected libCard with readerID: %s", readerID)
@@ -75,7 +75,7 @@ func (lcr *LibCardRepo) GetByNum(ctx context.Context, libCardNum string) (*model
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		lcr.logger.Warnf("libCard with this num not found: %v", libCardNum)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrLibCardDoesNotExists
 	}
 
 	lcr.logger.Infof("sselected libCard with num: %s", libCardNum)

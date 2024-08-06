@@ -71,11 +71,18 @@ func (s *IntegrationTestSuite) TestReservation_Update_Success() {
 	readerID, err := uuid.Parse("75919792-c2d9-4685-92b2-e2a80b2ed5be")
 	bookID, err := uuid.Parse("43f45552-4a95-4f12-864b-e1d8bfa30b8d")
 
-	// чит (нельзя так)
-	reservation, err := s.reservationRepo.GetByReaderAndBook(context.Background(), readerID, bookID)
+	reservations, err := s.reservationService.GetAllReservationsByReaderID(context.Background(), readerID)
 	s.NoError(err)
 
-	err = s.reservationService.Update(context.Background(), reservation)
+	var testReservation *models.ReservationModel
+	for _, reservation := range reservations {
+		if reservation.BookID == bookID {
+			testReservation = reservation
+			break
+		}
+	}
+
+	err = s.reservationService.Update(context.Background(), testReservation)
 	s.NoError(err)
 }
 
@@ -91,11 +98,18 @@ func (s *IntegrationTestSuite) TestReservation_Update_Error() {
 	readerID, err := uuid.Parse("75919792-c2d9-4685-92b2-e2a80b2ed5be")
 	bookID, err := uuid.Parse("f01107fb-4f7a-4f37-ba1e-6c6012c5203c")
 
-	// чит (нельзя так)
-	reservation, err := s.reservationRepo.GetByReaderAndBook(context.Background(), readerID, bookID)
+	reservations, err := s.reservationService.GetAllReservationsByReaderID(context.Background(), readerID)
 	s.NoError(err)
 
-	err = s.reservationService.Update(context.Background(), reservation)
+	var testReservation *models.ReservationModel
+	for _, reservation := range reservations {
+		if reservation.BookID == bookID {
+			testReservation = reservation
+			break
+		}
+	}
+
+	err = s.reservationService.Update(context.Background(), testReservation)
 	s.Error(err)
 	s.Error(errs.ErrRareAndUniqueBookNotExtended, err)
 }

@@ -3,3 +3,6 @@ auth:
   refreshTokenTTL: 10m
 
 port: 8000
+
+db:
+  type: postgres # postgres | mongo

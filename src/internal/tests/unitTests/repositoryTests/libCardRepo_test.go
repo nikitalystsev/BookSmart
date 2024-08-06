@@ -1,9 +1,9 @@
 package repositoryTests
 
 import (
-	errsRepo "BookSmart-repositories/errs"
-	"BookSmart-repositories/impl"
+	"BookSmart-postgres/impl"
 	"BookSmart-services/core/models"
+	"BookSmart-services/errs"
 	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
@@ -151,7 +151,7 @@ func TestLibCardRepo_GetByReaderID(t *testing.T) {
 			},
 			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
 				assert.Nil(t, libCard)
-				assert.Equal(t, errsRepo.ErrNotFound, err)
+				assert.Equal(t, errs.ErrLibCardDoesNotExists, err)
 				err = mock.ExpectationsWereMet()
 				assert.NoError(t, err)
 			},
@@ -242,7 +242,7 @@ func TestLibCardRepo_GetByNum(t *testing.T) {
 			},
 			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
 				assert.Nil(t, libCard)
-				assert.Equal(t, errsRepo.ErrNotFound, err)
+				assert.Equal(t, errs.ErrLibCardDoesNotExists, err)
 				err = mock.ExpectationsWereMet()
 				assert.NoError(t, err)
 			},

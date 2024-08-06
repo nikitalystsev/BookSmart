@@ -1,7 +1,7 @@
 package repositoryTests
 
 import (
-	"BookSmart-repositories/impl"
+	"BookSmart-postgres/impl"
 	"BookSmart-services/core/models"
 	"Booksmart/pkg/logging"
 	"context"

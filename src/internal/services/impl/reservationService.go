@@ -1,7 +1,6 @@
 package impl
 
 import (
-	errsRepo "BookSmart-repositories/errs"
 	models2 "BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"BookSmart-services/intf"
@@ -145,11 +144,11 @@ func (rs *ReservationService) GetAllReservationsByReaderID(ctx context.Context, 
 	return allReservations, nil
 }
 
-func (rs *ReservationService) GetByID(ctx context.Context, reservationID uuid.UUID) (*models2.ReservationModel, error) {
-	rs.logger.Infof("attempting to get reservation with ID: %s", reservationID)
+func (rs *ReservationService) GetByID(ctx context.Context, ID uuid.UUID) (*models2.ReservationModel, error) {
+	rs.logger.Infof("attempting to get reservation with ID: %s", ID)
 
-	reservation, err := rs.reservationRepo.GetByID(ctx, reservationID)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	reservation, err := rs.reservationRepo.GetByID(ctx, ID)
+	if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
 		rs.logger.Errorf("error checking reservation existence: %v", err)
 		return nil, err
 	}
@@ -159,7 +158,7 @@ func (rs *ReservationService) GetByID(ctx context.Context, reservationID uuid.UU
 		return nil, errs.ErrReservationDoesNotExists
 	}
 
-	rs.logger.Infof("successfully getting reservation by ID: %s", reservationID)
+	rs.logger.Infof("successfully getting reservation by ID: %s", ID)
 
 	return reservation, nil
 }
@@ -184,7 +183,7 @@ func (rs *ReservationService) create(ctx context.Context, readerID, bookID uuid.
 		}
 
 		existingBook, err := rs.bookRepo.GetByID(ctx, bookID)
-		if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+		if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
 			rs.logger.Errorf("error checking book existence: %v", err)
 			return err
 		}
@@ -254,7 +253,7 @@ func (rs *ReservationService) checkBook(ctx context.Context, bookID uuid.UUID) (
 
 func (rs *ReservationService) checkReaderExists(ctx context.Context, readerID uuid.UUID) (*models2.ReaderModel, error) {
 	existingReader, err := rs.readerRepo.GetByID(ctx, readerID)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
 		rs.logger.Errorf("error checking book existence: %v", err)
 		return nil, err
 	}
@@ -303,7 +302,7 @@ func (rs *ReservationService) checkActiveReservationsLimit(ctx context.Context, 
 
 func (rs *ReservationService) checkValidLibCard(ctx context.Context, readerID uuid.UUID) error {
 	libCard, err := rs.libCardRepo.GetByReaderID(ctx, readerID)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
 		rs.logger.Errorf("error checking libCard existence: %v", err)
 		return err
 	}
@@ -324,7 +323,7 @@ func (rs *ReservationService) checkValidLibCard(ctx context.Context, readerID uu
 
 func (rs *ReservationService) checkBookExists(ctx context.Context, bookID uuid.UUID) (*models2.BookModel, error) {
 	existingBook, err := rs.bookRepo.GetByID(ctx, bookID)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
 		rs.logger.Errorf("error checking book existence: %v", err)
 		return nil, err
 	}
@@ -373,7 +372,7 @@ func (rs *ReservationService) checkAgeLimit(reader *models2.ReaderModel, book *m
 
 func (rs *ReservationService) checkBookRarityUpdate(ctx context.Context, bookID uuid.UUID) error {
 	existingBook, err := rs.bookRepo.GetByID(ctx, bookID)
-	if err != nil && !errors.Is(err, errsRepo.ErrNotFound) {
+	if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
 		rs.logger.Errorf("error checking book existence: %v", err)
 		return err
 	}

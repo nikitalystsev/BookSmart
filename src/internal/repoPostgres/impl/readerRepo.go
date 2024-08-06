@@ -1,8 +1,8 @@
 package impl
 
 import (
-	"BookSmart-repositories/errs"
 	"BookSmart-services/core/models"
+	"BookSmart-services/errs"
 	"BookSmart-services/intfRepo"
 	"context"
 	"database/sql"
@@ -54,7 +54,7 @@ func (rr *ReaderRepo) GetByPhoneNumber(ctx context.Context, phoneNumber string) 
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		rr.logger.Warnf("reader with this phoneNumber not found: %s", phoneNumber)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrReaderDoesNotExists
 	}
 
 	rr.logger.Infof("selected reader with phoneNumber: %s", phoneNumber)
@@ -75,7 +75,7 @@ func (rr *ReaderRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.Reader
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		rr.logger.Warnf("reader with this ID not found: %v", ID)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrReaderDoesNotExists
 	}
 
 	rr.logger.Infof("selected reader with ID: %s", ID)
@@ -142,7 +142,7 @@ func (rr *ReaderRepo) GetByRefreshToken(ctx context.Context, token string) (*mod
 	}
 	if err != nil && errors.Is(err, redis.Nil) {
 		rr.logger.Errorf("reader with this refresh token not found: %s", token)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrReaderDoesNotExists
 	}
 
 	readerID, err = uuid.Parse(readerIDStr)
@@ -162,7 +162,7 @@ func (rr *ReaderRepo) GetByRefreshToken(ctx context.Context, token string) (*mod
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		rr.logger.Warnf("reader with this ID not found: %v", readerID)
-		return nil, errs.ErrNotFound
+		return nil, errs.ErrReaderDoesNotExists
 	}
 
 	rr.logger.Infof("getting reader by refresh token: %v", token)
