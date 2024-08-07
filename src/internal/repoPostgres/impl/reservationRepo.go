@@ -74,7 +74,7 @@ func (rr *ReservationRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.R
 		return nil, err
 	}
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		rr.logger.Warnf("rewservation with this ID not found: %s", ID)
+		rr.logger.Warnf("reservation with this ID not found: %s", ID)
 		return nil, errs.ErrReservationDoesNotExists
 	}
 
