@@ -43,6 +43,13 @@ func Run(configDir string) {
 		_manager *manager.Manager
 	)
 
+	client := redis.NewClient(&redis.Options{
+		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
+		Username: cfg.Redis.Username,
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
+	})
+
 	switch cfg.DBType {
 	case "postgres":
 		dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
@@ -54,13 +61,6 @@ func Run(configDir string) {
 			logger.Errorf("error connect to postgres: %v", err)
 			return
 		}
-
-		client := redis.NewClient(&redis.Options{
-			Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
-			Username: cfg.Redis.Username,
-			Password: cfg.Redis.Password,
-			DB:       cfg.Redis.DB,
-		})
 
 		bookRepo = implPostgres.NewBookRepo(db, logger)
 		libCardRepo = implPostgres.NewLibCardRepo(db, logger)
@@ -84,7 +84,7 @@ func Run(configDir string) {
 
 		bookRepo = implMongo.NewBookRepo(db, logger)
 		libCardRepo = implMongo.NewLibCardRepo(db, logger)
-		readerRepo = implMongo.NewReaderRepo(db, logger)
+		readerRepo = implMongo.NewReaderRepo(db, client, logger)
 		reservationRepo = implMongo.NewReservationRepo(db, logger)
 
 		_manager, err = manager.New(trmmongo.NewDefaultFactory(mongoClient))
