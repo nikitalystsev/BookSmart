@@ -232,3 +232,83 @@ func TestLibCardService_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestLibCardService_GetByReaderID(t *testing.T) {
+	type args struct {
+		readerID uuid.UUID
+	}
+	type mockBehavior func(m *mockrepo.MockILibCardRepo, args args)
+	type expectedFunc func(t *testing.T, libCard *models.LibCardModel, err error)
+
+	testTable := []struct {
+		name         string
+		args         args
+		mockBehavior mockBehavior
+		expected     expectedFunc
+	}{
+		{
+			name: "Success successfully getting libCard by readerID",
+			args: args{
+				readerID: uuid.New(),
+			},
+			mockBehavior: func(m *mockrepo.MockILibCardRepo, args args) {
+				libCard := &models.LibCardModel{
+					ID:           uuid.New(),
+					ReaderID:     args.readerID,
+					LibCardNum:   "1234567890123",
+					Validity:     impl.LibCardValidityPeriod,
+					IssueDate:    time.Now(),
+					ActionStatus: true,
+				}
+				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(libCard, nil)
+			},
+			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
+				assert.NoError(t, err)
+				assert.NotNil(t, libCard)
+			},
+		},
+		{
+			name: "Error error checking libCard existence",
+			args: args{
+				readerID: uuid.New(),
+			},
+			mockBehavior: func(m *mockrepo.MockILibCardRepo, args args) {
+				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(nil, errors.New("database error"))
+			},
+			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
+				expectedError := errors.New("database error")
+				assert.Equal(t, expectedError, err)
+				assert.Nil(t, libCard)
+			},
+		},
+		{
+			name: "Error library card does not exists",
+			args: args{
+				readerID: uuid.New(),
+			},
+			mockBehavior: func(m *mockrepo.MockILibCardRepo, args args) {
+				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(nil, errs.ErrLibCardDoesNotExists)
+			},
+			expected: func(t *testing.T, libCard *models.LibCardModel, err error) {
+				expectedError := errs.ErrLibCardDoesNotExists
+				assert.Equal(t, expectedError, err)
+				assert.Nil(t, libCard)
+			},
+		},
+	}
+
+	for _, testCase := range testTable {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+
+			mockLibCardRepo := mockrepo.NewMockILibCardRepo(ctrl)
+			libCardService := impl.NewLibCardService(mockLibCardRepo, logging.GetLoggerForTests())
+
+			testCase.mockBehavior(mockLibCardRepo, testCase.args)
+
+			libCard, err := libCardService.GetByReaderID(context.Background(), testCase.args.readerID)
+
+			testCase.expected(t, libCard, err)
+		})
+	}
+}
