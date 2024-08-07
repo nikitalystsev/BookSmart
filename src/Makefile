@@ -34,7 +34,7 @@ migrate-down:
 
 mmigrate-up:
 	cd internal/repoMongo/impl/migrations && migrate-mongo up
-	eval $(MIGRATION_COMMAND)
+	cd docs/data/mydatasets/ && python to_mongodb.py
 
 mmigrate-down:
 	cd internal/repoMongo/impl/migrations && migrate-mongo down

@@ -78,7 +78,7 @@ func (lcr *LibCardRepo) GetByNum(ctx context.Context, libCardNum string) (*model
 		return nil, errs.ErrLibCardDoesNotExists
 	}
 
-	lcr.logger.Infof("sselected libCard with num: %s", libCardNum)
+	lcr.logger.Infof("selected libCard with num: %s", libCardNum)
 
 	return &libCard, nil
 }
