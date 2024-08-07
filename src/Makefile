@@ -13,7 +13,7 @@ run: build
 	./main.exe
 
 build:
-	docker compose up -d postgres-db redis
+	docker compose up -d postgres-db redis mongo-db
 	go build cmd/app/main.go
 
 utest-srv:
