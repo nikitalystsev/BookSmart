@@ -32,5 +32,12 @@ migrate-up:
 migrate-down:
 	migrate -database $(database_url) -path $(migration_path) down
 
+mmigrate-up:
+	cd internal/repoMongo/impl/migrations && migrate-mongo up
+	eval $(MIGRATION_COMMAND)
+
+mmigrate-down:
+	cd internal/repoMongo/impl/migrations && migrate-mongo down
+
 clean:
 	rm *.exe
