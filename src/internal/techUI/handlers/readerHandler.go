@@ -12,13 +12,22 @@ import (
 
 func (h *Handler) signUp(c *gin.Context) {
 
-	var inp models.ReaderModel
+	var inp dto.ReaderSignUpDTO
 	if err := c.BindJSON(&inp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
 		return
 	}
 
-	err := h.readerService.SignUp(c.Request.Context(), &inp)
+	reader := models.ReaderModel{
+		ID:          uuid.New(),
+		Fio:         inp.Fio,
+		PhoneNumber: inp.PhoneNumber,
+		Age:         inp.Age,
+		Password:    inp.Password,
+		Role:        "Reader",
+	}
+
+	err := h.readerService.SignUp(c.Request.Context(), &reader)
 	if err != nil && !errors.Is(err, errs.ErrReaderAlreadyExist) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return

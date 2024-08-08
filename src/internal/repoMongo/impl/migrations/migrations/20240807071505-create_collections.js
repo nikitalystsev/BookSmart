@@ -10,12 +10,12 @@ module.exports = {
                         title: {bsonType: "string"},
                         author: {bsonType: "string"},
                         publisher: {bsonType: "string"},
-                        copies_number: {bsonType: "int", minimum: 0},
+                        copies_number: {bsonType: "long", minimum: 0},
                         rarity: {bsonType: "string"},
                         genre: {bsonType: "string"},
-                        publishing_year: {bsonType: "int", minimum: 0},
+                        publishing_year: {bsonType: "long", minimum: 0},
                         language: {bsonType: "string"},
-                        age_limit: {bsonType: "int", minimum: 0}
+                        age_limit: {bsonType: "long", minimum: 0}
                     }
                 }
             },
@@ -31,7 +31,7 @@ module.exports = {
                         _id: {bsonType: "binData"},
                         fio: {bsonType: "string"},
                         phone_number: {bsonType: "string"},
-                        age: {bsonType: "int"},
+                        age: {bsonType: "long"},
                         password: {bsonType: "string"},
                         role: {bsonType: "string"},
                     }

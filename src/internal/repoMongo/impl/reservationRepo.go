@@ -176,7 +176,7 @@ func (rr *ReservationRepo) GetActiveByReaderID(ctx context.Context, readerID uui
 
 	if len(reservations) == 0 {
 		rr.logger.Warnf("active reservations with this readerID not found: %s", readerID)
-		return nil, errs.ErrReaderDoesNotExists
+		return nil, errs.ErrReservationDoesNotExists
 	}
 
 	rr.logger.Infof("found %d active reservations with readerID %s", len(reservations), readerID)

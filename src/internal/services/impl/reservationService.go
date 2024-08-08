@@ -269,7 +269,7 @@ func (rs *ReservationService) checkReaderExists(ctx context.Context, readerID uu
 
 func (rs *ReservationService) checkNoExpiredBooks(ctx context.Context, readerID uuid.UUID) error {
 	expiredReservations, err := rs.reservationRepo.GetExpiredByReaderID(ctx, readerID)
-	if err != nil {
+	if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
 		rs.logger.Errorf("error checking expired book existence: %v", err)
 		return err
 	}
@@ -286,7 +286,7 @@ func (rs *ReservationService) checkNoExpiredBooks(ctx context.Context, readerID 
 
 func (rs *ReservationService) checkActiveReservationsLimit(ctx context.Context, readerID uuid.UUID) error {
 	activeReservations, err := rs.reservationRepo.GetActiveByReaderID(ctx, readerID)
-	if err != nil {
+	if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
 		rs.logger.Errorf("error checking active reservations: %v", err)
 		return err
 	}

@@ -14,14 +14,6 @@ import (
 	"time"
 )
 
-/*
-	3 -- add book to favorites (now?)
-	4 -- reserve book
-	5 -- renew book
-	6 -- issue library card
-	7 -- renew library card
-*/
-
 const catalogMenu = `Catalog's menu:
 	1 -- view books
 	2 -- next page
@@ -254,7 +246,6 @@ func (r *Requester) AddToFavorites(bookPagesID *[]uuid.UUID, accessToken string)
 	return nil
 }
 
-// Функция для красивого вывода информации о книге
 func printBook(book *models.BookModel, num int) {
 	fmt.Printf("\n\nBook №%d:\n", num)
 	fmt.Println(strings.Repeat("-", 150))
@@ -269,13 +260,10 @@ func printBook(book *models.BookModel, num int) {
 	fmt.Printf("Age Limit:       %d\n", book.AgeLimit)
 }
 
-// Функция для вывода элементов слайса указателей на BookModel
 func printBooks(response []*models.BookModel, offset int) {
-	// Определим ширину для выравнивания
 	titleWidth := 60
 	authorWidth := 60
 
-	// Выведем заголовок таблицы
 	fmt.Printf("%-5s %-60s %-60s\n", "No.", "Title", "Author")
 	fmt.Println(strings.Repeat("-", 5+1+titleWidth+1+authorWidth))
 
@@ -284,7 +272,6 @@ func printBooks(response []*models.BookModel, offset int) {
 	}
 }
 
-// Вспомогательная функция для обрезки строки до заданной длины
 func truncate(s string, maxLength int) string {
 	if len(s) > maxLength {
 		return s[:maxLength-3] + "..."

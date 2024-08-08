@@ -75,7 +75,7 @@ func Run(configDir string) {
 
 	default:
 		fmt.Println("choice branch with mongodb")
-		mongoClient, err := repoMongo.NewClient(cfg.Mongo.URI, cfg.Mongo.Username, cfg.Mongo.Password)
+		mongoClient, err := repoMongo.NewClient(cfg.Mongo.URI, cfg.Mongo.Username, cfg.Mongo.Password, cfg.Mongo.DBName)
 		if err != nil {
 			logger.Error(err)
 			return

@@ -12,11 +12,11 @@ import (
 	"reflect"
 )
 
-func NewClient(url, username, password string) (*mongo.Client, error) {
+func NewClient(url, username, password, dbName string) (*mongo.Client, error) {
 	opts := options.Client().SetRegistry(newMongoUUIDRegistry()).ApplyURI(url)
 	if username != "" && password != "" {
 		opts.SetAuth(options.Credential{
-			Username: username, Password: password,
+			Username: username, Password: password, AuthSource: dbName,
 		})
 	}
 

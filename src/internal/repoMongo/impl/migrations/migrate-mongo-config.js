@@ -3,6 +3,7 @@
 const config = {
   mongodb: {
     // TODO Change (or review) the url to your MongoDB:
+    // url: "mongodb://nikitalystsev:zhpiix69@127.0.10.1:27017,127.0.10.3:27017,127.0.10.3:27017/booksmart?replicaSet=dbrs",
     url: "mongodb://nikitalystsev:zhpiix69@localhost:27017/booksmart",
 
     // TODO Change this to your database name:

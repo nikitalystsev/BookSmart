@@ -1,6 +1,6 @@
 auth:
-  accessTokenTTL: 5m
-  refreshTokenTTL: 10m
+  accessTokenTTL: 1h
+  refreshTokenTTL: 2h
 
 port: 8000
 
