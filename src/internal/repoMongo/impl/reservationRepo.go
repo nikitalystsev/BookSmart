@@ -41,6 +41,11 @@ func (rr *ReservationRepo) Create(ctx context.Context, reservation *models.Reser
 func (rr *ReservationRepo) GetByReaderAndBook(ctx context.Context, readerID, bookID uuid.UUID) (*models.ReservationModel, error) {
 	rr.logger.Infof("find reservation with readerID и bookID: %s и %s", readerID, bookID)
 
+	if err := rr.updateReservationStates(ctx); err != nil {
+		rr.logger.Errorf("error updating reservations status: %v", err)
+		return nil, err
+	}
+
 	one := rr.db.FindOne(ctx, bson.M{"reader_id": readerID, "book_id": bookID})
 
 	if one.Err() != nil && !errors.Is(one.Err(), mongo.ErrNoDocuments) {
@@ -65,6 +70,11 @@ func (rr *ReservationRepo) GetByReaderAndBook(ctx context.Context, readerID, boo
 
 func (rr *ReservationRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.ReservationModel, error) {
 	rr.logger.Infof("find reservation with ID: %s", ID)
+
+	if err := rr.updateReservationStates(ctx); err != nil {
+		rr.logger.Errorf("error updating reservations status: %v", err)
+		return nil, err
+	}
 
 	one := rr.db.FindOne(ctx, bson.M{"_id": ID})
 
@@ -113,6 +123,11 @@ func (rr *ReservationRepo) Update(ctx context.Context, reservation *models.Reser
 func (rr *ReservationRepo) GetExpiredByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
 	rr.logger.Infof("find expired reservations with readerID: %s", readerID)
 
+	if err := rr.updateReservationStates(ctx); err != nil {
+		rr.logger.Errorf("error updating reservations status: %v", err)
+		return nil, err
+	}
+
 	filter := bson.M{
 		"reader_id":   readerID,
 		"return_date": bson.M{"$lt": time.Now()},
@@ -149,6 +164,10 @@ func (rr *ReservationRepo) GetExpiredByReaderID(ctx context.Context, readerID uu
 func (rr *ReservationRepo) GetActiveByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
 	rr.logger.Infof("find active reservations with readerID: %s", readerID)
 
+	if err := rr.updateReservationStates(ctx); err != nil {
+		rr.logger.Errorf("error updating reservations status: %v", err)
+		return nil, err
+	}
 	filter := bson.M{
 		"reader_id": readerID,
 		"state": bson.M{
@@ -182,4 +201,21 @@ func (rr *ReservationRepo) GetActiveByReaderID(ctx context.Context, readerID uui
 	rr.logger.Infof("found %d active reservations with readerID %s", len(reservations), readerID)
 
 	return reservations, nil
+}
+
+func (rr *ReservationRepo) updateReservationStates(ctx context.Context) error {
+	filterExpired := bson.M{
+		"state":      bson.M{"$in": []string{impl.ReservationIssued, impl.ReservationExtended}},
+		"returnDate": bson.M{"$lt": time.Now()},
+	}
+	updateExpired := bson.M{
+		"$set": bson.M{"state": impl.ReservationExpired},
+	}
+
+	_, err := rr.db.UpdateMany(ctx, filterExpired, updateExpired)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

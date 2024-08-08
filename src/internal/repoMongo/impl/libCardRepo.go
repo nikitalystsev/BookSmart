@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"time"
 )
 
 type LibCardRepo struct {
@@ -38,6 +39,11 @@ func (lcr *LibCardRepo) Create(ctx context.Context, libCard *models.LibCardModel
 func (lcr *LibCardRepo) GetByReaderID(ctx context.Context, readerID uuid.UUID) (*models.LibCardModel, error) {
 	lcr.logger.Infof("find libCard with readerID: %s", readerID)
 
+	if err := lcr.updateActionStatus(ctx); err != nil {
+		lcr.logger.Errorf("error updating libCard status: %v", err)
+		return nil, err
+	}
+
 	one := lcr.db.FindOne(ctx, bson.M{"reader_id": readerID})
 
 	if one.Err() != nil && !errors.Is(one.Err(), mongo.ErrNoDocuments) {
@@ -62,6 +68,11 @@ func (lcr *LibCardRepo) GetByReaderID(ctx context.Context, readerID uuid.UUID) (
 
 func (lcr *LibCardRepo) GetByNum(ctx context.Context, libCardNum string) (*models.LibCardModel, error) {
 	lcr.logger.Infof("find libCard with num: %s", libCardNum)
+
+	if err := lcr.updateActionStatus(ctx); err != nil {
+		lcr.logger.Errorf("error updating libCard status: %v", err)
+		return nil, err
+	}
 
 	one := lcr.db.FindOne(ctx, bson.M{"lib_card_num": libCardNum})
 
@@ -99,6 +110,23 @@ func (lcr *LibCardRepo) Update(ctx context.Context, libCard *models.LibCardModel
 	}
 
 	lcr.logger.Infof("updated libCard with ID: %s", libCard.ID)
+
+	return nil
+}
+
+func (lcr *LibCardRepo) updateActionStatus(ctx context.Context) error {
+	filter := bson.M{
+		"action_status": true,
+		"issue_date":    bson.M{"$lt": time.Now().AddDate(0, 0, -365)},
+	}
+	update := bson.M{
+		"$set": bson.M{"action_status": false},
+	}
+
+	_, err := lcr.db.UpdateMany(ctx, filter, update)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
