@@ -3,9 +3,11 @@ package handlers
 import (
 	"BookSmart-services/intf"
 	"BookSmart-services/pkg/auth"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"io"
+	"net/http"
 )
 
 type Handler struct {
@@ -40,6 +42,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	gin.DefaultWriter = io.Discard
 
 	router := gin.Default()
+
+	router.Use(h.corsSettings())
 
 	authenticate := router.Group("/auth")
 	{
@@ -82,4 +86,23 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	}
 
 	return router
+}
+
+func (h *Handler) corsSettings() gin.HandlerFunc {
+	return cors.New(cors.Config{
+		AllowMethods: []string{
+			http.MethodPost,
+		},
+		AllowOrigins: []string{
+			"*",
+		},
+		AllowCredentials: true,
+		AllowHeaders: []string{
+			"Authorization",
+			"Content-Type",
+		},
+		ExposeHeaders: []string{
+			"Content-Type",
+		},
+	})
 }

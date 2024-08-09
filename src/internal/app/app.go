@@ -9,7 +9,6 @@ import (
 	"BookSmart-services/pkg/hash"
 	"BookSmart-services/pkg/transact"
 	"BookSmart-techUI/handlers"
-	"BookSmart-techUI/requesters"
 	repoMongo "Booksmart-mongo"
 	implMongo "Booksmart-mongo/impl"
 	"Booksmart/internal/config"
@@ -113,14 +112,22 @@ func Run(configDir string) {
 
 	router := handler.InitRoutes()
 
-	go func() {
-		err = router.Run(":" + cfg.Port)
-		if err != nil {
-			logger.Errorf("error running server: %v", err)
-			return
-		}
-	}()
+	fmt.Println("Server was successfully started!")
 
-	requester := requesters.NewRequester(logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
-	requester.Run()
+	err = router.Run(":" + cfg.Port)
+	if err != nil {
+		logger.Errorf("error running server: %v", err)
+		return
+	}
+
+	//go func() {
+	//	err = router.Run(":" + cfg.Port)
+	//	if err != nil {
+	//		logger.Errorf("error running server: %v", err)
+	//		return
+	//	}
+	//}()
+	//
+	//requester := requesters.NewRequester(logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
+	//requester.Run()
 }

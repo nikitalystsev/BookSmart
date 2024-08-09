@@ -5,4 +5,4 @@ auth:
 port: 8000
 
 db:
-  type: mongo # postgres | mongo
+  type: postgres # postgres | mongo
