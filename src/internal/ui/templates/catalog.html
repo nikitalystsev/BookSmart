@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Каталог</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="../js/main.js"></script>
+    <script src="../js/catalog.js"></script>
+</head>
+<body>
+
+<div id="navbar-container"></div>
+
+<div class="container-fluid mt-3">
+    <h1>Параметры поиска</h1>
+    <form class="mb-auto" id="paramsForm">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="title" placeholder="Название">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="author" placeholder="Автор">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="publisher" placeholder="Издательство">
+            </div>
+            <div class="col-md-3">
+                <input type="number" class="form-control" id="copies_number" placeholder="Число экземпляров">
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <select class="form-control" type="text" id="rarity">
+                    <option value="">Редкость</option>
+                    <option value="Обычная">Обычная</option>
+                    <option value="Редкая">Редкая</option>
+                    <option value="Уникальная">Уникальная</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="genre" placeholder="Жанр">
+            </div>
+            <div class="col-md-3">
+                <input type="number" class="form-control" id="publishing_year" placeholder="Год издания">
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="language" placeholder="Введите язык">
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <select class="form-control" type="number" id="age_limit">
+                    <option value="">Цензура</option>
+                    <option value="0">0+</option>
+                    <option value="6">6+</option>
+                    <option value="12">12+</option>
+                    <option value="16">16+</option>
+                    <option value="18">18+</option>
+                    <option value="21">21+</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-block">Поиск</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="container-fluid mt-4">
+    <h1>Каталог</h1>
+    <div class="row" id="book-cards">
+    </div>
+
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center mt-4" id="pagination">
+            <li class="page-item"><a class="page-link" href="#" id="prevPageBtn">Назад</a></li>
+            <li class="page-item"><a class="page-link" href="#" type="click" id="nextPageBtn">Вперед</a></li>
+        </ul>
+    </nav>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+<script src="../js/catalog.js"></script>
+
+</body>
+</html>

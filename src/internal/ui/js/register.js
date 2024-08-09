@@ -9,11 +9,15 @@ async function registerUser(event) {
 }
 
 function parseRegistration() {
-    const form = document.getElementById('loginForm');
+    const form = document.getElementById('registrationForm');
     let userData = {}
-    const phoneNumber = form.elements.phone_number,
+    const fio = form.elements.fio,
+        age = form.elements.age,
+        phoneNumber = form.elements.phone_number,
         password = form.elements.password;
 
+    if (fio) userData.fio = fio.value;
+    if (age) userData.age = age.value;
     if (phoneNumber) userData.phone_number = phoneNumber.value;
     if (password) userData.password = password.value;
 
@@ -21,7 +25,7 @@ function parseRegistration() {
 }
 
 async function saveUserToStorage(userData) {
-    const response = await fetch("http://localhost:8000/auth/sign-in", {
+    const response = await fetch("http://localhost:8000/auth/sign-up", {
         method: 'POST', headers: {
             'Content-Type': 'application/json'
         }, body: JSON.stringify(userData)
@@ -35,4 +39,4 @@ async function saveUserToStorage(userData) {
     return await response.json();
 }
 
-document.getElementById('loginForm').addEventListener('submit', registerUser);
+document.getElementById('registrationForm').addEventListener('submit', registerUser);
