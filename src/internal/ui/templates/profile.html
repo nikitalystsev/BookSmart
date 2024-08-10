@@ -1,33 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль пользователя</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/profile.css">
+
 </head>
 <body>
+
 <div class="container mt-5">
-    <h1 class="mb-4">Профиль пользователя</h1>
+    <h1 class="mb-4 text-center">Профиль пользователя</h1>
     <div id="user-container" class="card">
         <div class="card-body">
-            <h5 class="card-title" id="fio"></h5>
+            <h5 class="card-title text-center" id="fio"></h5>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item"><strong>Номер телефона:</strong> <span id="phone_number"></span></li>
-                <li class="list-group-item"><strong>Возраст</strong> <span id="age"></span>
+                <li class="list-group-item"><strong>Возраст:</strong> <span id="age"></span></li>
             </ul>
-            <div class="d-flex justify-content-between mt-4">
+            <div class="btn-container">
                 <a href="#" class="btn btn-primary">Работа с читательским билетом</a>
                 <a href="#" class="btn btn-secondary">Работа с бронями</a>
                 <a href="#" class="btn btn-success">Вернуться к каталогу</a>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <script src="../js/profile.js" type="module"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="../js/profile.js" type="module"></script>
 
 </body>
 </html>

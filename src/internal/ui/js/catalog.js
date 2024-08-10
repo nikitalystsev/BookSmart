@@ -127,10 +127,10 @@ function displayBooks(books) {
         card.className = 'col-md-4 mb-4';
 
         card.innerHTML = `
-            <div class="card h-100">
+            <div class="card h-100" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
                 <h5 class="card-header">${book.title}</h5>
                 <div class="card-body">
-                    <h5 class="card-title" >${book.author}</h5>
+                    <h5 class="card-title">${book.author}</h5>
                     <p class="card-text" style="max-width: 150px;">${book.description || 'Нет описания.'}</p>
                     <a href="#" class="btn btn-primary" onclick='choiceBook(${JSON.stringify(book)})'>Подробнее</a>
                 </div>
@@ -139,6 +139,7 @@ function displayBooks(books) {
         bookCardsContainer.appendChild(card);
     });
 }
+
 
 function choiceBook(book) {
     sessionStorage.setItem('selectedBook', JSON.stringify(book));
@@ -210,7 +211,7 @@ function setCatalogNavbar() {
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true'; // Проверка статуса аутентификации
 
     document.getElementById('navbar-container').innerHTML = `
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
                 <a class="navbar-brand" href="#"><b>BookSmart</b></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
@@ -228,19 +229,16 @@ function setCatalogNavbar() {
                 </div>
                 <div id="auth-links">
                     ${isAuthenticated
-        ? '<a href="../templates/profile.html" class="btn btn-outline-primary" onclick="toLks()">Личный кабинет</a>'
-        : '<a href="../templates/login.html" class="btn btn-outline-primary">Войти</a>'}
+        ? '<a href="../templates/profile.html" class="btn btn-outline-primary ms-2">Личный кабинет</a>'
+        : '<a href="../templates/login.html" class="btn btn-outline-primary ms-2">Войти</a>'}
                 </div>
-            </nav>
-        `;
+        </nav> `
+    ;
 
     // Устанавливаем активную ссылку
     setActiveNavLink('nav-catalog'); // Замените 'nav-catalog' на нужный ID, если требуется
 }
 
-function toLks() {
-    window.location.href = '../templates/profile.html';
-}
 // Вызываем функцию при загрузке страницы
 window.onload = setCatalogNavbar;
 

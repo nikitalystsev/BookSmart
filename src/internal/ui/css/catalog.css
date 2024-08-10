@@ -1,0 +1,33 @@
+body {
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #343a40;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.content {
+    flex: 1;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: auto;
+}

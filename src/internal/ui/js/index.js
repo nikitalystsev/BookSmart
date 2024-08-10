@@ -2,7 +2,7 @@ function setHomeNavbar() {
     const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true'; // Проверка статуса аутентификации
 
     document.getElementById('navbar-container').innerHTML = `
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
                 <a class="navbar-brand" href="#"><b>BookSmart</b></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
@@ -20,18 +20,15 @@ function setHomeNavbar() {
                 </div>
                 <div id="auth-links">
                     ${isAuthenticated
-        ? '<a href="../templates/profile.html" class="btn btn-outline-primary" onclick="toLks()">Личный кабинет</a>'
-        : '<a href="../templates/login.html" class="btn btn-outline-primary">Войти</a>'}
+        ? '<a href="../templates/profile.html" class="btn btn-outline-primary ms-2">Личный кабинет</a>'
+        : '<a href="../templates/login.html" class="btn btn-outline-primary ms-2">Войти</a>'}
                 </div>
-            </nav>
-        `;
+        </nav> `
+    ;
 
     // Устанавливаем активную ссылку
     setActiveNavLink('nav-home'); // Замените 'nav-catalog' на нужный ID, если требуется
 }
 
-function toLks() {
-    window.location.href = '../templates/profile.html';
-}
 
 document.addEventListener("DOMContentLoaded", setHomeNavbar);

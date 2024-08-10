@@ -5,15 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Подробности о книге</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/book.css">
 </head>
 <body>
 
 <div class="container mt-5">
-    <h1 class="mb-4">Информация о книге</h1>
-    <div id="book-container" class="card">
+    <h1 class="mb-4 text-center">Информация о книге</h1>
+
+    <div id="book-container" class="card shadow-lg">
         <div class="card-body">
-            <h5 class="card-title" id="book-title"></h5>
-            <h6 class="card-subtitle mb-2 text-muted" id="book-author"></h6>
+            <h5 class="card-title" id="book-title">Название книги</h5>
+            <h6 class="card-subtitle mb-2 text-muted" id="book-author">Автор книги</h6>
 
             <ul class="list-group list-group-flush">
                 <li class="list-group-item"><strong>Издатель:</strong> <span id="book-publisher"></span></li>
@@ -26,7 +29,8 @@
                 <li class="list-group-item"><strong>Возрастное ограничение:</strong> <span id="book-age-limit"></span>
                 </li>
             </ul>
-            <a href="catalog.html" class="btn btn-primary mt-3">Назад к каталогу</a>
+
+            <a href="catalog.html" class="btn btn-primary mt-3"><i class="fas fa-arrow-left"></i> Назад к каталогу</a>
         </div>
     </div>
 </div>

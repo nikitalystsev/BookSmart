@@ -6,10 +6,12 @@
     <title>Форма регистрации</title>
     <!-- Подключение Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/register.css" rel="stylesheet">
+
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="container">
     <h2 class="text-center">Регистрация</h2>
     <div id="message" class="alert d-none" role="alert"></div>
     <form id="registrationForm">
@@ -26,14 +28,15 @@
             <input type="tel" class="form-control" id="phone_number" name="phone_number"
                    placeholder="Введите номер телефона" required>
         </div>
-
         <div class="form-group">
             <label for="password">Пароль</label>
             <input type="password" class="form-control" id="password" name="password" placeholder="Введите пароль"
                    required>
         </div>
         <button type="submit" class="btn btn-primary btn-block">Зарегистрироваться</button>
-        <p>Уже зарегистрированы? <a href="login.html">Войдите в систему</a>.</p>
+        <div class="footer-link">
+            <p>Уже зарегистрированы? <a href="login.html">Войдите в систему</a>.</p>
+        </div>
     </form>
 </div>
 

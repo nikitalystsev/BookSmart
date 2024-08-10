@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Форма аутентификации</title>
-    <!-- Подключение Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/login.css" rel="stylesheet">
+
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="container">
     <h2 class="text-center">Вход в систему</h2>
     <div id="message" class="alert d-none" role="alert"></div>
     <form id="loginForm">
@@ -24,7 +25,9 @@
                    required>
         </div>
         <button type="submit" class="btn btn-primary btn-block">Войти</button>
-        <p>Нет аккаунта? <a href="register.html">Создайте его за минуту</a>.</p>
+        <div class="footer-link">
+            <p>Нет аккаунта? <a href="register.html">Создайте его за минуту</a>.</p>
+        </div>
     </form>
 </div>
 
@@ -33,8 +36,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-<script src="../js/login.js">
-</script>
+<script src="../js/login.js"></script>
 
 </body>
 </html>

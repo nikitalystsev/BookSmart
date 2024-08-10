@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Каталог</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <script src="../js/main.js"></script>
-    <script src="../js/catalog.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/catalog.css">
 </head>
 <body>
 
@@ -30,14 +30,13 @@
         </div>
         <div class="row mt-2">
             <div class="col-md-3">
-                <select class="form-control" type="text" id="rarity">
+                <select class="form-control" id="rarity">
                     <option value="">Редкость</option>
                     <option value="Обычная">Обычная</option>
                     <option value="Редкая">Редкая</option>
                     <option value="Уникальная">Уникальная</option>
                 </select>
             </div>
-
             <div class="col-md-3">
                 <input type="text" class="form-control" id="genre" placeholder="Жанр">
             </div>
@@ -50,7 +49,7 @@
         </div>
         <div class="row mt-2">
             <div class="col-md-3">
-                <select class="form-control" type="number" id="age_limit">
+                <select class="form-control" id="age_limit">
                     <option value="">Цензура</option>
                     <option value="0">0+</option>
                     <option value="6">6+</option>
@@ -70,12 +69,18 @@
 <div class="container-fluid mt-4">
     <h1>Каталог</h1>
     <div class="row" id="book-cards">
+        <!-- Здесь будут карточки книг -->
     </div>
 
+</div>
+
+<div class="pagination-container">
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center mt-4" id="pagination">
-            <li class="page-item"><a class="page-link" href="#" id="prevPageBtn">Назад</a></li>
-            <li class="page-item"><a class="page-link" href="#" type="click" id="nextPageBtn">Вперед</a></li>
+            <li class="page-item"><a class="page-link" href="#" id="prevPageBtn"><i class="fas fa-chevron-left"></i>
+                Назад</a></li>
+            <li class="page-item"><a class="page-link" href="#" id="nextPageBtn">Вперед <i
+                    class="fas fa-chevron-right"></i></a></li>
         </ul>
     </nav>
 </div>
