@@ -1,14 +1,28 @@
-async function registerUser(event) {
+async function loginUser(event) {
     event.preventDefault();
 
-    const user = parseRegistration();
+    const user = parseLogin();
 
-    let res = await saveUserToStorage(user);
-    if (res != null) {
+    sessionStorage.setItem('phone_number', user.phone_number);
+
+    try {
+        let response = await loginUserOnStorage(user);
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${response.status}`);
+            return response.text();
+        }
+
+        const tokens = await response.json();
+        sessionStorage.setItem('tokens', JSON.stringify(tokens));
+        sessionStorage.setItem('isAuthenticated', "true");
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
     }
 }
 
-function parseRegistration() {
+function parseLogin() {
     const form = document.getElementById('loginForm');
     let userData = {}
     const phoneNumber = form.elements.phone_number,
@@ -20,19 +34,34 @@ function parseRegistration() {
     return userData;
 }
 
-async function saveUserToStorage(userData) {
-    const response = await fetch("http://localhost:8000/auth/sign-in", {
-        method: 'POST', headers: {
+async function loginUserOnStorage(userData) {
+    return await fetch("http://localhost:8000/auth/sign-in", {
+        method: 'POST',
+        headers: {
             'Content-Type': 'application/json'
-        }, body: JSON.stringify(userData)
+        },
+        body: JSON.stringify(userData)
     });
-
-    if (!response.ok) {
-        console.error(`HTTP error! Status: ${response.status}`);
-        return null;
-    }
-
-    return await response.json();
 }
 
-document.getElementById('loginForm').addEventListener('submit', registerUser);
+async function loginUserWithMessage(event) {
+    event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
+
+    const message = await loginUser(event)
+
+    const messageElement = document.getElementById('message');
+    if (message === null) {
+        messageElement.className = 'alert alert-success'; // Успех
+        messageElement.textContent = 'Вход прошел успешно!';
+        window.location.href = '../templates/index.html';
+    } else {
+        messageElement.className = 'alert alert-danger'; // Ошибка
+        messageElement.textContent = message;
+    }
+
+    messageElement.classList.remove('d-none'); // Показываем сообщение
+}
+
+
+// document.getElementById('loginForm').addEventListener('submit', loginUser);
+document.getElementById('loginForm').addEventListener('submit', loginUserWithMessage);

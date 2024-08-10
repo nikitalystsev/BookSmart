@@ -3,8 +3,16 @@ async function registerUser(event) {
 
     const user = parseRegistration();
 
-    let res = await saveUserToStorage(user);
-    if (res != null) {
+    try {
+        let response = await saveUserToStorage(user);
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${response.status}`);
+            return response.text();
+        }
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
     }
 }
 
@@ -17,7 +25,7 @@ function parseRegistration() {
         password = form.elements.password;
 
     if (fio) userData.fio = fio.value;
-    if (age) userData.age = age.value;
+    if (age) userData.age = parseInt(age.value, 10);
     if (phoneNumber) userData.phone_number = phoneNumber.value;
     if (password) userData.password = password.value;
 
@@ -25,18 +33,34 @@ function parseRegistration() {
 }
 
 async function saveUserToStorage(userData) {
-    const response = await fetch("http://localhost:8000/auth/sign-up", {
-        method: 'POST', headers: {
+    return await fetch("http://localhost:8000/auth/sign-up", {
+        method: 'POST',
+        headers: {
             'Content-Type': 'application/json'
-        }, body: JSON.stringify(userData)
+        },
+        body: JSON.stringify(userData)
     });
-
-    if (!response.ok) {
-        console.error(`HTTP error! Status: ${response.status}`);
-        return null;
-    }
-
-    return await response.json();
 }
 
-document.getElementById('registrationForm').addEventListener('submit', registerUser);
+
+async function registerUserWithMessage(event) {
+    event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
+
+    const message = await registerUser(event)
+
+    const messageElement = document.getElementById('message');
+    if (message === null) {
+        messageElement.className = 'alert alert-success'; // Успех
+        messageElement.textContent = 'Регистрация прошла успешно!';
+        window.location.href = '../templates/index.html';
+    } else {
+        messageElement.className = 'alert alert-danger'; // Ошибка
+        messageElement.textContent = message;
+    }
+
+    messageElement.classList.remove('d-none'); // Показываем сообщение
+}
+
+
+// document.getElementById('registrationForm').addEventListener('submit', registerUser);
+document.getElementById('registrationForm').addEventListener('submit', registerUserWithMessage);
