@@ -1,3 +1,5 @@
+import {isBadRequest, isConflict, isInternalServerError} from "./errors.js";
+
 async function loginUser(event) {
     event.preventDefault();
 
@@ -7,10 +9,9 @@ async function loginUser(event) {
 
     try {
         let response = await loginUserOnStorage(user);
-        if (!response.ok) {
-            console.error(`HTTP error! Status: ${response.status}`);
-            return response.text();
-        }
+        if (isBadRequest(response)) return "Ошибка запроса"
+        if (isConflict(response)) return response.text()
+        if (isInternalServerError(response)) return response.text()
 
         const tokens = await response.json();
         sessionStorage.setItem('tokens', JSON.stringify(tokens));
@@ -62,6 +63,4 @@ async function loginUserWithMessage(event) {
     messageElement.classList.remove('d-none'); // Показываем сообщение
 }
 
-
-// document.getElementById('loginForm').addEventListener('submit', loginUser);
 document.getElementById('loginForm').addEventListener('submit', loginUserWithMessage);

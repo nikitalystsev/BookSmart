@@ -1,4 +1,5 @@
 import {fetchWithAuth} from "./tokens.js";
+import {isBadRequest, isInternalServerError, isNotFound} from "./errors.js";
 
 async function getUser(event) {
     event.preventDefault();
@@ -9,14 +10,12 @@ async function getUser(event) {
 
     try {
         const response = await getUserFromStorage(phoneNumber);
-        if (!response.ok) {
-            console.error(`HTTP error! Status: ${response.status}`);
-            return response.text();
-        }
 
-        const user = await response.json();
+        if (isNotFound(response)) return "Читателя не существует"
+        if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
+        if (isBadRequest(response)) return "Ошибка запроса"
 
-        displayUser(user)
+        displayUser(await response.json())
 
         return null;
     } catch (error) {

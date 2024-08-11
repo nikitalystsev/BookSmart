@@ -1,3 +1,5 @@
+import {isBadRequest, isConflict, isInternalServerError} from "./errors.js";
+
 async function registerUser(event) {
     event.preventDefault();
 
@@ -5,10 +7,9 @@ async function registerUser(event) {
 
     try {
         let response = await saveUserToStorage(user);
-        if (!response.ok) {
-            console.error(`HTTP error! Status: ${response.status}`);
-            return response.text();
-        }
+        if (isBadRequest(response)) return "Ошибка запроса"
+        if (isConflict(response)) return "Вы уже зарегистрированы"
+        if (isInternalServerError(response)) return response.text()
 
         return null;
     } catch (error) {

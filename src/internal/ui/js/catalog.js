@@ -1,3 +1,5 @@
+import {isBadRequest, isInternalServerError, isNotFound} from "./errors.js";
+
 async function getBooks(event) {
     event.preventDefault();
 
@@ -5,11 +7,10 @@ async function getBooks(event) {
 
     try {
         let response = await getBooksFromStorage(searchParams);
-        if (!response.ok) {
-            console.error(`HTTP error! Status: ${response.status}`);
-            return response.text();
-        }
 
+        if (isNotFound(response)) return "Нет книг, удовлетворяющих условиям поиска";
+        if (isInternalServerError(response)) return response.text()
+        if (isBadRequest(response)) return "Ошибка запроса"
         const books = await response.json();
 
         displayBooks(books);
@@ -106,10 +107,10 @@ async function getPageBooks(newPageNum) {
 
     try {
         let response = await getBooksFromStorage(searchParams);
-        if (!response.ok) {
-            console.error(`HTTP error! Status: ${response.status}`);
-            return response.text();
-        }
+
+        if (isNotFound(response)) return "Все книги, удовлетворяющие условиям поиска, отображены"; // ?
+        if (isInternalServerError(response)) return response.text()
+        if (isBadRequest(response)) return "Ошибка запроса"
 
         const books = await response.json();
 
@@ -132,6 +133,11 @@ async function getBooksFromStorage(searchParams) {
     });
 }
 
+function choiceBook(book) {
+    sessionStorage.setItem('selectedBook', JSON.stringify(book));
+    window.location.href = '../templates/book.html';
+}
+
 function displayBooks(books) {
     const bookCardsContainer = document.getElementById('book-cards');
     bookCardsContainer.innerHTML = '';
@@ -150,11 +156,20 @@ function displayBooks(books) {
                 <h5 class="card-header">${book.title}</h5>
                 <div class="card-body">
                     <h5 class="card-title">${book.author}</h5>
-                    <a href="#" class="btn btn-primary" onclick='choiceBook(${JSON.stringify(book)})'>Подробнее</a>
+                    <a href="#" class="btn btn-primary" data-book='${JSON.stringify(book)}'>Подробнее</a>
                 </div>
             </div> `;
 
         bookCardsContainer.appendChild(card);
+    });
+
+    // Добавление обработчика событий для всех кнопок
+    bookCardsContainer.querySelectorAll('.btn-primary').forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            const book = JSON.parse(button.getAttribute('data-book'));
+            choiceBook(book);
+        });
     });
 }
 
@@ -170,7 +185,6 @@ async function getBooksWithMessage(event) {
         messageElement.textContent = message;
         messageElement.classList.remove('d-none');
     } else messageElement.classList.add('d-none');
-
 }
 
 async function getNextPageWithMessage(event) {
@@ -183,9 +197,8 @@ async function getNextPageWithMessage(event) {
     if (message) {
         messageElement.className = 'alert alert-danger';
         messageElement.textContent = message;
-    }
-
-    messageElement.classList.remove('d-none');
+        messageElement.classList.remove('d-none');
+    } else messageElement.classList.add('d-none');
 }
 
 async function getPrevPageWithMessage(event) {
@@ -198,15 +211,8 @@ async function getPrevPageWithMessage(event) {
     if (message) {
         messageElement.className = 'alert alert-danger';
         messageElement.textContent = message;
-    }
-
-    messageElement.classList.remove('d-none');
-}
-
-
-function choiceBook(book) {
-    sessionStorage.setItem('selectedBook', JSON.stringify(book));
-    window.location.href = '../templates/book.html';
+        messageElement.classList.remove('d-none');
+    } else messageElement.classList.add('d-none');
 }
 
 function displayPageBooks() {
@@ -298,11 +304,9 @@ function setCatalogNavbar() {
         </nav> `
     ;
 
-    // Устанавливаем активную ссылку
     setActiveNavLink('nav-catalog');
 }
 
-// Вызываем функцию при загрузке страницы
 window.onload = setCatalogNavbar;
 
 document.addEventListener("DOMContentLoaded", updatePagination)

@@ -1,4 +1,5 @@
 import {fetchWithAuth} from "./tokens.js";
+import {isBadRequest, isConflict, isInternalServerError, isNotFound} from "./errors.js";
 
 function displaySelectedBook() {
     const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
@@ -18,7 +19,6 @@ function displaySelectedBook() {
     document.getElementById('book-publishing-year').textContent = publishing_year || 'Нет данных';
     document.getElementById('book-language').textContent = language || 'Нет данных';
     document.getElementById('book-age-limit').textContent = age_limit || 'Нет данных';
-
 }
 
 async function reserveSelectedBook(event) {
@@ -33,10 +33,11 @@ async function reserveSelectedBook(event) {
 
     try {
         let response = await reserveBookOnStorage(selectedBook.id);
-        if (!response.ok) {
-            console.error(`HTTP error! Status: ${response.status}`);
-            return response.text();
-        }
+
+        if (isBadRequest(response)) return "Ошибка запроса"
+        if (isConflict(response)) return response.text()
+        if (isNotFound(response)) return response.text()
+        if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
 
         return null;
     } catch (error) {
@@ -71,6 +72,58 @@ async function reserveSelectedBookWithMessage(event) {
     messageElement.classList.remove('d-none');
 }
 
+
+async function addToFavoritesSelectedBook(event) {
+    event.preventDefault()
+
+    const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
+
+    if (!selectedBook) {
+        document.getElementById('book-container').innerHTML = '<p>Книга не найдена.</p>';
+        return;
+    }
+
+    try {
+        let response = await addBookToFavoritesOnStorage(selectedBook.id);
+
+        if (isBadRequest(response)) return "Ошибка запроса"
+        if (isConflict(response)) return response.text()
+        if (isNotFound(response)) return response.text()
+        if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
+    }
+}
+
+async function addBookToFavoritesOnStorage(bookID) {
+    return await fetchWithAuth("http://localhost:8000/api/favorites", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookID)
+    });
+}
+
+async function addToFavoritesSelectedBookWithMessage(event) {
+    event.preventDefault();
+
+    const message = await addToFavoritesSelectedBook(event)
+
+    const messageElement = document.getElementById('message');
+    if (message === null) {
+        messageElement.className = 'alert alert-success';
+        messageElement.textContent = 'Книга была успешно Добавлена в избранное!';
+    } else {
+        messageElement.className = 'alert alert-danger';
+        messageElement.textContent = message;
+    }
+
+    messageElement.classList.remove('d-none');
+}
+
 function addButtonsIfAuthenticated() {
     const isAuthenticated = sessionStorage.getItem("isAuthenticated");
 
@@ -80,7 +133,7 @@ function addButtonsIfAuthenticated() {
 
     const reserveBookBtn = document.createElement('a');
     reserveBookBtn.href = '#';
-    reserveBookBtn.id = 'reserve-book-btn'
+    reserveBookBtn.id = 'reserveBookBtn'
     reserveBookBtn.className = 'btn btn-primary mt-3';
     reserveBookBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Забронировать';
 
@@ -93,6 +146,7 @@ function addButtonsIfAuthenticated() {
     btnContainer.appendChild(addBookToFavoriteBtn);
 
     reserveBookBtn.addEventListener("click", reserveSelectedBookWithMessage)
+    addBookToFavoriteBtn.addEventListener("click", addToFavoritesSelectedBookWithMessage)
 }
 
 
