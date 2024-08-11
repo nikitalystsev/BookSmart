@@ -13,7 +13,9 @@
 <div id="navbar-container"></div>
 
 <div class="container-fluid mt-3">
-    <h1>Параметры поиска</h1>
+    <div class="header-bar">
+        <h1>Параметры поиска</h1>
+    </div>
     <div id="message" class="alert d-none" role="alert"></div>
     <form class="mb-auto" id="paramsForm">
         <div class="row">
@@ -43,7 +45,7 @@
                 <input type="text" class="form-control" id="genre" placeholder="Жанр">
             </div>
             <div class="col-md-3">
-                <input type="number" class="form-control" id="publishing_year" placeholder="Год издания">
+                <input class="form-control" id="publishing_year" placeholder="Год издания" type="number">
             </div>
             <div class="col-md-3">
                 <input type="text" class="form-control" id="language" placeholder="Введите язык">
@@ -69,7 +71,9 @@
 </div>
 
 <div class="container-fluid mt-4">
-    <h1>Каталог</h1>
+    <div class="header-bar">
+        <h1>Каталог</h1>
+    </div>
     <div class="row" id="book-cards">
         <!-- Здесь будут карточки книг -->
     </div>
