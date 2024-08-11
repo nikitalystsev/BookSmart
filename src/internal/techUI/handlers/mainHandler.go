@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
+	"time"
 )
 
 type Handler struct {
@@ -16,6 +17,8 @@ type Handler struct {
 	readerService      intf.IReaderService
 	reservationService intf.IReservationService
 	tokenManager       auth.ITokenManager
+	accessTokenTTL     time.Duration
+	refreshTokenTTL    time.Duration
 	logger             *logrus.Entry
 }
 
@@ -25,6 +28,8 @@ func NewHandler(
 	readerService intf.IReaderService,
 	reservationService intf.IReservationService,
 	tokenManager auth.ITokenManager,
+	accessTokenTTL time.Duration,
+	refreshTokenTTL time.Duration,
 	logger *logrus.Entry,
 ) *Handler {
 	return &Handler{
@@ -33,6 +38,8 @@ func NewHandler(
 		readerService:      readerService,
 		reservationService: reservationService,
 		tokenManager:       tokenManager,
+		accessTokenTTL:     accessTokenTTL,
+		refreshTokenTTL:    refreshTokenTTL,
 		logger:             logger,
 	}
 }
@@ -55,7 +62,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	general := router.Group("/general")
 	{
-		general.GET("/books", h.getBooks)
+		general.POST("/books", h.getBooks)
 		general.GET("/books/:id", h.getBookByID)
 
 	}
@@ -63,6 +70,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	api := router.Group("/api", h.readerIdentity)
 	{
 		api.POST("/favorites", h.addToFavorites)
+
+		api.GET("/readers/:phone_number", h.getReaderByPhoneNumber)
 
 		libCards := api.Group("/lib-cards")
 		{

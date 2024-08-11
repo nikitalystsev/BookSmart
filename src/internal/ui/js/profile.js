@@ -7,13 +7,17 @@ async function getUser(event) {
     if (!phoneNumber) {
         return;
     }
-    console.log(`http://localhost:8000/api/readers/${phoneNumber}`)
 
     try {
-        const user = await getUserFromStorage(phoneNumber);
-        if (user) {
-            displayUser(user)
+        const response = await getUserFromStorage(phoneNumber);
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${response.status}`);
+            return response.text();
         }
+
+        const user = await response.json();
+
+        displayUser(user)
 
         return null;
     } catch (error) {
@@ -21,16 +25,10 @@ async function getUser(event) {
     }
 }
 
-function getUserFromStorage(phoneNumber) {
-    return fetchWithAuth(`http://localhost:8000/api/readers/${phoneNumber}`, {
+async function getUserFromStorage(phoneNumber) {
+    return await fetchWithAuth(`http://localhost:8000/api/readers/${phoneNumber}`, {
         method: 'GET',
     })
-        .then((res) => {
-            if (res.status === 200) {
-                return res.json();
-            }
-            return null;
-        });
 }
 
 function displayUser(user) {
@@ -39,4 +37,19 @@ function displayUser(user) {
     document.getElementById('age').textContent = user.age;
 }
 
-document.addEventListener('DOMContentLoaded', getUser);
+async function getUserWithMessage(event) {
+    event.preventDefault();
+
+    const message = await getUser(event)
+
+    const messageElement = document.getElementById('message');
+
+    if (message) {
+        messageElement.className = 'alert alert-danger'; // Ошибка
+        messageElement.textContent = message;
+        messageElement.classList.remove('d-none');
+    } else messageElement.classList.add('d-none');
+
+}
+
+document.addEventListener('DOMContentLoaded', getUserWithMessage);

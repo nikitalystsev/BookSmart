@@ -85,7 +85,7 @@ func (r *Requester) viewFirstPage(params *dto.BookParamsDTO, bookPagesID *[]uuid
 	}
 
 	request := HTTPRequest{
-		Method: "GET",
+		Method: "POST",
 		URL:    "http://localhost:8000/general/books",
 		Headers: map[string]string{
 			"Content-Type": "application/json",
@@ -124,7 +124,7 @@ func (r *Requester) viewNextPage(params *dto.BookParamsDTO, bookPagesID *[]uuid.
 	}
 
 	request := HTTPRequest{
-		Method: "GET",
+		Method: "POST",
 		URL:    "http://localhost:8000/general/books",
 		Headers: map[string]string{
 			"Content-Type": "application/json",

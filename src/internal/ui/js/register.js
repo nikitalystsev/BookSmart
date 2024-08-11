@@ -44,23 +44,22 @@ async function saveUserToStorage(userData) {
 
 
 async function registerUserWithMessage(event) {
-    event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
+    event.preventDefault();
 
     const message = await registerUser(event)
 
     const messageElement = document.getElementById('message');
     if (message === null) {
-        messageElement.className = 'alert alert-success'; // Успех
+        messageElement.className = 'alert alert-success';
         messageElement.textContent = 'Регистрация прошла успешно!';
         window.location.href = '../templates/index.html';
     } else {
-        messageElement.className = 'alert alert-danger'; // Ошибка
+        messageElement.className = 'alert alert-danger';
         messageElement.textContent = message;
     }
 
-    messageElement.classList.remove('d-none'); // Показываем сообщение
+    messageElement.classList.remove('d-none');
 }
 
 
-// document.getElementById('registrationForm').addEventListener('submit', registerUser);
 document.getElementById('registrationForm').addEventListener('submit', registerUserWithMessage);

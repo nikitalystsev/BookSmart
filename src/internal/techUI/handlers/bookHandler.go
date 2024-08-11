@@ -9,13 +9,13 @@ import (
 )
 
 func (h *Handler) getBooks(c *gin.Context) {
+	fmt.Println("call getBooks")
 	var params dto.BookParamsDTO
 	if err := c.BindJSON(&params); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid input body"})
 		return
 	}
 
-	fmt.Println(params)
 	books, err := h.bookService.GetByParams(c.Request.Context(), &params)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())

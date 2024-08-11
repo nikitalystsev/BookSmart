@@ -124,6 +124,26 @@ func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO
 	return rs.createTokens(ctx, exitingReader.ID, exitingReader.Role)
 }
 
+// GetByPhoneNumber TODO добавить в схемы и протестировать
+func (rs *ReaderService) GetByPhoneNumber(ctx context.Context, phoneNumber string) (*models.ReaderModel, error) {
+	rs.logger.Infof("attempting to get reader by phoneNumber: %s", phoneNumber)
+
+	reader, err := rs.readerRepo.GetByPhoneNumber(ctx, phoneNumber)
+	if err != nil && !errors.Is(err, errs.ErrReaderDoesNotExists) {
+		rs.logger.Errorf("error checking reader existence: %v", err)
+		return nil, err
+	}
+
+	if reader == nil {
+		rs.logger.Warn("reader has no library card")
+		return nil, errs.ErrReaderDoesNotExists
+	}
+
+	rs.logger.Infof("successfully getting reader by phoneNumber: %s", phoneNumber)
+
+	return reader, nil
+}
+
 func (rs *ReaderService) RefreshTokens(ctx context.Context, refreshToken string) (intf.Tokens, error) {
 	rs.logger.Info("attempting refresh tokens")
 

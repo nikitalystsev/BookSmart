@@ -3,12 +3,23 @@ async function getBooks(event) {
 
     const searchParams = parseParams();
 
-    const books = await getBooksFromStorage(searchParams);
-    if (books != null) {
+    try {
+        let response = await getBooksFromStorage(searchParams);
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${response.status}`);
+            return response.text();
+        }
+
+        const books = await response.json();
+
         displayBooks(books);
         sessionStorage.setItem("searchParams", JSON.stringify(searchParams))
         sessionStorage.setItem('currPageNum', "1");
         sessionStorage.setItem("1", JSON.stringify(books));
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
     }
 }
 
@@ -54,8 +65,10 @@ async function nextPageBooks(event) {
     }
     const currPageNum = parseInt(sessionStorage.getItem('currPageNum'));
     const newPageNum = currPageNum + 1;
-    await getPageBooks(newPageNum);
+    const message = await getPageBooks(newPageNum);
     updatePagination();
+
+    return message
 }
 
 async function prevPageBooks(event) {
@@ -69,8 +82,10 @@ async function prevPageBooks(event) {
         return
     }
     const newPageNum = currPageNum - 1;
-    await getPageBooks(newPageNum);
+    const message = await getPageBooks(newPageNum);
     updatePagination();
+
+    return message
 }
 
 async function getPageBooks(newPageNum) {
@@ -89,28 +104,32 @@ async function getPageBooks(newPageNum) {
     }
     searchParams['offset'] = (newPageNum - 1) * 10;
 
-    const books = await getBooksFromStorage(searchParams);
-    if (books != null) {
+    try {
+        let response = await getBooksFromStorage(searchParams);
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${response.status}`);
+            return response.text();
+        }
+
+        const books = await response.json();
+
         displayBooks(books);
         sessionStorage.setItem('currPageNum', newPageNum.toString());
         sessionStorage.setItem(newPageNum.toString(), JSON.stringify(books));
         sessionStorage.setItem("searchParams", JSON.stringify(searchParams));
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
     }
 }
 
 async function getBooksFromStorage(searchParams) {
-    const response = await fetch("http://localhost:8000/general/books", {
+    return await fetch("http://localhost:8000/general/books", {
         method: 'POST', headers: {
             'Content-Type': 'application/json'
         }, body: JSON.stringify(searchParams)
     });
-
-    if (!response.ok) {
-        console.error(`HTTP error! Status: ${response.status}`);
-        return null;
-    }
-
-    return await response.json();
 }
 
 function displayBooks(books) {
@@ -131,13 +150,57 @@ function displayBooks(books) {
                 <h5 class="card-header">${book.title}</h5>
                 <div class="card-body">
                     <h5 class="card-title">${book.author}</h5>
-                    <p class="card-text" style="max-width: 150px;">${book.description || 'Нет описания.'}</p>
                     <a href="#" class="btn btn-primary" onclick='choiceBook(${JSON.stringify(book)})'>Подробнее</a>
                 </div>
             </div> `;
 
         bookCardsContainer.appendChild(card);
     });
+}
+
+async function getBooksWithMessage(event) {
+    event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
+
+    const message = await getBooks(event)
+
+    const messageElement = document.getElementById('message');
+
+    if (message) {
+        messageElement.className = 'alert alert-danger'; // Ошибка
+        messageElement.textContent = message;
+        messageElement.classList.remove('d-none');
+    } else messageElement.classList.add('d-none');
+
+}
+
+async function getNextPageWithMessage(event) {
+    event.preventDefault();
+
+    const message = await nextPageBooks(event)
+
+    const messageElement = document.getElementById('message');
+
+    if (message) {
+        messageElement.className = 'alert alert-danger';
+        messageElement.textContent = message;
+    }
+
+    messageElement.classList.remove('d-none');
+}
+
+async function getPrevPageWithMessage(event) {
+    event.preventDefault();
+
+    const message = await prevPageBooks(event)
+
+    const messageElement = document.getElementById('message');
+
+    if (message) {
+        messageElement.className = 'alert alert-danger';
+        messageElement.textContent = message;
+    }
+
+    messageElement.classList.remove('d-none');
 }
 
 
@@ -208,7 +271,7 @@ function setActiveNavLink(activeLinkId) {
 }
 
 function setCatalogNavbar() {
-    const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true'; // Проверка статуса аутентификации
+    const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
 
     document.getElementById('navbar-container').innerHTML = `
         <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
@@ -236,17 +299,15 @@ function setCatalogNavbar() {
     ;
 
     // Устанавливаем активную ссылку
-    setActiveNavLink('nav-catalog'); // Замените 'nav-catalog' на нужный ID, если требуется
+    setActiveNavLink('nav-catalog');
 }
 
 // Вызываем функцию при загрузке страницы
 window.onload = setCatalogNavbar;
 
-// Инициализация пагинации при загрузке страницы
-updatePagination();
-displayPageBooks()
+document.addEventListener("DOMContentLoaded", updatePagination)
+document.addEventListener("DOMContentLoaded", displayPageBooks)
 
-document.getElementById('paramsForm').addEventListener("submit", getBooks);
-document.getElementById('nextPageBtn').addEventListener("click", nextPageBooks);
-document.getElementById('prevPageBtn').addEventListener("click", prevPageBooks);
-document.getElementById('prevPageBtn').addEventListener("click", prevPageBooks);
+document.getElementById('paramsForm').addEventListener("submit", getBooksWithMessage);
+document.getElementById('nextPageBtn').addEventListener("click", getNextPageWithMessage);
+document.getElementById('prevPageBtn').addEventListener("click", getPrevPageWithMessage);

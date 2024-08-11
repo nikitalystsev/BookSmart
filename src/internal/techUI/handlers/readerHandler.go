@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
+	"time"
 )
 
 func (h *Handler) signUp(c *gin.Context) {
@@ -45,7 +46,6 @@ func (h *Handler) signIn(c *gin.Context) {
 	fmt.Println("call signIn handler")
 	var inp dto.ReaderSignInDTO
 	if err := c.BindJSON(&inp); err != nil {
-		fmt.Println("бляяяя, возвращается хуета полная")
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -63,10 +63,12 @@ func (h *Handler) signIn(c *gin.Context) {
 	c.JSON(http.StatusOK, TokenResponse{
 		AccessToken:  res.AccessToken,
 		RefreshToken: res.RefreshToken,
+		ExpiredAt:    time.Now().Add(h.accessTokenTTL).UnixMilli(),
 	})
 }
 
 func (h *Handler) refresh(c *gin.Context) {
+	fmt.Println("call refresh handler")
 	var inp string
 	if err := c.BindJSON(&inp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
@@ -82,6 +84,7 @@ func (h *Handler) refresh(c *gin.Context) {
 	c.JSON(http.StatusOK, TokenResponse{
 		AccessToken:  res.AccessToken,
 		RefreshToken: res.RefreshToken,
+		ExpiredAt:    time.Now().Add(h.accessTokenTTL).UnixMilli(),
 	})
 }
 
@@ -113,7 +116,25 @@ func (h *Handler) addToFavorites(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
+func (h *Handler) getReaderByPhoneNumber(c *gin.Context) {
+	fmt.Println("call getReaderByPhoneNumber handler")
+	phoneNumber := c.Param("phone_number")
+
+	reader, err := h.readerService.GetByPhoneNumber(c.Request.Context(), phoneNumber)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, reader)
+}
+
 type TokenResponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiredAt    int64  `json:"expired_at"`
+}
+
+type Refresh struct {
+	RefreshToken string `json:"refresh_token"`
 }

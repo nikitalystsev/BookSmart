@@ -108,7 +108,7 @@ func Run(configDir string) {
 	readerService := impl.NewReaderService(readerRepo, bookRepo, tokenManager, hasher, logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
 	reservationService := impl.NewReservationService(reservationRepo, bookRepo, readerRepo, libCardRepo, transactionManager, logger)
 
-	handler := handlers.NewHandler(bookService, libCardService, readerService, reservationService, tokenManager, logger)
+	handler := handlers.NewHandler(bookService, libCardService, readerService, reservationService, tokenManager, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL, logger)
 
 	router := handler.InitRoutes()
 

@@ -2,19 +2,16 @@ export async function fetchWithAuth(url, options) {
     let tokens;
     if (sessionStorage.getItem('tokens')) {
         tokens = JSON.parse(sessionStorage.getItem('tokens'));
-    } else {
-        return logOut()
-    }
+    } else return logOut()
 
-    if (!options.headers) {
-        options.headers = {};
-    }
 
-    if (!tokens) {
-        return fetch(url, options)
-    }
+    if (!options.headers) options.headers = {};
+
+    if (!tokens) return fetch(url, options)
+
 
     if (Date.now() < tokens.expired_at) {
+        console.log("here")
         options.headers.Authorization = `Bearer ${tokens.access_token}`;
         return fetch(url, options)
     }
@@ -23,9 +20,8 @@ export async function fetchWithAuth(url, options) {
         tokens = await refreshTokens(tokens.refresh_token);
         if (tokens) {
             sessionStorage.setItem('tokens', JSON.stringify(tokens));
-        } else {
-            return logOut();
-        }
+        } else return logOut();
+
     } catch {
         return logOut();
     }
