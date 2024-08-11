@@ -4,9 +4,8 @@ async function getUser(event) {
     event.preventDefault();
 
     const phoneNumber = sessionStorage.getItem('phone_number');
-    if (!phoneNumber) {
-        return;
-    }
+    if (!phoneNumber) return;
+
 
     try {
         const response = await getUserFromStorage(phoneNumber);

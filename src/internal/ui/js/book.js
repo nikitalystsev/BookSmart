@@ -1,3 +1,5 @@
+import {fetchWithAuth} from "./tokens.js";
+
 function displaySelectedBook() {
     const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
 
@@ -6,46 +8,93 @@ function displaySelectedBook() {
         return;
     }
 
-    document.getElementById('book-title').textContent = selectedBook.title;
-    document.getElementById('book-author').textContent = selectedBook.author;
-    document.getElementById('book-publisher').textContent = selectedBook.publisher || 'Нет данных';
-    document.getElementById('book-copies-number').textContent = selectedBook.copies_number || 'Нет данных';
-    document.getElementById('book-rarity').textContent = selectedBook.rarity || 'Нет данных';
-    document.getElementById('book-genre').textContent = selectedBook.genre || 'Нет данных';
-    document.getElementById('book-publishing-year').textContent = selectedBook.publishing_year || 'Нет данных';
-    document.getElementById('book-language').textContent = selectedBook.language || 'Нет данных';
-    document.getElementById('book-age-limit').textContent = selectedBook.age_limit || 'Нет данных';
+    const {copies_number, publisher, age_limit, rarity, title, author, genre, language, publishing_year} = selectedBook;
+    document.getElementById('book-title').textContent = title;
+    document.getElementById('book-author').textContent = author;
+    document.getElementById('book-publisher').textContent = publisher || 'Нет данных';
+    document.getElementById('book-copies-number').textContent = copies_number || 'Нет данных';
+    document.getElementById('book-rarity').textContent = rarity || 'Нет данных';
+    document.getElementById('book-genre').textContent = genre || 'Нет данных';
+    document.getElementById('book-publishing-year').textContent = publishing_year || 'Нет данных';
+    document.getElementById('book-language').textContent = language || 'Нет данных';
+    document.getElementById('book-age-limit').textContent = age_limit || 'Нет данных';
 
+}
+
+async function reserveSelectedBook(event) {
+    event.preventDefault()
+
+    const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
+
+    if (!selectedBook) {
+        document.getElementById('book-container').innerHTML = '<p>Книга не найдена.</p>';
+        return;
+    }
+
+    try {
+        let response = await reserveBookOnStorage(selectedBook.id);
+        if (!response.ok) {
+            console.error(`HTTP error! Status: ${response.status}`);
+            return response.text();
+        }
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
+    }
+}
+
+async function reserveBookOnStorage(bookID) {
+    return await fetchWithAuth("http://localhost:8000/api/reservations/", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookID)
+    });
+}
+
+async function reserveSelectedBookWithMessage(event) {
+    event.preventDefault();
+
+    const message = await reserveSelectedBook(event)
+
+    const messageElement = document.getElementById('message');
+    if (message === null) {
+        messageElement.className = 'alert alert-success';
+        messageElement.textContent = 'Книга была успешно забронирована!';
+    } else {
+        messageElement.className = 'alert alert-danger';
+        messageElement.textContent = message;
+    }
+
+    messageElement.classList.remove('d-none');
 }
 
 function addButtonsIfAuthenticated() {
-    // Предположим, что эта переменная устанавливается в зависимости от состояния авторизации пользователя
-    const isAuthenticated = sessionStorage.getItem("isAuthenticated"); // Замените на реальную проверку авторизации пользователя
+    const isAuthenticated = sessionStorage.getItem("isAuthenticated");
 
-    // Находим контейнер кнопок по ID
     const btnContainer = document.getElementById('book-btn');
 
-    if (isAuthenticated) {
-        // Создаем кнопку "Забронировать"
-        const bookButton = document.createElement('a');
-        bookButton.href = '#'; // Замените на реальную ссылку для бронирования
-        bookButton.className = 'btn btn-primary mt-3';
-        bookButton.innerHTML = '<i class="fas fa-calendar-check"></i> Забронировать';
+    if (!isAuthenticated) return
 
-        // Создаем кнопку "Добавить в избранное"
-        const favoriteButton = document.createElement('a');
-        favoriteButton.href = '#'; // Замените на реальную ссылку для добавления в избранное
-        favoriteButton.className = 'btn btn-secondary mt-3';
-        favoriteButton.innerHTML = '<i class="fas fa-heart"></i> Добавить в избранное';
+    const reserveBookBtn = document.createElement('a');
+    reserveBookBtn.href = '#';
+    reserveBookBtn.id = 'reserve-book-btn'
+    reserveBookBtn.className = 'btn btn-primary mt-3';
+    reserveBookBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Забронировать';
 
-        // Убедитесь, что кнопки добавлены с отступами
-        btnContainer.appendChild(bookButton);
-        btnContainer.appendChild(favoriteButton);
+    const addBookToFavoriteBtn = document.createElement('a');
+    addBookToFavoriteBtn.href = '#';
+    addBookToFavoriteBtn.className = 'btn btn-secondary mt-3';
+    addBookToFavoriteBtn.innerHTML = '<i class="fas fa-heart"></i> Добавить в избранное';
 
-        // Применение классов для обеспечения отступов
-        btnContainer.classList.add('btn-container');
-    }
+    btnContainer.appendChild(reserveBookBtn);
+    btnContainer.appendChild(addBookToFavoriteBtn);
+
+    reserveBookBtn.addEventListener("click", reserveSelectedBookWithMessage)
 }
+
 
 // Вызываем функцию при загрузке страницы
 document.addEventListener('DOMContentLoaded', addButtonsIfAuthenticated);

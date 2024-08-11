@@ -11,7 +11,6 @@ export async function fetchWithAuth(url, options) {
 
 
     if (Date.now() < tokens.expired_at) {
-        console.log("here")
         options.headers.Authorization = `Bearer ${tokens.access_token}`;
         return fetch(url, options)
     }
