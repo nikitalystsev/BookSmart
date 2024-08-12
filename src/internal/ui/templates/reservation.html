@@ -14,9 +14,10 @@
 <div class="container mt-5">
     <h1 class="mb-4 text-center">Информация о брони</h1>
 
-    <div id="book-container" class="card shadow-lg">
+    <div id="reservation-container" class="card shadow-lg">
         <div class="card-body">
             <div id="message" class="alert d-none" role="alert"></div>
+            <div id="empty-reservation"></div>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item"><strong>Название и автор книги:</strong> <span id="book-title"></span></li>
                 <li class="list-group-item"><strong>Дата выдачи:</strong> <span id="reservation-issue-date"></span></li>
@@ -29,7 +30,7 @@
             <div class="btn-container" id="book-btn">
                 <a href="reservationCatalog.html" class="btn btn-primary mt-3"><i class="fas fa-arrow-left"></i> Назад к
                     списку броней</a>
-                <a href="#" class="btn btn-primary mt-3" id="update-reservation"><i class="bi bi-arrow-repeat"></i> Продлить бронь</a>
+                <a href="#" class="btn btn-primary mt-3" id="update-reservation-btn"><i class="bi bi-arrow-repeat"></i> Продлить бронь</a>
             </div>
         </div>
     </div>

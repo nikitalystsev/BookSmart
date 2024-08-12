@@ -1,15 +1,18 @@
 import {fetchWithAuth} from "./tokens.js";
-import {isBadRequest, isConflict, isInternalServerError, isNotFound} from "./errors.js";
+import {isBadRequest, isConflict, isForbidden, isInternalServerError, isNotFound} from "./errors.js";
 
 function displaySelectedBook() {
-    const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
+    console.log("call displaySelectedBook")
+
+    const selectedBook = JSON.parse(sessionStorage.getItem("selectedBook"));
 
     if (!selectedBook) {
-        document.getElementById('book-container').innerHTML = '<p>Книга не найдена.</p>';
+        document.getElementById('empty-book').innerHTML = '<h2>Книга не найдена.</h2>';
         return;
     }
 
     const {copies_number, publisher, age_limit, rarity, title, author, genre, language, publishing_year} = selectedBook;
+
     document.getElementById('book-title').textContent = title;
     document.getElementById('book-author').textContent = author;
     document.getElementById('book-publisher').textContent = publisher || 'Нет данных';
@@ -21,13 +24,67 @@ function displaySelectedBook() {
     document.getElementById('book-age-limit').textContent = age_limit || 'Нет данных';
 }
 
+async function getActualSelectedBook() {
+    let selectedBook = JSON.parse(sessionStorage.getItem("selectedBook"));
+    if (!selectedBook) {
+        document.getElementById("empty-book").innerHTML = '<h2>Книга не найдена</h2>';
+        return;
+    }
+    try {
+        const response = await getActualSelectedBookFromStorage(selectedBook.id)
+
+        if (isBadRequest(response)) return "Ошибка запроса"
+        if (isNotFound(response)) return "Книга не найдена"
+        if (isInternalServerError(response)) return response.text()
+
+        selectedBook = await response.json()
+
+        sessionStorage.setItem("selectedBook", JSON.stringify(selectedBook))
+
+        updateBookFromCurrPage(selectedBook.id, selectedBook)
+
+        return null
+    } catch (error) {
+        return `Error: ${error.message}`;
+    }
+}
+
+async function getActualSelectedBookFromStorage(bookID) {
+    return await fetchWithAuth(`http://localhost:8000/general/books/${bookID}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+}
+
+function updateBookFromCurrPage(bookId, book) {
+    const pageNumber = sessionStorage.getItem("currPageNum");
+    if (!pageNumber) {
+        return;
+    }
+    const books = JSON.parse(sessionStorage.getItem(pageNumber));
+
+    if (!Array.isArray(books)) {
+        return;
+    }
+
+    const bookIndex = books.findIndex(book => book.id === bookId);
+
+    if (bookIndex !== -1) {
+        books[bookIndex] = book;
+        sessionStorage.setItem(pageNumber, JSON.stringify(books));
+    }
+}
+
+
 async function reserveSelectedBook(event) {
     event.preventDefault()
 
     const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
 
     if (!selectedBook) {
-        document.getElementById('book-container').innerHTML = '<p>Книга не найдена.</p>';
+        document.getElementById('empty-book').innerHTML = '<h2>Книга не найдена.</h2>';
         return;
     }
 
@@ -38,6 +95,8 @@ async function reserveSelectedBook(event) {
         if (isConflict(response)) return response.text()
         if (isNotFound(response)) return response.text()
         if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
+
+        await getActualSelectedBook()
 
         return null;
     } catch (error) {
@@ -79,7 +138,7 @@ async function addToFavoritesSelectedBook(event) {
     const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
 
     if (!selectedBook) {
-        document.getElementById('book-container').innerHTML = '<p>Книга не найдена.</p>';
+        document.getElementById('empty-book').innerHTML = '<h2>Книга не найдена.</h2>';
         return;
     }
 
@@ -150,9 +209,9 @@ function addButtonsIfAuthenticated() {
 }
 
 function addButtonDeleteBookIfAdmin() {
-    const isAdmin = true;
+    const isAdmin = sessionStorage.getItem("isAdmin") === "true";
     if (!isAdmin) return
-    
+
     const btnContainer = document.getElementById('book-btn');
 
     const deleteBookBtn = document.createElement('a');
@@ -162,7 +221,118 @@ function addButtonDeleteBookIfAdmin() {
 
     btnContainer.appendChild(deleteBookBtn);
 
-    deleteBookBtn.addEventListener("click", reserveSelectedBookWithMessage)
+    deleteBookBtn.addEventListener("click", deleteBookWithMessage)
+}
+
+async function getReservationsBySelectedBook() {
+
+    const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
+
+    if (!selectedBook) {
+        document.getElementById('empty-book').innerHTML = '<h2>Книга не найдена.</h2>';
+        return;
+    }
+
+    try {
+        let response = await getReservationsBySelectedBookOnStorage(selectedBook.id);
+
+        if (isBadRequest(response)) return "Ошибка запроса"
+        if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
+        if (isNotFound(response)) return null
+
+        const reservations = await response.json()
+
+        if (reservations.length > 0) return "Эту книгу нельзя удалить, она забронирована"
+
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
+    }
+}
+
+async function getReservationsBySelectedBookOnStorage(bookID) {
+    return await fetchWithAuth(`http://localhost:8000/api/admin/reservations`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookID)
+    });
+}
+
+async function deleteSelectedBook(event) {
+    event.preventDefault()
+
+    const selectedBook = JSON.parse(sessionStorage.getItem('selectedBook'));
+
+    if (!selectedBook) {
+        document.getElementById('empty-book').innerHTML = '<h2>Книга не найдена.</h2>';
+        return;
+    }
+
+    const res = await getReservationsBySelectedBook()
+    if (res) return res
+
+    try {
+        let response = await deleteBookOnStorage(selectedBook.id);
+
+        if (isBadRequest(response)) return "Ошибка запроса"
+        if (isForbidden(response)) return "У вас нет прав для удаления этой книги"
+        if (isNotFound(response)) return response.text()
+        if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
+
+        deleteBookFromCurrPage(selectedBook.id)
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
+    }
+}
+
+function deleteBookFromCurrPage(bookId) {
+    const pageNumber = sessionStorage.getItem('currPageNum');
+    if (!pageNumber) {
+        return;
+    }
+    const books = JSON.parse(sessionStorage.getItem(pageNumber));
+
+    if (!Array.isArray(books)) {
+        return;
+    }
+
+    const bookIndex = books.findIndex(book => book.id === bookId);
+
+    if (bookIndex !== -1) {
+        books.splice(bookIndex, 1);
+        sessionStorage.setItem(pageNumber, JSON.stringify(books));
+    }
+}
+
+async function deleteBookOnStorage(bookID) {
+    return await fetchWithAuth(`http://localhost:8000/api/admin/books/${bookID}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    });
+}
+
+async function deleteBookWithMessage(event) {
+    event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
+
+    const message = await deleteSelectedBook(event)
+    const messageElement = document.getElementById('message');
+    if (message === null) {
+        messageElement.className = 'alert alert-success'; // Успех
+        messageElement.textContent = 'Книга была успешно удалена!';
+        window.location.href = '../templates/catalog.html';
+    } else {
+        messageElement.className = 'alert alert-danger'; // Ошибка
+        messageElement.textContent = message;
+    }
+
+    messageElement.classList.remove('d-none'); // Показываем сообщение
 }
 
 

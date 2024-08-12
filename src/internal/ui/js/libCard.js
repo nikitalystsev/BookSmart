@@ -6,19 +6,9 @@ async function createLibCard(event) {
 
     try {
         let response = await createLibCardOnStorage();
-        if (isConflict(response)) {
-            return "Читательский билет уже создан"
-        }
-
-        if (isInternalServerError(response)) {
-            return "Внутренняя ошибка сервера"
-        }
-
-        if (isBadRequest(response)) {
-            return "Ошибка запроса"
-        }
-
-        displayLibCard(await response.json())
+        if (isConflict(response)) return "Читательский билет уже создан"
+        if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
+        if (isBadRequest(response)) return "Ошибка запроса"
 
         location.reload();
 
@@ -66,17 +56,10 @@ async function loadLibCardIfExists() {
             libCardContainer.classList.add('d-none');
             return null
         }
+        if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
+        if (isBadRequest(response)) return "Ошибка запроса"
 
-        if (isInternalServerError(response)) {
-            return "Внутренняя ошибка сервера"
-        }
-
-        if (isBadRequest(response)) {
-            return "Ошибка запроса"
-        }
-
-        const libCard = await response.json()
-        displayLibCard(libCard)
+        displayLibCard(await response.json())
 
         return null;
     } catch (error) {
@@ -86,7 +69,7 @@ async function loadLibCardIfExists() {
 
 function displayLibCard(libCard) {
     const {validity, action_status, issue_date, lib_card_num} = libCard;
-    addUpdateButtonIfFalse(action_status === true)
+    addUpdateButtonIfActionStatusFalse(action_status === true)
     document.getElementById("lib-card-number").textContent = lib_card_num
     document.getElementById("lib-card-validity").textContent = validity + " дней"
     document.getElementById("lib-card-issue-date").textContent = issue_date.slice(0, 10)
@@ -103,8 +86,6 @@ async function getLibCardFromStorage() {
 }
 
 async function getLibCardWithMessage() {
-    console.log("call getLibCardWithMessage")
-
     const message = await loadLibCardIfExists()
 
     const messageElement = document.getElementById('message');
@@ -119,21 +100,10 @@ async function updateLibCard() {
     try {
         let response = await updateLibCardFromStorage();
 
-        if (isNotFound(response)) {
-            return "Читательский билет не найден"
-        }
-
-        if (isInternalServerError(response)) {
-            return "Внутренняя ошибка сервера"
-        }
-
-        if (isConflict(response)) {
-            return "Читательский билет и так действующий"
-        }
-
-        if (isBadRequest(response)) {
-            return "Ошибка запроса"
-        }
+        if (isNotFound(response)) return "Читательский билет не найден"
+        if (isInternalServerError(response)) return "Внутренняя ошибка сервера"
+        if (isConflict(response)) return "Читательский билет и так действующий"
+        if (isBadRequest(response)) return "Ошибка запроса"
 
         location.reload()
 
@@ -153,7 +123,6 @@ async function updateLibCardFromStorage() {
     });
 }
 
-
 async function updateLibCardWithMessage(event) {
     event.preventDefault();
 
@@ -171,14 +140,14 @@ async function updateLibCardWithMessage(event) {
     messageElement.classList.remove('d-none'); // Показываем сообщение
 }
 
-function addUpdateButtonIfFalse(condition) {
+function addUpdateButtonIfActionStatusFalse(condition) {
     if (condition) return
 
     const btnContainer = document.getElementById('lib-card-btn');
 
     const updateLibCardBtn = document.createElement('a');
     updateLibCardBtn.href = '#';
-    updateLibCardBtn.id = 'updateLibCardBtn'
+    updateLibCardBtn.id = 'update-lib-card-btn'
     updateLibCardBtn.className = 'btn btn-primary mt-3';
     updateLibCardBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Обновить билет';
 
@@ -189,4 +158,4 @@ function addUpdateButtonIfFalse(condition) {
 
 
 document.addEventListener('DOMContentLoaded', getLibCardWithMessage);
-document.getElementById('createLibCardBtn').addEventListener('click', createLibCardWithMessage);
+document.getElementById('create-lib-card-btn').addEventListener('click', createLibCardWithMessage);

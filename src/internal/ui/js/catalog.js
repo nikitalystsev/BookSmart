@@ -11,12 +11,16 @@ async function getBooks(event) {
         if (isNotFound(response)) return "Нет книг, удовлетворяющих условиям поиска";
         if (isInternalServerError(response)) return response.text()
         if (isBadRequest(response)) return "Ошибка запроса"
+
         const books = await response.json();
 
-        displayBooks(books);
+        cleanCatalog()
         sessionStorage.setItem("searchParams", JSON.stringify(searchParams))
         sessionStorage.setItem('currPageNum', "1");
+        sessionStorage.setItem("maxPageNum", "1");
         sessionStorage.setItem("1", JSON.stringify(books));
+        displayBooks(books);
+        updatePagination()
 
         return null;
     } catch (error) {
@@ -57,8 +61,16 @@ function parseParams() {
     return searchParams;
 }
 
+function cleanCatalog() {
+    const maxPage = parseInt(sessionStorage.getItem("maxPageNum"))
+
+    for (let i = 1; i <= maxPage; i++) sessionStorage.removeItem(i.toString())
+
+    sessionStorage.removeItem("currPageNum")
+    sessionStorage.removeItem("maxPageNum")
+}
+
 async function nextPageBooks(event) {
-    console.log('Next page');
     event.preventDefault();
 
     if (!sessionStorage.getItem('currPageNum')) {
@@ -68,6 +80,8 @@ async function nextPageBooks(event) {
     const newPageNum = currPageNum + 1;
     const message = await getPageBooks(newPageNum);
     updatePagination();
+
+    sessionStorage.setItem("maxPageNum", newPageNum.toString())
 
     return message
 }
@@ -141,11 +155,6 @@ function choiceBook(book) {
 function displayBooks(books) {
     const bookCardsContainer = document.getElementById('book-cards');
     bookCardsContainer.innerHTML = '';
-
-    if (books.length === 0) {
-        bookCardsContainer.innerHTML = '<p>Книги не найдены.</p>';
-        return;
-    }
 
     books.forEach(book => {
         const card = document.createElement('div');
@@ -307,11 +316,26 @@ function setCatalogNavbar() {
     setActiveNavLink('nav-catalog');
 }
 
+function addButtonAddBookIfAdmin() {
+    const isAdmin = sessionStorage.getItem("isAdmin") === "true";
+    if (!isAdmin) return
+
+    const buttonContainer = document.getElementById('admin-button-container');
+    const button = document.createElement('a');
+    button.href = 'addBook.html';
+    button.className = 'btn btn-success';
+    button.innerText = 'Добавить новую книгу';
+    buttonContainer.appendChild(button);
+}
+
+
 window.onload = setCatalogNavbar;
 
+document.addEventListener("DOMContentLoaded", addButtonAddBookIfAdmin)
 document.addEventListener("DOMContentLoaded", updatePagination)
 document.addEventListener("DOMContentLoaded", displayPageBooks)
 
-document.getElementById('paramsForm').addEventListener("submit", getBooksWithMessage);
+
+document.getElementById('search-btn').addEventListener("click", getBooksWithMessage);
 document.getElementById('nextPageBtn').addEventListener("click", getNextPageWithMessage);
 document.getElementById('prevPageBtn').addEventListener("click", getPrevPageWithMessage);

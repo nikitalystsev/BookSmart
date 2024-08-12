@@ -17,3 +17,7 @@ export function isNotFound(response) {
 export function isUnauthorized(response) {
     return !response.ok && response.status === 401;
 }
+
+export function isForbidden(response) {
+    return !response.ok && response.status === 403;
+}

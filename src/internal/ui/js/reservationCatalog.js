@@ -7,13 +7,14 @@ async function getReservations(event) {
     try {
         let response = await getReservationsFromStorage();
 
-        if (isNotFound(response)) return "Вы еще ничего не забронировали";
+        if (isNotFound(response)) {
+            document.getElementById('empty-reservations-list').innerHTML = '<h2>Вы еще ничего не забронировали</h2>';
+            return null;
+        }
         if (isBadRequest(response)) return "Ошибка запроса"
         if (isInternalServerError(response)) return response.text()
 
-        const reservations = await response.json();
-
-        await displayReservations(reservations);
+        await displayReservations(await response.json());
 
         return null;
     } catch (error) {
