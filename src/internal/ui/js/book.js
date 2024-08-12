@@ -326,7 +326,6 @@ async function deleteBookWithMessage(event) {
     if (message === null) {
         messageElement.className = 'alert alert-success'; // Успех
         messageElement.textContent = 'Книга была успешно удалена!';
-        window.location.href = '../templates/catalog.html';
     } else {
         messageElement.className = 'alert alert-danger'; // Ошибка
         messageElement.textContent = message;

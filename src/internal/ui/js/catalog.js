@@ -3,18 +3,22 @@ import {isBadRequest, isInternalServerError, isNotFound} from "./errors.js";
 async function getBooks(event) {
     event.preventDefault();
 
+    cleanCatalog()
+
     const searchParams = parseParams();
 
     try {
         let response = await getBooksFromStorage(searchParams);
 
-        if (isNotFound(response)) return "Нет книг, удовлетворяющих условиям поиска";
+        if (isNotFound(response)) {
+            document.getElementById("book-cards").innerHTML = '';
+            return "Нет книг, удовлетворяющих условиям поиска";
+        }
         if (isInternalServerError(response)) return response.text()
         if (isBadRequest(response)) return "Ошибка запроса"
 
         const books = await response.json();
 
-        cleanCatalog()
         sessionStorage.setItem("searchParams", JSON.stringify(searchParams))
         sessionStorage.setItem('currPageNum', "1");
         sessionStorage.setItem("maxPageNum", "1");
@@ -24,6 +28,7 @@ async function getBooks(event) {
 
         return null;
     } catch (error) {
+        document.getElementById("book-cards").innerHTML = '';
         return `Error: ${error.message}`;
     }
 }
@@ -68,6 +73,7 @@ function cleanCatalog() {
 
     sessionStorage.removeItem("currPageNum")
     sessionStorage.removeItem("maxPageNum")
+    sessionStorage.removeItem("selectedBook")
 }
 
 async function nextPageBooks(event) {
