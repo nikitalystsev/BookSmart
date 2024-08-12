@@ -149,7 +149,24 @@ function addButtonsIfAuthenticated() {
     addBookToFavoriteBtn.addEventListener("click", addToFavoritesSelectedBookWithMessage)
 }
 
+function addButtonDeleteBookIfAdmin() {
+    const isAdmin = true;
+    if (!isAdmin) return
+    
+    const btnContainer = document.getElementById('book-btn');
+
+    const deleteBookBtn = document.createElement('a');
+    deleteBookBtn.href = '#';
+    deleteBookBtn.className = 'btn btn-secondary mt-3';
+    deleteBookBtn.innerHTML = '<i class="fas fa-trash"></i> Удалить книгу';
+
+    btnContainer.appendChild(deleteBookBtn);
+
+    deleteBookBtn.addEventListener("click", reserveSelectedBookWithMessage)
+}
+
 
 // Вызываем функцию при загрузке страницы
 document.addEventListener('DOMContentLoaded', addButtonsIfAuthenticated);
+document.addEventListener('DOMContentLoaded', addButtonDeleteBookIfAdmin);
 document.addEventListener('DOMContentLoaded', displaySelectedBook);

@@ -13,3 +13,7 @@ export function isBadRequest(response) {
 export function isNotFound(response) {
     return !response.ok && response.status === 404;
 }
+
+export function isUnauthorized(response) {
+    return !response.ok && response.status === 401;
+}

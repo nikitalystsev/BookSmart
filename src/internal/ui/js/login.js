@@ -1,4 +1,4 @@
-import {isBadRequest, isConflict, isInternalServerError} from "./errors.js";
+import {isBadRequest, isConflict, isInternalServerError, isNotFound, isUnauthorized} from "./errors.js";
 
 async function loginUser(event) {
     event.preventDefault();
@@ -9,6 +9,7 @@ async function loginUser(event) {
 
     try {
         let response = await loginUserOnStorage(user);
+        if (isNotFound(response)) return "Такого читателя не существует"
         if (isBadRequest(response)) return "Ошибка запроса"
         if (isConflict(response)) return response.text()
         if (isInternalServerError(response)) return response.text()
@@ -45,10 +46,52 @@ async function loginUserOnStorage(userData) {
     });
 }
 
+
+async function loginAdmin(event) {
+    event.preventDefault();
+
+    const admin = parseLogin();
+
+    sessionStorage.setItem('phone_number', admin.phone_number);
+
+    try {
+        let response = await loginAdminOnStorage(admin);
+        if (isNotFound(response)) return "Такого читателя не существует"
+        if (isConflict(response)) return response.text()
+        if (isBadRequest(response)) return "Ошибка запроса"
+        if (isInternalServerError(response)) return response.text()
+        if (isUnauthorized(response)) return "У вас нет прав администратора"
+
+        const tokens = await response.json();
+        sessionStorage.setItem('tokens', JSON.stringify(tokens));
+        sessionStorage.setItem('isAuthenticated', "true");
+        sessionStorage.setItem("isAdmin", "true")
+
+        return null;
+    } catch (error) {
+        return `Error: ${error.message}`;
+    }
+}
+
+async function loginAdminOnStorage(adminData) {
+    return await fetch("http://localhost:8000/auth/admin/sign-in", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(adminData)
+    });
+}
+
 async function loginUserWithMessage(event) {
     event.preventDefault(); // Предотвращаем стандартное поведение отправки формы
 
-    const message = await loginUser(event)
+    // Получаем состояние чекбокса
+    const isAdmin = document.getElementById('adminCheckbox').checked;
+
+    let message;
+    if (isAdmin) message = await loginAdmin(event)
+    else message = await loginUser(event);
 
     const messageElement = document.getElementById('message');
     if (message === null) {
@@ -62,5 +105,6 @@ async function loginUserWithMessage(event) {
 
     messageElement.classList.remove('d-none'); // Показываем сообщение
 }
+
 
 document.getElementById('loginForm').addEventListener('submit', loginUserWithMessage);

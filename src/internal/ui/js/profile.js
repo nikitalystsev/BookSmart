@@ -50,4 +50,11 @@ async function getUserWithMessage(event) {
 
 }
 
+function logOutFromSystem() {
+    sessionStorage.clear()
+    window.location.href = '../templates/index.html';
+}
+
+// Обработчик события для кнопки "Выйти"
+document.getElementById('logoutButton').addEventListener('click', logOutFromSystem);
 document.addEventListener('DOMContentLoaded', getUserWithMessage);

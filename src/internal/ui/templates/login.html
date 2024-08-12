@@ -6,7 +6,6 @@
     <title>Форма аутентификации</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/login.css" rel="stylesheet">
-
 </head>
 <body>
 
@@ -24,8 +23,17 @@
             <input type="password" class="form-control" id="password" name="password" placeholder="Введите пароль"
                    required>
         </div>
-        <button type="submit" class="btn btn-primary btn-block">Войти</button>
-        <div class="footer-link">
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="adminCheckbox">
+            <label class="form-check-label" for="adminCheckbox" id="admin">
+                Как администратор
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block mt-3">Войти</button>
+
+        <div class="footer-link mt-3">
             <p>Нет аккаунта? <a href="register.html">Создайте его за минуту</a>.</p>
         </div>
     </form>
