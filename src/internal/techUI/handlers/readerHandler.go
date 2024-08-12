@@ -5,7 +5,6 @@ import (
 	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -13,7 +12,6 @@ import (
 )
 
 func (h *Handler) signUp(c *gin.Context) {
-	fmt.Println("call signUp handler")
 	var inp dto.ReaderSignUpDTO
 	if err := c.BindJSON(&inp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
@@ -30,12 +28,16 @@ func (h *Handler) signUp(c *gin.Context) {
 	}
 
 	err := h.readerService.SignUp(c.Request.Context(), &reader)
-	if err != nil && !errors.Is(err, errs.ErrReaderAlreadyExist) {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+	if err != nil && errors.Is(err, errs.ErrReaderObjectIsNil) {
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 	if err != nil && errors.Is(err, errs.ErrReaderAlreadyExist) {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		c.AbortWithStatusJSON(http.StatusConflict, err.Error())
+		return
+	}
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -43,7 +45,6 @@ func (h *Handler) signUp(c *gin.Context) {
 }
 
 func (h *Handler) signIn(c *gin.Context) {
-	fmt.Println("call signIn handler")
 	var inp dto.ReaderSignInDTO
 	if err := c.BindJSON(&inp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
@@ -51,16 +52,24 @@ func (h *Handler) signIn(c *gin.Context) {
 	}
 
 	res, err := h.readerService.SignIn(c.Request.Context(), &inp)
-	if err != nil && !errors.Is(err, errs.ErrReaderDoesNotExists) {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+	if err != nil && errors.Is(err, errs.ErrReaderDoesNotExists) {
+		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
 		return
 	}
-	if err != nil && errors.Is(err, errs.ErrReaderDoesNotExists) {
+	if err != nil && errors.Is(err, errors.New("wrong password")) {
+		c.AbortWithStatusJSON(http.StatusConflict, err.Error())
+		return
+	}
+	if err != nil && errors.Is(err, errs.ErrReaderObjectIsNil) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	c.JSON(http.StatusOK, TokenResponse{
+	c.JSON(http.StatusOK, dto.ReaderTokensDTO{
 		AccessToken:  res.AccessToken,
 		RefreshToken: res.RefreshToken,
 		ExpiredAt:    time.Now().Add(h.accessTokenTTL).UnixMilli(),
@@ -68,7 +77,6 @@ func (h *Handler) signIn(c *gin.Context) {
 }
 
 func (h *Handler) refresh(c *gin.Context) {
-	fmt.Println("call refresh handler")
 	var inp string
 	if err := c.BindJSON(&inp); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
@@ -76,12 +84,16 @@ func (h *Handler) refresh(c *gin.Context) {
 	}
 
 	res, err := h.readerService.RefreshTokens(c.Request.Context(), inp)
+	if err != nil && errors.Is(err, errs.ErrReaderDoesNotExists) {
+		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, TokenResponse{
+	c.JSON(http.StatusOK, dto.ReaderTokensDTO{
 		AccessToken:  res.AccessToken,
 		RefreshToken: res.RefreshToken,
 		ExpiredAt:    time.Now().Add(h.accessTokenTTL).UnixMilli(),
@@ -91,23 +103,35 @@ func (h *Handler) refresh(c *gin.Context) {
 func (h *Handler) addToFavorites(c *gin.Context) {
 	readerIDStr, _, err := getReaderData(c)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	readerID, err := uuid.Parse(readerIDStr)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	var bookID uuid.UUID
 	if err = c.BindJSON(&bookID); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	err = h.readerService.AddToFavorites(c.Request.Context(), readerID, bookID)
+	if err != nil && errors.Is(err, errs.ErrReaderDoesNotExists) {
+		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
+		return
+	}
+	if err != nil && errors.Is(err, errs.ErrBookDoesNotExists) {
+		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
+		return
+	}
+	if err != nil && errors.Is(err, errs.ErrBookAlreadyIsFavorite) {
+		c.AbortWithStatusJSON(http.StatusConflict, err.Error())
+		return
+	}
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
@@ -117,24 +141,17 @@ func (h *Handler) addToFavorites(c *gin.Context) {
 }
 
 func (h *Handler) getReaderByPhoneNumber(c *gin.Context) {
-	fmt.Println("call getReaderByPhoneNumber handler")
 	phoneNumber := c.Param("phone_number")
 
 	reader, err := h.readerService.GetByPhoneNumber(c.Request.Context(), phoneNumber)
+	if err != nil && errors.Is(err, errs.ErrReaderDoesNotExists) {
+		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
+		return
+	}
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	c.JSON(http.StatusOK, reader)
-}
-
-type TokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	ExpiredAt    int64  `json:"expired_at"`
-}
-
-type Refresh struct {
-	RefreshToken string `json:"refresh_token"`
 }

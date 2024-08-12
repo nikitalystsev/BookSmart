@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	MaxBooksPerReader    = 5
+	MaxBooksPerReader    = 10
 	ReaderPhoneNumberLen = 11
 	ReaderPasswordLen    = 10
 
@@ -94,10 +94,10 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 }
 
 // SignIn Войти
-func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO) (intf.Tokens, error) {
+func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO) (models.Tokens, error) {
 	if reader == nil {
 		rs.logger.Warn("reader object is nil")
-		return intf.Tokens{}, errs.ErrReaderObjectIsNil
+		return models.Tokens{}, errs.ErrReaderObjectIsNil
 	}
 
 	rs.logger.Infof("attempting sign in with phoneNumber: %s", reader.PhoneNumber)
@@ -105,12 +105,12 @@ func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO
 	exitingReader, err := rs.readerRepo.GetByPhoneNumber(ctx, reader.PhoneNumber)
 	if err != nil && !errors.Is(err, errs.ErrReaderDoesNotExists) {
 		rs.logger.Errorf("error checking reader existence: %v", err)
-		return intf.Tokens{}, err
+		return models.Tokens{}, err
 	}
 
 	if exitingReader == nil {
 		rs.logger.Warn("reader with this phoneNumber does not exist")
-		return intf.Tokens{}, errs.ErrReaderDoesNotExists
+		return models.Tokens{}, errs.ErrReaderDoesNotExists
 	}
 
 	rs.logger.Info("compare password with hashing password")
@@ -118,7 +118,7 @@ func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO
 	err = rs.hasher.Compare(exitingReader.Password, reader.Password)
 	if err != nil {
 		rs.logger.Errorf("compare password with hashing password failed: %v", err)
-		return intf.Tokens{}, err
+		return models.Tokens{}, err
 	}
 
 	return rs.createTokens(ctx, exitingReader.ID, exitingReader.Role)
@@ -144,13 +144,13 @@ func (rs *ReaderService) GetByPhoneNumber(ctx context.Context, phoneNumber strin
 	return reader, nil
 }
 
-func (rs *ReaderService) RefreshTokens(ctx context.Context, refreshToken string) (intf.Tokens, error) {
+func (rs *ReaderService) RefreshTokens(ctx context.Context, refreshToken string) (models.Tokens, error) {
 	rs.logger.Info("attempting refresh tokens")
 
 	existingReader, err := rs.readerRepo.GetByRefreshToken(ctx, refreshToken)
 	if err != nil {
 		rs.logger.Errorf("error checking reader existence: %v", err)
-		return intf.Tokens{}, err
+		return models.Tokens{}, err
 	}
 
 	return rs.createTokens(ctx, existingReader.ID, existingReader.Role)
@@ -254,11 +254,11 @@ func (rs *ReaderService) baseValidation(ctx context.Context, reader *models.Read
 	return nil
 }
 
-func (rs *ReaderService) createTokens(ctx context.Context, readerID uuid.UUID, readerRole string) (intf.Tokens, error) {
+func (rs *ReaderService) createTokens(ctx context.Context, readerID uuid.UUID, readerRole string) (models.Tokens, error) {
 	rs.logger.Info("attempting to create Tokens")
 
 	var (
-		res intf.Tokens
+		res models.Tokens
 		err error
 	)
 

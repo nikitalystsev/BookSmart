@@ -98,7 +98,7 @@ func (lcr *LibCardRepo) GetByNum(ctx context.Context, libCardNum string) (*model
 
 func (lcr *LibCardRepo) Update(ctx context.Context, libCard *models.LibCardModel) error {
 	lcr.logger.Infof("updating libCard with ID: %s", libCard.ID)
-	one, err := lcr.db.UpdateOne(ctx, bson.M{"_id": libCard.ID}, bson.M{"$set": bson.M{"issue_date": libCard.IssueDate}})
+	one, err := lcr.db.UpdateOne(ctx, bson.M{"_id": libCard.ID}, bson.M{"$set": bson.M{"issue_date": libCard.IssueDate, "action_status": libCard.ActionStatus}})
 	if err != nil {
 		lcr.logger.Errorf("error updating libCard: %v", err)
 		return err

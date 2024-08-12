@@ -10,3 +10,8 @@ type ReaderModel struct {
 	Password    string    `json:"password" db:"password" bson:"password"`
 	Role        string    `json:"role" db:"role" bson:"role"`
 }
+
+type Tokens struct {
+	AccessToken  string
+	RefreshToken string
+}

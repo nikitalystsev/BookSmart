@@ -98,6 +98,47 @@ func (rr *ReservationRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.R
 	return &reservation, nil
 }
 
+// GetByBookID TODO добавить в схемы
+func (rr *ReservationRepo) GetByBookID(ctx context.Context, bookID uuid.UUID) ([]*models.ReservationModel, error) {
+	rr.logger.Infof("find reservation with bookID: %s", bookID)
+
+	if err := rr.updateReservationStates(ctx); err != nil {
+		rr.logger.Errorf("error updating reservations status: %v", err)
+		return nil, err
+	}
+
+	filter := bson.M{
+		"book_id": bookID,
+	}
+
+	cursor, err := rr.db.Find(ctx, filter)
+	if err != nil {
+		rr.logger.Errorf("error find expired reservations: %v", err)
+		return nil, err
+	}
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err = cursor.Close(ctx)
+		if err != nil {
+			fmt.Println("error close cursor")
+		}
+	}(cursor, ctx)
+
+	var reservations []*models.ReservationModel
+	if err = cursor.All(ctx, &reservations); err != nil {
+		rr.logger.Printf("error decoding reservations: %v", err)
+		return nil, err
+	}
+
+	if len(reservations) == 0 {
+		rr.logger.Warnf("reservations with this bookID not found: %s", bookID)
+		return nil, errs.ErrReservationDoesNotExists
+	}
+
+	rr.logger.Infof("found reservation with bookID: %s", bookID)
+
+	return reservations, nil
+}
+
 func (rr *ReservationRepo) Update(ctx context.Context, reservation *models.ReservationModel) error {
 	rr.logger.Infof("updating reservation with ID: %s", reservation.ID)
 

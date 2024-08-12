@@ -12,4 +12,5 @@ var (
 	ErrReservationIsAlreadyExtended = errors.New("[!] reservationService error! Reservation is already extended")
 	ErrReservationObjectIsNil       = errors.New("[!] reservationService error! Reservation object is nil")
 	ErrReservationDoesNotExists     = errors.New("[!] reservationService error! Reservation does not exists")
+	ErrReservationAlreadyExists     = errors.New("[!] reservationService error! Reservation already exists")
 )

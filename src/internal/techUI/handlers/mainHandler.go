@@ -64,13 +64,11 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		general.POST("/books", h.getBooks)
 		general.GET("/books/:id", h.getBookByID)
-
 	}
 
 	api := router.Group("/api", h.readerIdentity)
 	{
 		api.POST("/favorites", h.addToFavorites)
-
 		api.GET("/readers/:phone_number", h.getReaderByPhoneNumber)
 
 		libCards := api.Group("/lib-cards")
@@ -84,6 +82,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			reservations.POST("/", h.reserveBook)
 			reservations.GET("/", h.getReservationsByReaderID)
+			reservations.GET("/:id", h.getReservationsByID)
 			reservations.PUT("/:id", h.updateReservation)
 		}
 
@@ -91,6 +90,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			admin.POST("/books/:id", h.deleteBook)
 			admin.POST("/books", h.addNewBook)
+			admin.POST("/reservations", h.getReservationsByBookID)
 		}
 	}
 
@@ -101,6 +101,8 @@ func (h *Handler) corsSettings() gin.HandlerFunc {
 	return cors.New(cors.Config{
 		AllowMethods: []string{
 			http.MethodPost,
+			http.MethodGet,
+			http.MethodPut,
 		},
 		AllowOrigins: []string{
 			"*",

@@ -11,3 +11,9 @@ type ReaderSignUpDTO struct {
 	Age         uint   `json:"age" db:"age"`
 	Password    string `json:"password" db:"password"`
 }
+
+type ReaderTokensDTO struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiredAt    int64  `json:"expired_at"`
+}

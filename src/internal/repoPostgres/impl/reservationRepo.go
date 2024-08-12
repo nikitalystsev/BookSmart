@@ -83,6 +83,28 @@ func (rr *ReservationRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.R
 	return &reservation, nil
 }
 
+// GetByBookID TODO добавить в схемы и протестировать
+func (rr *ReservationRepo) GetByBookID(ctx context.Context, bookID uuid.UUID) ([]*models.ReservationModel, error) {
+	rr.logger.Infof("selecting reservation with bookID: %s", bookID)
+
+	query := fmt.Sprintf(`SELECT * FROM bs.reservation_view WHERE book_id = $1 AND state != '%s'`, impl.ReservationClosed)
+
+	var reservations []*models.ReservationModel
+	err := rr.db.SelectContext(ctx, &reservations, query, bookID)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		rr.logger.Errorf("error selecting reservation with ID: %v", err)
+		return nil, err
+	}
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		rr.logger.Warnf("reservation with this bookID not found: %s", bookID)
+		return nil, errs.ErrReservationDoesNotExists
+	}
+
+	rr.logger.Infof("selected reservation with bookID: %s", bookID)
+
+	return reservations, nil
+}
+
 func (rr *ReservationRepo) Update(ctx context.Context, reservation *models.ReservationModel) error {
 	rr.logger.Infof("updating reservation with ID: %s", reservation.ID)
 

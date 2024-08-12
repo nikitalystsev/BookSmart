@@ -86,9 +86,9 @@ func (lcr *LibCardRepo) GetByNum(ctx context.Context, libCardNum string) (*model
 func (lcr *LibCardRepo) Update(ctx context.Context, libCard *models.LibCardModel) error {
 	lcr.logger.Infof("updating libCard with ID: %s", libCard.ID)
 
-	query := `UPDATE bs.lib_card SET issue_date = $1 WHERE id = $2`
+	query := `UPDATE bs.lib_card SET issue_date = $1, action_status = $2 WHERE id = $3`
 
-	_, err := lcr.db.ExecContext(ctx, query, libCard.IssueDate, libCard.ID)
+	_, err := lcr.db.ExecContext(ctx, query, libCard.IssueDate, libCard.ActionStatus, libCard.ID)
 	if err != nil {
 		lcr.logger.Errorf("error updating libCard: %v", err)
 		return err
