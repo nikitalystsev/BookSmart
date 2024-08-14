@@ -1,8 +1,8 @@
 package requesters
 
 import (
+	"BookSmart-services/core/dto"
 	"BookSmart-services/core/models"
-	"BookSmart-techUI/handlers"
 	"BookSmart-techUI/input"
 	"encoding/json"
 	"errors"
@@ -19,8 +19,8 @@ const reservationsMenu = `Reservations menu:
 	0 -- go to main menu
 `
 
-func (r *Requester) ProcessReservationsActions(tokens *handlers.TokenResponse) error {
-	var reservationsID []uuid.UUID // массив id выведенных броней
+func (r *Requester) ProcessReservationsActions(tokens *dto.ReaderTokensDTO) error {
+	var reservationsID []uuid.UUID
 
 	for {
 		fmt.Printf("\n\n%s", reservationsMenu)
@@ -48,7 +48,7 @@ func (r *Requester) ProcessReservationsActions(tokens *handlers.TokenResponse) e
 	}
 }
 
-func (r *Requester) ViewReservations(reservationsID *[]uuid.UUID, tokens *handlers.TokenResponse) error {
+func (r *Requester) ViewReservations(reservationsID *[]uuid.UUID, tokens *dto.ReaderTokensDTO) error {
 	request := HTTPRequest{
 		Method: "GET",
 		URL:    "http://localhost:8000/api/reservations",
@@ -86,7 +86,7 @@ func (r *Requester) ViewReservations(reservationsID *[]uuid.UUID, tokens *handle
 	return nil
 }
 
-func (r *Requester) UpdateReservation(reservationsID *[]uuid.UUID, tokens *handlers.TokenResponse) error {
+func (r *Requester) UpdateReservation(reservationsID *[]uuid.UUID, tokens *dto.ReaderTokensDTO) error {
 	num, err := input.ReservationNumber()
 	if err != nil {
 		return err
