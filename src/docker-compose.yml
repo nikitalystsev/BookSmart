@@ -1,13 +1,13 @@
-x-common-postgres: &common-postgres
-  image: postgres:latest
-  environment:
-    POSTGRES_USER: ${POSTGRES_DB_USER}
-    POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
-    POSTGRES_DB: ${POSTGRES_DB_NAME}
-  volumes:
-    - ${DB_DATASETS_PATH}:/data
+#x-postgres: &postgres
+#  image: postgres:latest
+#  environment:
+#    POSTGRES_USER: ${POSTGRES_DB_USER}
+#    POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+#    POSTGRES_DB: ${POSTGRES_DB_NAME}
+#  volumes:
+#    - ${DB_DATASETS_PATH}:/data
 
-x-common-redis: &common-redis
+x-redis: &redis
   image: redis:latest
   environment:
     REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -16,51 +16,80 @@ x-common-redis: &common-redis
   command: >
     sh -c '
       mkdir -p /usr/local/etc/redis &&
-      echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+      echo "requirepass $REDIS_PASSWORD" > /usr/local/etc/redis/redis.conf &&
       echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
       echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
-      echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
-      echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+      echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" > /usr/local/etc/redis/users.acl &&
       redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
     '
+
 services:
-  test-postgres-db:
-    <<: *common-postgres
-    container_name: test_postgres_db
+  bs-app:
+    image: booksmart:local
+    container_name: bs-app
+    ports:
+      - "8000:8000"
+    depends_on:
+      bs-mongo:
+        condition: service_started
+      bs-postgres:
+        condition: service_healthy
+      bs-redis:
+        condition: service_started
+    volumes:
+      - ./.logs:/usr/local/src/.logs/
+    networks:
+      - bs
+
+  bs-postgres:
+    image: postgres:latest
+    container_name: bs-postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB_NAME_TEST}
+      POSTGRES_USER: ${POSTGRES_DB_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
     ports:
-      - "${POSTGRES_DB_PORT_TEST}:5432"
+      - "5432:5432"
+    volumes:
+      - ./.data/postgres:/var/lib/postgresql/data
+      - ${DB_DATASETS_PATH}:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bs
 
-  test-redis:
-    <<: *common-redis
-    container_name: test_redis
+  bs-redis:
+    <<: *redis
+    container_name: bs-redis
+    volumes:
+      - ./.data/redis:/var/lib/redis
+    expose:
+      - 6379
     ports:
-      - "${REDIS_PORT_TEST}:6379"
+      - "6379:6379"
+    networks:
+      - bs
 
-  postgres-db:
-    <<: *common-postgres
-    container_name: postgres_db
-    ports:
-      - "${POSTGRES_DB_PORT}:5432"
-
-  redis:
-    <<: *common-redis
-    container_name: redis
-    ports:
-      - "${REDIS_PORT}:6379"
-
-  mongo-db:
-    container_name: mongo_db
+  bs-mongo:
+    container_name: bs-mongo
     image: mongo:latest
     expose:
-      - ${MONGO_DB_PORT}
+      - 27017
     ports:
-      - "${MONGO_DB_PORT}:27017"
+      - "27017:27017"
     volumes:
       - ./internal/repoMongo/impl/migrations/rs-initiate.js:/docker-entrypoint-initdb.d/rs-initiate.js
+      - ./.data/mongo/:/data/db/
     command: [ "--replSet", "dbrs", "--bind_ip_all" ]
+    networks:
+      - bs
 
+networks:
+  bs:
+    driver: bridge
 
 # https://www.mongodb.com/community/forums/t/v-6-docker-one-node-replica-set/219245/5 -- откуда взял репликации (без них не работали транзакции в mongo)
 #  log-influxdb:

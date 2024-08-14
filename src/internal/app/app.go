@@ -9,6 +9,7 @@ import (
 	"BookSmart-services/pkg/hash"
 	"BookSmart-services/pkg/transact"
 	"BookSmart-techUI/handlers"
+	"BookSmart-techUI/requesters"
 	repoMongo "Booksmart-mongo"
 	implMongo "Booksmart-mongo/impl"
 	"Booksmart/internal/config"
@@ -39,7 +40,7 @@ func Run(configDir string) {
 		readerRepo      intfRepo.IReaderRepo
 		reservationRepo intfRepo.IReservationRepo
 
-		_manager *manager.Manager
+		trm *manager.Manager
 	)
 
 	client := redis.NewClient(&redis.Options{
@@ -66,17 +67,16 @@ func Run(configDir string) {
 		readerRepo = implPostgres.NewReaderRepo(db, client, logger)
 		reservationRepo = implPostgres.NewReservationRepo(db, logger)
 
-		_manager, err = manager.New(trmsqlx.NewDefaultFactory(db))
+		trm, err = manager.New(trmsqlx.NewDefaultFactory(db))
 		if err != nil {
 			logger.Errorf("error initializing manager: %v", err)
 			return
 		}
 
 	default:
-		fmt.Println("choice branch with mongodb")
 		mongoClient, err := repoMongo.NewClient(cfg.Mongo.URI, cfg.Mongo.Username, cfg.Mongo.Password, cfg.Mongo.DBName)
 		if err != nil {
-			logger.Error(err)
+			logger.Errorf("error connect to mongo: %v", err)
 			return
 		}
 		db := mongoClient.Database(cfg.Mongo.DBName)
@@ -86,7 +86,7 @@ func Run(configDir string) {
 		readerRepo = implMongo.NewReaderRepo(db, client, logger)
 		reservationRepo = implMongo.NewReservationRepo(db, logger)
 
-		_manager, err = manager.New(trmmongo.NewDefaultFactory(mongoClient))
+		trm, err = manager.New(trmmongo.NewDefaultFactory(mongoClient))
 		if err != nil {
 			logger.Errorf("error initializing manager: %v", err)
 			return
@@ -100,8 +100,7 @@ func Run(configDir string) {
 	}
 
 	hasher := hash.NewPasswordHasher(cfg.Auth.PasswordSalt)
-
-	transactionManager := transact.NewTransactionManager(_manager)
+	transactionManager := transact.NewTransactionManager(trm)
 
 	bookService := impl.NewBookService(bookRepo, logger)
 	libCardService := impl.NewLibCardService(libCardRepo, logger)
@@ -112,22 +111,26 @@ func Run(configDir string) {
 
 	router := handler.InitRoutes()
 
-	fmt.Println("Server was successfully started!")
+	switch cfg.UIType {
+	case "tech":
+		go func() {
+			err = router.Run(":" + cfg.Port)
+			if err != nil {
+				logger.Errorf("error running server: %v", err)
+				return
+			}
+		}()
 
-	err = router.Run(":" + cfg.Port)
-	if err != nil {
-		logger.Errorf("error running server: %v", err)
-		return
+		// TODO переделать логику с временем жизни
+		requester := requesters.NewRequester(logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
+		requester.Run()
+	default:
+		fmt.Println("Server was successfully started!")
+
+		err = router.Run(":" + cfg.Port)
+		if err != nil {
+			logger.Errorf("error running server: %v", err)
+			return
+		}
 	}
-
-	//go func() {
-	//	err = router.Run(":" + cfg.Port)
-	//	if err != nil {
-	//		logger.Errorf("error running server: %v", err)
-	//		return
-	//	}
-	//}()
-	//
-	//requester := requesters.NewRequester(logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
-	//requester.Run()
 }

@@ -27,7 +27,7 @@ func (w *InfluxDBWriter) Write(p []byte) (n int, err error) {
 		return 0, fmt.Errorf("failed to unmarshal log entry: %v", err)
 	}
 
-	point := influxdb2.NewPointWithMeasurement("logs").SetTime(time.Now())
+	point := influxdb2.NewPointWithMeasurement(".logs").SetTime(time.Now())
 
 	for key, value := range logEntry {
 		switch v := value.(type) {
@@ -88,12 +88,12 @@ func NewLogger() (*logrus.Entry, error) {
 		PrettyPrint: false,
 	})
 
-	err := os.MkdirAll("logs", 0755)
+	err := os.MkdirAll(".logs", 0755)
 	if err != nil {
 		return nil, err
 	}
 
-	allFile, err := os.OpenFile("logs/all.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
+	allFile, err := os.OpenFile(".logs/all.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
 	if err != nil {
 		return nil, err
 	}

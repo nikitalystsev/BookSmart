@@ -12,6 +12,7 @@ type Config struct {
 	Redis    RedisConfig
 	Mongo    MongoConfig
 	DBType   string
+	UIType   string
 	Port     string
 }
 
@@ -55,6 +56,7 @@ func Init(configsDir string) (*Config, error) {
 	viper.AddConfigPath(configsDir)
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
+
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
@@ -69,6 +71,9 @@ func Init(configsDir string) (*Config, error) {
 	if err := viper.UnmarshalKey("db.type", &cfg.DBType); err != nil {
 		return nil, err
 	}
+	if err := viper.UnmarshalKey("ui.type", &cfg.UIType); err != nil {
+		return nil, err
+	}
 
 	setFromEnv(&cfg)
 
@@ -81,7 +86,7 @@ func setFromEnv(cfg *Config) {
 	cfg.Postgres.DBName = os.Getenv("POSTGRES_DB_NAME")
 	cfg.Postgres.Username = os.Getenv("POSTGRES_DB_USER")
 	cfg.Postgres.Password = os.Getenv("POSTGRES_DB_PASSWORD")
-	cfg.Postgres.SSLMode = "disable"
+	cfg.Postgres.SSLMode = os.Getenv("POSTGRES_SSL_MODE")
 
 	cfg.Redis.Host = os.Getenv("REDIS_HOST")
 	cfg.Redis.Port = os.Getenv("REDIS_PORT")

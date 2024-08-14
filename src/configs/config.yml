@@ -6,3 +6,6 @@ port: 8000
 
 db:
   type: mongo # postgres | mongo
+
+ui:
+  type: tech # tech | full
