@@ -305,7 +305,7 @@ func TestLibCardRepo_Update(t *testing.T) {
 			name: "Success update lib card",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`UPDATE bs.lib_card SET (.+) WHERE (.+)`).
-					WithArgs(args.libCard.IssueDate, args.libCard.ID).
+					WithArgs(args.libCard.IssueDate, args.libCard.ActionStatus, args.libCard.ID).
 					WillReturnResult(sqlxmock.NewResult(1, 1))
 			},
 			args: args{
@@ -328,7 +328,7 @@ func TestLibCardRepo_Update(t *testing.T) {
 			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`UPDATE bs.lib_card SET (.+) WHERE (.+)`).
-					WithArgs(args.libCard.IssueDate, args.libCard.ID).
+					WithArgs(args.libCard.IssueDate, args.libCard.ActionStatus, args.libCard.ID).
 					WillReturnError(errors.New("update error"))
 			},
 			args: args{
