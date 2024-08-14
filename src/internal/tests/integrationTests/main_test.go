@@ -67,7 +67,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	}
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6381",
+		Addr:     "0.0.0.0:6380",
 		Username: os.Getenv("REDIS_USER"),
 		Password: os.Getenv("REDIS_USER_PASSWORD"),
 		DB:       0,

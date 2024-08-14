@@ -35,8 +35,8 @@ func (s *IntegrationTestSuite) TestReservation_Create_Success() {
 
 func (s *IntegrationTestSuite) TestReservation_Create_Error() {
 	readerDTO := &dto.ReaderSignInDTO{
-		PhoneNumber: "76867456521",
-		Password:    "hghhfnnbdd",
+		PhoneNumber: "32534523451",
+		Password:    "rtjhhhgffr",
 	}
 	_, err := s.readerService.SignIn(context.Background(), readerDTO)
 	s.NoError(err)
@@ -47,7 +47,7 @@ func (s *IntegrationTestSuite) TestReservation_Create_Error() {
 		Offset: 0,
 	}
 
-	readerID, _ := uuid.Parse("3885b2d3-ef6e-4f62-8f86-d1454d108207")
+	readerID, _ := uuid.Parse("6800b3ee-9810-450e-9ca5-776aa1c6191d")
 
 	var books []*models.BookModel
 	books, err = s.bookService.GetByParams(context.Background(), params)

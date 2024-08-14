@@ -23,9 +23,8 @@ utest-repo:
 	go test -v ./internal/tests/unitTests/repositoryTests/
 
 itest:
-	docker compose up -d test-postgres-db test-redis
+	docker compose up -d bs-postgres-test bs-redis-test
 	go test -v ./internal/tests/integrationTests
-	docker stop test_postgres_db test_redis
 
 migrate-up:
 	migrate -database $(database_url) -path $(migration_path) up
