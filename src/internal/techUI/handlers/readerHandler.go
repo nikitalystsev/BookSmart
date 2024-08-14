@@ -14,7 +14,7 @@ import (
 func (h *Handler) signUp(c *gin.Context) {
 	var inp dto.ReaderSignUpDTO
 	if err := c.BindJSON(&inp); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "invalid input body")
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -98,46 +98,6 @@ func (h *Handler) refresh(c *gin.Context) {
 		RefreshToken: res.RefreshToken,
 		ExpiredAt:    time.Now().Add(h.accessTokenTTL).UnixMilli(),
 	})
-}
-
-func (h *Handler) addToFavorites(c *gin.Context) {
-	readerIDStr, _, err := getReaderData(c)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	readerID, err := uuid.Parse(readerIDStr)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	var bookID uuid.UUID
-	if err = c.BindJSON(&bookID); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	err = h.readerService.AddToFavorites(c.Request.Context(), readerID, bookID)
-	if err != nil && errors.Is(err, errs.ErrReaderDoesNotExists) {
-		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
-		return
-	}
-	if err != nil && errors.Is(err, errs.ErrBookDoesNotExists) {
-		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
-		return
-	}
-	if err != nil && errors.Is(err, errs.ErrBookAlreadyIsFavorite) {
-		c.AbortWithStatusJSON(http.StatusConflict, err.Error())
-		return
-	}
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	c.Status(http.StatusCreated)
 }
 
 func (h *Handler) getReaderByPhoneNumber(c *gin.Context) {

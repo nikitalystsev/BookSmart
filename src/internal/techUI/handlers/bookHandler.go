@@ -48,3 +48,43 @@ func (h *Handler) getBookByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, book)
 }
+
+func (h *Handler) addToFavorites(c *gin.Context) {
+	readerIDStr, _, err := getReaderData(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	readerID, err := uuid.Parse(readerIDStr)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var bookID uuid.UUID
+	if err = c.BindJSON(&bookID); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err = h.readerService.AddToFavorites(c.Request.Context(), readerID, bookID)
+	if err != nil && errors.Is(err, errs.ErrReaderDoesNotExists) {
+		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
+		return
+	}
+	if err != nil && errors.Is(err, errs.ErrBookDoesNotExists) {
+		c.AbortWithStatusJSON(http.StatusNotFound, err.Error())
+		return
+	}
+	if err != nil && errors.Is(err, errs.ErrBookAlreadyIsFavorite) {
+		c.AbortWithStatusJSON(http.StatusConflict, err.Error())
+		return
+	}
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}

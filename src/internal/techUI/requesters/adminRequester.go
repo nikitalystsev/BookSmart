@@ -2,7 +2,6 @@ package requesters
 
 import (
 	"BookSmart-services/core/dto"
-	"BookSmart-techUI/handlers"
 	"BookSmart-techUI/input"
 	"encoding/json"
 	"errors"
@@ -13,7 +12,7 @@ import (
 )
 
 func (r *Requester) ProcessAdminActions() error {
-	var tokens handlers.TokenResponse
+	var tokens dto.ReaderTokensDTO
 	stopRefresh := make(chan struct{})
 
 	if err := r.SignInAsAdmin(&tokens, stopRefresh); err != nil {
@@ -55,7 +54,7 @@ func (r *Requester) ProcessAdminActions() error {
 	}
 }
 
-func (r *Requester) SignInAsAdmin(tokens *handlers.TokenResponse, stopRefresh <-chan struct{}) error {
+func (r *Requester) SignInAsAdmin(tokens *dto.ReaderTokensDTO, stopRefresh <-chan struct{}) error {
 	readerSignInDTO, err := input.SignInParams()
 	if err != nil {
 		return err
@@ -106,7 +105,7 @@ const adminCatalogMenu = `Admin's Catalog menu:
 	0 -- go to main menu
 `
 
-func (r *Requester) ProcessAdminBookCatalogActions(tokens *handlers.TokenResponse) error {
+func (r *Requester) ProcessAdminBookCatalogActions(tokens *dto.ReaderTokensDTO) error {
 	var params dto.BookParamsDTO
 	var bookPagesID []uuid.UUID // массив id выведенных книг
 

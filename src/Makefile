@@ -10,7 +10,8 @@ database_url := '$(DB_DSN)'
 .PHONY: run build utest-srv utest-repo itest migrate-up migrate-down clean
 
 all:
-	docker compose up bs-app bs-postgres bs-mongo bs-redis
+	docker compose up -d bs-app bs-postgres bs-mongo bs-redis
+	docker exec -it bs-app bash
 
 build:
 	docker build -t booksmart:local .

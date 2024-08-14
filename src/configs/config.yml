@@ -8,4 +8,4 @@ db:
   type: mongo # postgres | mongo
 
 ui:
-  type: tech # tech | full
+  type: full # tech | full

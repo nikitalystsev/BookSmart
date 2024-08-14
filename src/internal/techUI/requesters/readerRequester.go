@@ -1,7 +1,7 @@
 package requesters
 
 import (
-	"BookSmart-techUI/handlers"
+	"BookSmart-services/core/dto"
 	"BookSmart-techUI/input"
 	"encoding/json"
 	"errors"
@@ -18,7 +18,7 @@ const readerMainMenu = `Main menu:
 `
 
 func (r *Requester) ProcessReaderActions() error {
-	var tokens handlers.TokenResponse
+	var tokens dto.ReaderTokensDTO
 	stopRefresh := make(chan struct{})
 
 	if err := r.SignIn(&tokens, stopRefresh); err != nil {
@@ -92,7 +92,7 @@ func (r *Requester) SignUp() error {
 	return nil
 }
 
-func (r *Requester) SignIn(tokens *handlers.TokenResponse, stopRefresh <-chan struct{}) error {
+func (r *Requester) SignIn(tokens *dto.ReaderTokensDTO, stopRefresh <-chan struct{}) error {
 	readerSignInDTO, err := input.SignInParams()
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (r *Requester) SignIn(tokens *handlers.TokenResponse, stopRefresh <-chan st
 	return nil
 }
 
-func (r *Requester) Refresh(tokens *handlers.TokenResponse) error {
+func (r *Requester) Refresh(tokens *dto.ReaderTokensDTO) error {
 	request := HTTPRequest{
 		Method: "POST",
 		URL:    "http://localhost:8000/auth/refresh",
@@ -165,7 +165,7 @@ func (r *Requester) Refresh(tokens *handlers.TokenResponse) error {
 	return nil
 }
 
-func (r *Requester) Refreshing(tokens *handlers.TokenResponse, interval time.Duration, stopRefresh <-chan struct{}) {
+func (r *Requester) Refreshing(tokens *dto.ReaderTokensDTO, interval time.Duration, stopRefresh <-chan struct{}) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 

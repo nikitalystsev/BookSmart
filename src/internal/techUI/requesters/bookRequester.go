@@ -3,7 +3,6 @@ package requesters
 import (
 	"BookSmart-services/core/dto"
 	"BookSmart-services/core/models"
-	"BookSmart-techUI/handlers"
 	"BookSmart-techUI/input"
 	"encoding/json"
 	"errors"
@@ -25,9 +24,9 @@ const catalogMenu = `Catalog's menu:
 
 const PageLimit = 10
 
-func (r *Requester) ProcessBookCatalogActions(tokens *handlers.TokenResponse) error {
+func (r *Requester) ProcessBookCatalogActions(tokens *dto.ReaderTokensDTO) error {
 	var params dto.BookParamsDTO
-	var bookPagesID []uuid.UUID // массив id выведенных книг
+	var bookPagesID []uuid.UUID
 
 	for {
 		fmt.Printf("\n\n%s", catalogMenu)
@@ -66,6 +65,7 @@ func (r *Requester) ProcessBookCatalogActions(tokens *handlers.TokenResponse) er
 		}
 	}
 }
+
 func (r *Requester) viewFirstPage(params *dto.BookParamsDTO, bookPagesID *[]uuid.UUID) error {
 	isWithParams, err := input.IsWithParams()
 	if err != nil {

@@ -20,4 +20,4 @@ COPY --from=builder /usr/local/src/bin/app ./
 COPY configs/config.yml ./configs/config.yml
 COPY .env ./.env
 
-CMD ["./app"]
+#CMD ["./app"]

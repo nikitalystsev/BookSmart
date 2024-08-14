@@ -1,7 +1,7 @@
 package requesters
 
 import (
-	"BookSmart-techUI/handlers"
+	"BookSmart-services/core/dto"
 	"BookSmart-techUI/input"
 	"fmt"
 	"github.com/sirupsen/logrus"
@@ -23,8 +23,16 @@ type Requester struct {
 	refreshTokenTTL time.Duration
 }
 
-func NewRequester(logger *logrus.Entry, accessTokenTTL time.Duration, refreshTokenTTL time.Duration) *Requester {
-	return &Requester{logger: logger, accessTokenTTL: accessTokenTTL, refreshTokenTTL: refreshTokenTTL}
+func NewRequester(
+	logger *logrus.Entry,
+	accessTokenTTL time.Duration,
+	refreshTokenTTL time.Duration,
+) *Requester {
+	return &Requester{
+		logger:          logger,
+		accessTokenTTL:  accessTokenTTL,
+		refreshTokenTTL: refreshTokenTTL,
+	}
 }
 
 func (r *Requester) Run() {
@@ -51,7 +59,7 @@ func (r *Requester) Run() {
 				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 4:
-			if err = r.ProcessBookCatalogActions(&handlers.TokenResponse{}); err != nil {
+			if err = r.ProcessBookCatalogActions(&dto.ReaderTokensDTO{}); err != nil {
 				fmt.Printf("\n\n%s\n", err.Error())
 			}
 		case 0:
