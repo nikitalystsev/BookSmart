@@ -1,8 +1,8 @@
 package requesters
 
 import (
+	"BookSmart-services/core/dto"
 	"BookSmart-services/core/models"
-	"BookSmart-techUI/handlers"
 	"BookSmart-techUI/input"
 	"encoding/json"
 	"errors"
@@ -20,8 +20,7 @@ const libCardMenu = `Library card menu:
 	0 -- go to main menu
 `
 
-func (r *Requester) ProcessLibCardActions(tokens *handlers.TokenResponse) error {
-
+func (r *Requester) ProcessLibCardActions(tokens *dto.ReaderTokensDTO) error {
 	for {
 		fmt.Printf("\n\n%s", libCardMenu)
 
@@ -52,7 +51,7 @@ func (r *Requester) ProcessLibCardActions(tokens *handlers.TokenResponse) error 
 	}
 }
 
-func (r *Requester) CreateLibCard(tokens *handlers.TokenResponse) error {
+func (r *Requester) CreateLibCard(tokens *dto.ReaderTokensDTO) error {
 	request := HTTPRequest{
 		Method: "POST",
 		URL:    "http://localhost:8000/api/lib-cards",
@@ -81,7 +80,7 @@ func (r *Requester) CreateLibCard(tokens *handlers.TokenResponse) error {
 	return nil
 }
 
-func (r *Requester) UpdateLibCard(tokens *handlers.TokenResponse) error {
+func (r *Requester) UpdateLibCard(tokens *dto.ReaderTokensDTO) error {
 	request := HTTPRequest{
 		Method: "PUT",
 		URL:    "http://localhost:8000/api/lib-cards",
@@ -110,7 +109,7 @@ func (r *Requester) UpdateLibCard(tokens *handlers.TokenResponse) error {
 	return nil
 }
 
-func (r *Requester) ViewLibCard(tokens *handlers.TokenResponse) error {
+func (r *Requester) ViewLibCard(tokens *dto.ReaderTokensDTO) error {
 	request := HTTPRequest{
 		Method: "GET",
 		URL:    "http://localhost:8000/api/lib-cards",
