@@ -65,19 +65,34 @@ func (mr *MockIReservationRepoMockRecorder) GetActiveByReaderID(ctx, readerID in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActiveByReaderID", reflect.TypeOf((*MockIReservationRepo)(nil).GetActiveByReaderID), ctx, readerID)
 }
 
-// GetByID mocks base method.
-func (m *MockIReservationRepo) GetByID(ctx context.Context, reservationID uuid.UUID) (*models.ReservationModel, error) {
+// GetByBookID mocks base method.
+func (m *MockIReservationRepo) GetByBookID(ctx context.Context, bookID uuid.UUID) ([]*models.ReservationModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", ctx, reservationID)
+	ret := m.ctrl.Call(m, "GetByBookID", ctx, bookID)
+	ret0, _ := ret[0].([]*models.ReservationModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByBookID indicates an expected call of GetByBookID.
+func (mr *MockIReservationRepoMockRecorder) GetByBookID(ctx, bookID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByBookID", reflect.TypeOf((*MockIReservationRepo)(nil).GetByBookID), ctx, bookID)
+}
+
+// GetByID mocks base method.
+func (m *MockIReservationRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.ReservationModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, ID)
 	ret0, _ := ret[0].(*models.ReservationModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID.
-func (mr *MockIReservationRepoMockRecorder) GetByID(ctx, reservationID interface{}) *gomock.Call {
+func (mr *MockIReservationRepoMockRecorder) GetByID(ctx, ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIReservationRepo)(nil).GetByID), ctx, reservationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIReservationRepo)(nil).GetByID), ctx, ID)
 }
 
 // GetByReaderAndBook mocks base method.

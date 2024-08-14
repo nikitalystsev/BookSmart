@@ -39,6 +39,7 @@ func TestReservationService_Create(t *testing.T) {
 			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
 				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
 				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 1}, nil)
+				res.EXPECT().GetByReaderAndBook(gomock.Any(), args.readerID, args.bookID).Return(nil, nil)
 				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
 				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
 				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)

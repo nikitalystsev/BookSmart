@@ -52,32 +52,32 @@ func (mr *MockIBookRepoMockRecorder) Create(ctx, book interface{}) *gomock.Call 
 }
 
 // Delete mocks base method.
-func (m *MockIBookRepo) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockIBookRepo) Delete(ctx context.Context, ID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret := m.ctrl.Call(m, "Delete", ctx, ID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockIBookRepoMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+func (mr *MockIBookRepoMockRecorder) Delete(ctx, ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIBookRepo)(nil).Delete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIBookRepo)(nil).Delete), ctx, ID)
 }
 
 // GetByID mocks base method.
-func (m *MockIBookRepo) GetByID(ctx context.Context, id uuid.UUID) (*models.BookModel, error) {
+func (m *MockIBookRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.BookModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", ctx, id)
+	ret := m.ctrl.Call(m, "GetByID", ctx, ID)
 	ret0, _ := ret[0].(*models.BookModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID.
-func (mr *MockIBookRepoMockRecorder) GetByID(ctx, id interface{}) *gomock.Call {
+func (mr *MockIBookRepoMockRecorder) GetByID(ctx, ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIBookRepo)(nil).GetByID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIBookRepo)(nil).GetByID), ctx, ID)
 }
 
 // GetByParams mocks base method.
