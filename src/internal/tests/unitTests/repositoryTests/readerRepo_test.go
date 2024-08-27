@@ -41,7 +41,7 @@ func TestReaderRepo_Create(t *testing.T) {
 		{
 			name: "Success create reader",
 			mockBehavior: func(args args) {
-				mock.ExpectExec(`INSERT INTO bs.reader VALUES`).
+				mock.ExpectExec(`insert into bs.reader values`).
 					WithArgs(args.reader.ID, args.reader.Fio, args.reader.PhoneNumber, args.reader.Age, args.reader.Password, args.reader.Role).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
@@ -63,7 +63,7 @@ func TestReaderRepo_Create(t *testing.T) {
 		{
 			name: "Error executing query",
 			mockBehavior: func(args args) {
-				mock.ExpectExec(`INSERT INTO bs.reader VALUES`).
+				mock.ExpectExec(`insert into bs.reader values`).
 					WithArgs(args.reader.ID, args.reader.Fio, args.reader.PhoneNumber, args.reader.Age, args.reader.Password, args.reader.Role).
 					WillReturnError(errors.New("insert error"))
 			},
@@ -121,7 +121,7 @@ func TestReaderRepo_GetByPhoneNumber(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(uuid.New(), "Test Reader", args.phoneNumber, 25, "password")
 
-				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.reader where (.+)`).
 					WithArgs(args.phoneNumber).WillReturnRows(rows)
 			},
 			args: args{
@@ -141,7 +141,7 @@ func TestReaderRepo_GetByPhoneNumber(t *testing.T) {
 		{
 			name: "Error reader not found",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.reader where (.+)`).
 					WithArgs(args.phoneNumber).WillReturnError(sql.ErrNoRows)
 			},
 			args: args{
@@ -195,7 +195,7 @@ func TestReaderRepo_GetByID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(uuid.New(), "Test Reader", "1234567890", 25, "password")
 
-				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.reader where (.+)`).
 					WithArgs(args.id).WillReturnRows(rows)
 			},
 			args: args{
@@ -215,7 +215,7 @@ func TestReaderRepo_GetByID(t *testing.T) {
 		{
 			name: "Error reader not found",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.reader where (.+)`).
 					WithArgs(args.id).WillReturnError(errors.New("sql: no rows in result set"))
 			},
 			args: args{
@@ -267,7 +267,7 @@ func TestReaderRepo_IsFavorite(t *testing.T) {
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"count"}).AddRow(1)
 
-				mock.ExpectQuery(`SELECT (.+) FROM bs.favorite_books WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.favorite_books where (.+)`).
 					WithArgs(args.readerID, args.bookID).WillReturnRows(rows)
 			},
 			args: args{
@@ -286,7 +286,7 @@ func TestReaderRepo_IsFavorite(t *testing.T) {
 			mockBehavior: func(args args) {
 				rows := sqlmock.NewRows([]string{"count"}).AddRow(0)
 
-				mock.ExpectQuery(`SELECT (.+) FROM bs.favorite_books WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.favorite_books where (.+)`).
 					WithArgs(args.readerID, args.bookID).WillReturnRows(rows)
 			},
 			args: args{
@@ -303,7 +303,7 @@ func TestReaderRepo_IsFavorite(t *testing.T) {
 		{
 			name: "Error query execution",
 			mockBehavior: func(args args) {
-				mock.ExpectQuery(`SELECT (.+) FROM bs.favorite_books WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.favorite_books where (.+)`).
 					WithArgs(args.readerID, args.bookID).WillReturnError(errors.New("query error"))
 			},
 			args: args{
@@ -355,7 +355,7 @@ func TestReaderRepo_AddToFavorites(t *testing.T) {
 		{
 			name: "Success add book to favorites",
 			mockBehavior: func(args args) {
-				mock.ExpectExec(`INSERT INTO bs.favorite_books`).
+				mock.ExpectExec(`insert into bs.favorite_books`).
 					WithArgs(args.readerID, args.bookID).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			args: args{
@@ -371,7 +371,7 @@ func TestReaderRepo_AddToFavorites(t *testing.T) {
 		{
 			name: "Error executing query",
 			mockBehavior: func(args args) {
-				mock.ExpectExec(`INSERT INTO bs.favorite_books`).
+				mock.ExpectExec(`insert into bs.favorite_books`).
 					WithArgs(args.readerID, args.bookID).WillReturnError(errors.New("insert error"))
 			},
 			args: args{
@@ -516,7 +516,7 @@ func TestReaderRepo_GetByRefreshToken(t *testing.T) {
 				// Mock database query
 				rows := sqlmock.NewRows([]string{"id", "fio", "phone_number", "age", "password"}).
 					AddRow(readerID, "Test Reader", "1234567890", 30, "password")
-				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.reader where (.+)`).
 					WithArgs(readerID).WillReturnRows(rows)
 			},
 			args: args{
@@ -552,7 +552,7 @@ func TestReaderRepo_GetByRefreshToken(t *testing.T) {
 			mockBehavior: func(args args, readerID uuid.UUID) {
 				mr.Set(args.token, readerID.String())
 
-				mock.ExpectQuery(`SELECT (.+) FROM bs.reader WHERE (.+)`).
+				mock.ExpectQuery(`select (.+) from bs.reader where (.+)`).
 					WithArgs(readerID).WillReturnError(errors.New("database error"))
 			},
 			args: args{

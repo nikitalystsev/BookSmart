@@ -65,18 +65,15 @@ func (rs *ReservationService) Create(ctx context.Context, readerID, bookID uuid.
 		return err
 	}
 
-	err = rs.checkAgeLimit(existingReader, existingBook)
-	if err != nil {
+	if err = rs.checkAgeLimit(existingReader, existingBook); err != nil {
 		return err
 	}
 
-	err = rs.checkReservationExists(ctx, readerID, bookID)
-	if err != nil {
+	if err = rs.checkReservationExists(ctx, readerID, bookID); err != nil {
 		return err
 	}
 
-	err = rs.create(ctx, readerID, bookID)
-	if err != nil {
+	if err = rs.create(ctx, readerID, bookID); err != nil {
 		rs.logger.Errorf("error creating reservation: %v", err)
 		return err
 	}
@@ -94,22 +91,19 @@ func (rs *ReservationService) Update(ctx context.Context, reservation *models.Re
 
 	rs.logger.Info("attempting to update reservation")
 
-	err := rs.checkValidLibCard(ctx, reservation.ReaderID)
-	if err != nil {
-		return err
-	}
-	err = rs.checkNoExpiredBooks(ctx, reservation.ReaderID)
-	if err != nil {
+	if err := rs.checkValidLibCard(ctx, reservation.ReaderID); err != nil {
 		return err
 	}
 
-	err = rs.checkReservationState(reservation.State)
-	if err != nil {
+	if err := rs.checkNoExpiredBooks(ctx, reservation.ReaderID); err != nil {
 		return err
 	}
 
-	err = rs.checkBookRarityUpdate(ctx, reservation.BookID)
-	if err != nil {
+	if err := rs.checkReservationState(reservation.State); err != nil {
+		return err
+	}
+
+	if err := rs.checkBookRarityUpdate(ctx, reservation.BookID); err != nil {
 		return err
 	}
 
@@ -117,8 +111,8 @@ func (rs *ReservationService) Update(ctx context.Context, reservation *models.Re
 	reservation.State = ReservationExtended
 
 	rs.logger.Info("update reservation in repository")
-	err = rs.reservationRepo.Update(ctx, reservation)
-	if err != nil {
+
+	if err := rs.reservationRepo.Update(ctx, reservation); err != nil {
 		rs.logger.Errorf("error updating reservation: %v", err)
 		return err
 	}
@@ -128,7 +122,7 @@ func (rs *ReservationService) Update(ctx context.Context, reservation *models.Re
 	return nil
 }
 
-// GetByBookID TODO добавить в схемы и протестировать
+// GetByBookID TODO добавить в схемы (протестировано)
 func (rs *ReservationService) GetByBookID(ctx context.Context, bookID uuid.UUID) ([]*models.ReservationModel, error) {
 	rs.logger.Infof("attempting to get reservation with bookID: %s", bookID)
 
@@ -137,7 +131,8 @@ func (rs *ReservationService) GetByBookID(ctx context.Context, bookID uuid.UUID)
 		rs.logger.Errorf("error checking reservation existence: %v", err)
 		return nil, err
 	}
-	if err != nil && errors.Is(err, errs.ErrReservationDoesNotExists) {
+
+	if reservations == nil {
 		rs.logger.Warnf("reservations with this bookID does not exist %s", bookID)
 		return nil, errs.ErrReservationDoesNotExists
 	}
@@ -147,6 +142,7 @@ func (rs *ReservationService) GetByBookID(ctx context.Context, bookID uuid.UUID)
 	return reservations, nil
 
 }
+
 func (rs *ReservationService) GetAllReservationsByReaderID(ctx context.Context, readerID uuid.UUID) ([]*models.ReservationModel, error) {
 	activeReservations, err := rs.reservationRepo.GetActiveByReaderID(ctx, readerID)
 	if err != nil && !errors.Is(err, errs.ErrReservationDoesNotExists) {
@@ -199,8 +195,7 @@ func (rs *ReservationService) create(ctx context.Context, readerID, bookID uuid.
 
 		rs.logger.Info("creating reservation in repository")
 
-		err := rs.reservationRepo.Create(ctx, newReservation)
-		if err != nil {
+		if err := rs.reservationRepo.Create(ctx, newReservation); err != nil {
 			rs.logger.Errorf("error creating reservation: %v", err)
 			return err
 		}
@@ -215,8 +210,7 @@ func (rs *ReservationService) create(ctx context.Context, readerID, bookID uuid.
 
 		rs.logger.Info("updating book copiesNumber in repository")
 
-		err = rs.bookRepo.Update(ctx, existingBook)
-		if err != nil {
+		if err = rs.bookRepo.Update(ctx, existingBook); err != nil {
 			rs.logger.Errorf("error updating book: %v", err)
 			return err
 		}
@@ -233,18 +227,15 @@ func (rs *ReservationService) checkReader(ctx context.Context, readerID uuid.UUI
 		return nil, err
 	}
 
-	err = rs.checkNoExpiredBooks(ctx, readerID)
-	if err != nil {
+	if err = rs.checkNoExpiredBooks(ctx, readerID); err != nil {
 		return nil, err
 	}
 
-	err = rs.checkActiveReservationsLimit(ctx, readerID)
-	if err != nil {
+	if err = rs.checkActiveReservationsLimit(ctx, readerID); err != nil {
 		return nil, err
 	}
 
-	err = rs.checkValidLibCard(ctx, readerID)
-	if err != nil {
+	if err = rs.checkValidLibCard(ctx, readerID); err != nil {
 		return nil, err
 	}
 
@@ -259,13 +250,11 @@ func (rs *ReservationService) checkBook(ctx context.Context, bookID uuid.UUID) (
 		return nil, err
 	}
 
-	err = rs.checkBookCopiesNumber(existingBook)
-	if err != nil {
+	if err = rs.checkBookCopiesNumber(existingBook); err != nil {
 		return nil, err
 	}
 
-	err = rs.checkBookRarityCreate(existingBook)
-	if err != nil {
+	if err = rs.checkBookRarityCreate(existingBook); err != nil {
 		return nil, err
 	}
 

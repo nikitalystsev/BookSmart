@@ -95,7 +95,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - test
+      - bs-test
 
   bs-redis-test:
     <<: *redis
@@ -103,12 +103,12 @@ services:
     ports:
       - "6380:6379"
     networks:
-      - test
+      - bs-test
 
 networks:
   bs:
     driver: bridge
-  test:
+  bs-test:
     driver: bridge
 # https://www.mongodb.com/community/forums/t/v-6-docker-one-node-replica-set/219245/5 -- откуда взял репликации (без них не работали транзакции в mongo)
 #  log-influxdb:

@@ -35,16 +35,14 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 
 	bs.logger.Info("attempting to create book")
 
-	err := bs.baseValidation(ctx, book)
-	if err != nil {
+	if err := bs.baseValidation(ctx, book); err != nil {
 		bs.logger.Errorf("book validation failed: %v", err)
 		return err
 	}
 
 	bs.logger.Infof("creating book in repository: %+v", book)
 
-	err = bs.bookRepo.Create(ctx, book)
-	if err != nil {
+	if err := bs.bookRepo.Create(ctx, book); err != nil {
 		bs.logger.Errorf("error creating book: %v", err)
 		return err
 	}
@@ -54,15 +52,15 @@ func (bs *BookService) Create(ctx context.Context, book *models.BookModel) error
 	return nil
 }
 
-func (bs *BookService) Delete(ctx context.Context, bookID uuid.UUID) error {
-	if bookID == uuid.Nil {
+func (bs *BookService) Delete(ctx context.Context, ID uuid.UUID) error {
+	if ID == uuid.Nil {
 		bs.logger.Warn("book object is nil")
 		return errs.ErrBookObjectIsNil
 	}
 
-	bs.logger.Infof("attempting to delete book with ID: %s", bookID)
+	bs.logger.Infof("attempting to delete book with ID: %s", ID)
 
-	existingBook, err := bs.bookRepo.GetByID(ctx, bookID)
+	existingBook, err := bs.bookRepo.GetByID(ctx, ID)
 	if err != nil && !errors.Is(err, errs.ErrBookDoesNotExists) {
 		bs.logger.Errorf("error checking book existence: %v", err)
 		return err
@@ -73,13 +71,12 @@ func (bs *BookService) Delete(ctx context.Context, bookID uuid.UUID) error {
 		return errs.ErrBookDoesNotExists
 	}
 
-	err = bs.bookRepo.Delete(ctx, bookID)
-	if err != nil {
-		bs.logger.Errorf("error deleting book with ID %s: %v", bookID, err)
+	if err = bs.bookRepo.Delete(ctx, ID); err != nil {
+		bs.logger.Errorf("error deleting book with ID %s: %v", ID, err)
 		return err
 	}
 
-	bs.logger.Infof("successfully deleted book with ID: %s", bookID)
+	bs.logger.Infof("successfully deleted book with ID: %s", ID)
 
 	return nil
 }
@@ -107,9 +104,14 @@ func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDT
 	bs.logger.Infof("attempting to search for books with params")
 
 	books, err := bs.bookRepo.GetByParams(ctx, params)
-	if err != nil {
+	if err != nil && !errors.Is(err, errs.ErrBookDoesNotExists) {
 		bs.logger.Errorf("error searching books with params: %v", err)
 		return nil, err
+	}
+
+	if books == nil {
+		bs.logger.Warn("books with params does not exist")
+		return nil, errs.ErrBookDoesNotExists
 	}
 
 	bs.logger.Infof("successfully found %d books with params", len(books))
@@ -119,7 +121,6 @@ func (bs *BookService) GetByParams(ctx context.Context, params *dto.BookParamsDT
 
 func (bs *BookService) baseValidation(ctx context.Context, book *models.BookModel) error {
 	existingBook, err := bs.bookRepo.GetByID(ctx, book.ID)
-
 	if err != nil && !errors.Is(err, errs.ErrBookDoesNotExists) {
 		bs.logger.Errorf("error checking book existence: %v", err)
 		return err

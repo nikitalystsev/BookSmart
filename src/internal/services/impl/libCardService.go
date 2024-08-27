@@ -34,7 +34,6 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 	lcs.logger.Infof("attempting to create libCard by readerID: %s", readerID)
 
 	existingLibCard, err := lcs.libCardRepo.GetByReaderID(ctx, readerID)
-
 	if err != nil && !errors.Is(err, errs.ErrLibCardDoesNotExists) {
 		lcs.logger.Errorf("error checking libCard existence: %v", err)
 		return err
@@ -58,8 +57,7 @@ func (lcs *LibCardService) Create(ctx context.Context, readerID uuid.UUID) error
 
 	lcs.logger.Infof("creating libCard in repository: %+v", newLibCard)
 
-	err = lcs.libCardRepo.Create(ctx, newLibCard)
-	if err != nil {
+	if err = lcs.libCardRepo.Create(ctx, newLibCard); err != nil {
 		lcs.logger.Errorf("error creating libCard: %v", err)
 		return err
 	}
@@ -96,8 +94,7 @@ func (lcs *LibCardService) Update(ctx context.Context, libCard *models.LibCardMo
 	libCard.IssueDate = time.Now()
 	libCard.ActionStatus = true
 
-	err = lcs.libCardRepo.Update(ctx, libCard)
-	if err != nil {
+	if err = lcs.libCardRepo.Update(ctx, libCard); err != nil {
 		lcs.logger.Errorf("error updating libCard: %v", err)
 		return err
 	}

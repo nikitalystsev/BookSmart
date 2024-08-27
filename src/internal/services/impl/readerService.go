@@ -63,8 +63,7 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 
 	rs.logger.Info("attempting to sign up")
 
-	err := rs.baseValidation(ctx, reader)
-	if err != nil {
+	if err := rs.baseValidation(ctx, reader); err != nil {
 		rs.logger.Errorf("reader validation failed: %v", err)
 		return err
 	}
@@ -82,8 +81,7 @@ func (rs *ReaderService) SignUp(ctx context.Context, reader *models.ReaderModel)
 
 	rs.logger.Infof("creating reader in repository: %+v", reader)
 
-	err = rs.readerRepo.Create(ctx, reader)
-	if err != nil {
+	if err = rs.readerRepo.Create(ctx, reader); err != nil {
 		rs.logger.Errorf("error creating reader: %v", err)
 		return err
 	}
@@ -115,8 +113,7 @@ func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO
 
 	rs.logger.Info("compare password with hashing password")
 
-	err = rs.hasher.Compare(exitingReader.Password, reader.Password)
-	if err != nil {
+	if err = rs.hasher.Compare(exitingReader.Password, reader.Password); err != nil {
 		rs.logger.Errorf("compare password with hashing password failed: %v", err)
 		return models.Tokens{}, err
 	}
@@ -124,7 +121,7 @@ func (rs *ReaderService) SignIn(ctx context.Context, reader *dto.ReaderSignInDTO
 	return rs.createTokens(ctx, exitingReader.ID, exitingReader.Role)
 }
 
-// GetByPhoneNumber TODO добавить в схемы и протестировать
+// GetByPhoneNumber TODO добавить в схемы (протестировано)
 func (rs *ReaderService) GetByPhoneNumber(ctx context.Context, phoneNumber string) (*models.ReaderModel, error) {
 	rs.logger.Infof("attempting to get reader by phoneNumber: %s", phoneNumber)
 
@@ -189,8 +186,7 @@ func (rs *ReaderService) AddToFavorites(ctx context.Context, readerID, bookID uu
 		return errs.ErrBookAlreadyIsFavorite
 	}
 
-	err = rs.readerRepo.AddToFavorites(ctx, readerID, bookID)
-	if err != nil {
+	if err = rs.readerRepo.AddToFavorites(ctx, readerID, bookID); err != nil {
 		rs.logger.Errorf("error adding book to favorites: %v", err)
 		return err
 	}

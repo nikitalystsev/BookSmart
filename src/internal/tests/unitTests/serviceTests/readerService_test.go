@@ -8,6 +8,7 @@ import (
 	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
 	"Booksmart/pkg/logging"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -428,6 +429,105 @@ func TestReaderService_SignIn(t *testing.T) {
 			testCase.mockBehaviour(mockReaderRepo, mockHasher, mockTokenManager, testCase.args)
 
 			_, err := readerService.SignIn(context.Background(), testCase.args.readerDTO)
+
+			testCase.expected(t, err)
+		})
+	}
+}
+
+func TestReaderService_GetByPhoneNumber(t *testing.T) {
+	type args struct {
+		existingReader *models.ReaderModel
+	}
+	type mockBehaviour func(
+		m *mockrepo.MockIReaderRepo,
+		args args,
+	)
+	type expectedFunc func(t *testing.T, err error)
+
+	const (
+		accessTokenTTL  = time.Hour * 2
+		refreshTokenTTL = time.Hour * 24 * 30
+	)
+
+	testTable := []struct {
+		name          string
+		args          args
+		mockBehaviour mockBehaviour
+		expected      expectedFunc
+	}{
+		{
+			name: "Success successful get by phone number",
+			args: args{
+				existingReader: &models.ReaderModel{
+					ID:          uuid.New(),
+					Fio:         "John Doe",
+					PhoneNumber: "12345678901",
+					Password:    "hashedPassword",
+					Age:         25,
+				},
+			},
+			mockBehaviour: func(m *mockrepo.MockIReaderRepo, args args) {
+				m.EXPECT().GetByPhoneNumber(gomock.Any(), args.existingReader.PhoneNumber).Return(args.existingReader, nil)
+			},
+			expected: func(t *testing.T, err error) {
+				assert.Equal(t, nil, err)
+			},
+		},
+		{
+			name: "Error reader does not exist",
+			args: args{
+				existingReader: &models.ReaderModel{
+					ID:          uuid.New(),
+					Fio:         "John Doe",
+					PhoneNumber: "12345678901",
+					Password:    "hashedPassword",
+					Age:         25,
+				},
+			},
+			mockBehaviour: func(m *mockrepo.MockIReaderRepo, args args) {
+				m.EXPECT().GetByPhoneNumber(gomock.Any(), args.existingReader.PhoneNumber).Return(nil, errs.ErrReaderDoesNotExists)
+			},
+			expected: func(t *testing.T, err error) {
+				expectedError := errs.ErrReaderDoesNotExists
+				assert.Equal(t, expectedError, err)
+			},
+		},
+		{
+			name: "Error in database",
+			args: args{
+				existingReader: &models.ReaderModel{
+					ID:          uuid.New(),
+					Fio:         "John Doe",
+					PhoneNumber: "12345678901",
+					Password:    "hashedPassword",
+					Age:         25,
+				},
+			},
+			mockBehaviour: func(m *mockrepo.MockIReaderRepo, args args) {
+				m.EXPECT().GetByPhoneNumber(gomock.Any(), args.existingReader.PhoneNumber).Return(nil, errors.New("database error"))
+			},
+			expected: func(t *testing.T, err error) {
+				expectedError := errors.New("database error")
+				assert.Equal(t, expectedError, err)
+			},
+		},
+	}
+
+	for _, testCase := range testTable {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+
+			mockReaderRepo := mockrepo.NewMockIReaderRepo(ctrl)
+			readerService := impl.NewReaderService(
+				mockReaderRepo, nil, nil,
+				nil, logging.GetLoggerForTests(),
+				accessTokenTTL, refreshTokenTTL,
+			)
+
+			testCase.mockBehaviour(mockReaderRepo, testCase.args)
+
+			_, err := readerService.GetByPhoneNumber(context.Background(), testCase.args.existingReader.PhoneNumber)
 
 			testCase.expected(t, err)
 		})

@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
@@ -15,23 +16,33 @@ import (
 
 type BookRepo struct {
 	db     *sqlx.DB
+	getter *trmsqlx.CtxGetter
 	logger *logrus.Entry
 }
 
 func NewBookRepo(db *sqlx.DB, logger *logrus.Entry) intfRepo.IBookRepo {
-	return &BookRepo{db: db, logger: logger}
+	return &BookRepo{db: db, getter: trmsqlx.DefaultCtxGetter, logger: logger}
 }
 
 func (br *BookRepo) Create(ctx context.Context, book *models.BookModel) error {
 	br.logger.Infof("inserting book with ID: %s", book.ID)
 
-	query := `INSERT INTO bs.book VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+	query := `insert into bs.book values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
-	_, err := br.db.ExecContext(ctx, query, book.ID, book.Title, book.Author, book.Publisher,
+	result, err := br.getter.DefaultTrOrDB(ctx, br.db).ExecContext(ctx, query, book.ID, book.Title, book.Author, book.Publisher,
 		book.CopiesNumber, book.Rarity, book.Genre, book.PublishingYear, book.Language, book.AgeLimit)
 	if err != nil {
 		br.logger.Errorf("error inserting book: %v", err)
 		return err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		br.logger.Errorf("error inserting book: %v", err)
+		return err
+	}
+	if rows != 1 {
+		br.logger.Errorf("error inserting book: expected 1 row affected, got %d", rows)
+		return errors.New("bookRepo.Create: expected 1 row affected")
 	}
 
 	br.logger.Infof("inserted book with ID: %s", book.ID)
@@ -42,15 +53,15 @@ func (br *BookRepo) Create(ctx context.Context, book *models.BookModel) error {
 func (br *BookRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.BookModel, error) {
 	br.logger.Infof("selecting book with ID: %s", ID)
 
-	query := `SELECT * FROM bs.book WHERE id = $1`
+	query := `select * from bs.book where id = $1`
 
 	var book models.BookModel
-	err := br.db.GetContext(ctx, &book, query, ID)
+	err := br.getter.DefaultTrOrDB(ctx, br.db).GetContext(ctx, &book, query, ID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		br.logger.Errorf("error selecting book with ID: %v", err)
 		return nil, err
 	}
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if errors.Is(err, sql.ErrNoRows) {
 		br.logger.Warnf("book with this ID not found %s", ID)
 		return nil, errs.ErrBookDoesNotExists
 	}
@@ -63,15 +74,15 @@ func (br *BookRepo) GetByID(ctx context.Context, ID uuid.UUID) (*models.BookMode
 func (br *BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookModel, error) {
 	br.logger.Infof("selecting book by title: %s", title)
 
-	query := `SELECT * FROM bs.book WHERE title = $1`
+	query := `select * from bs.book where title = $1`
 
 	var book models.BookModel
-	err := br.db.GetContext(ctx, &book, query, title)
+	err := br.getter.DefaultTrOrDB(ctx, br.db).GetContext(ctx, &book, query, title)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		br.logger.Errorf("error selecting book by title: %v", err)
 		return nil, err
 	}
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if errors.Is(err, sql.ErrNoRows) {
 		br.logger.Warnf("book with this title not found: %s", title)
 		return nil, errs.ErrBookDoesNotExists
 	}
@@ -84,12 +95,21 @@ func (br *BookRepo) GetByTitle(ctx context.Context, title string) (*models.BookM
 func (br *BookRepo) Delete(ctx context.Context, ID uuid.UUID) error {
 	br.logger.Infof("deleting book with ID: %s", ID)
 
-	query := `DELETE FROM bs.book WHERE id = $1`
+	query := `delete from bs.book where id = $1`
 
-	_, err := br.db.ExecContext(ctx, query, ID)
+	result, err := br.getter.DefaultTrOrDB(ctx, br.db).ExecContext(ctx, query, ID)
 	if err != nil {
 		br.logger.Errorf("error deleting book: %v", err)
 		return err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		br.logger.Errorf("error deleting book: %v", err)
+		return err
+	}
+	if rows != 1 {
+		br.logger.Errorf("error deleting book: expected 1 row affected, got %d", rows)
+		return errors.New("bookRepo.Delete: expected 1 row affected")
 	}
 
 	br.logger.Infof("deleted book with ID: %s", ID)
@@ -100,12 +120,21 @@ func (br *BookRepo) Delete(ctx context.Context, ID uuid.UUID) error {
 func (br *BookRepo) Update(ctx context.Context, book *models.BookModel) error {
 	br.logger.Infof("updating book with ID: %s", book.ID)
 
-	query := `UPDATE bs.book SET copies_number = $1 WHERE id = $2`
+	query := `update bs.book set copies_number = $1 where id = $2`
 
-	_, err := br.db.ExecContext(ctx, query, book.CopiesNumber, book.ID)
+	result, err := br.getter.DefaultTrOrDB(ctx, br.db).ExecContext(ctx, query, book.CopiesNumber, book.ID)
 	if err != nil {
 		br.logger.Errorf("error updating book: %v", err)
 		return err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		br.logger.Errorf("error updating book: %v", err)
+		return err
+	}
+	if rows != 1 {
+		br.logger.Errorf("error updating book: expected 1 row affected, got %d", rows)
+		return errors.New("bookRepo.Update: expected 1 row affected")
 	}
 
 	br.logger.Infof("updated book with ID: %s", book.ID)
@@ -116,22 +145,22 @@ func (br *BookRepo) Update(ctx context.Context, book *models.BookModel) error {
 func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) ([]*models.BookModel, error) {
 	br.logger.Infof("selecting books with params")
 
-	query := `SELECT * 
-	          FROM bs.book 
-	          WHERE ($1 = '' OR title ILIKE '%' || $1 || '%') AND 
-	                ($2 = '' OR author ILIKE '%' || $2 || '%') AND 
-	                ($3 = '' OR publisher ILIKE '%' || $3 || '%') AND 
-	                ($4 = 0 OR copies_number = $4) AND 
-	                ($5 = '' OR rarity::text = $5) AND 
-	                ($6 = '' OR genre ILIKE '%' || $6 || '%') AND 
-	                ($7 = 0 OR publishing_year = $7) AND 
-	                ($8 = '' OR language ILIKE '%' || $8 || '%') AND 
-	                ($9 = 0 OR age_limit = $9)
-	          LIMIT $10 OFFSET $11`
+	query := `select * 
+	          from bs.book 
+	          where ($1 = '' or title ilike '%' || $1 || '%') and 
+	                ($2 = '' or author ilike '%' || $2 || '%') and 
+	                ($3 = '' or publisher ilike '%' || $3 || '%') and 
+	                ($4 = 0 or copies_number = $4) and 
+	                ($5 = '' or rarity::text = $5) and 
+	                ($6 = '' or genre ilike '%' || $6 || '%') and 
+	                ($7 = 0 or publishing_year = $7) and 
+	                ($8 = '' or language ilike '%' || $8 || '%') and 
+	                ($9 = 0 or age_limit = $9)
+	          limit $10 offset $11`
 
 	var books []*models.BookModel
 
-	err := br.db.SelectContext(ctx, &books, query,
+	err := br.getter.DefaultTrOrDB(ctx, br.db).SelectContext(ctx, &books, query,
 		params.Title,
 		params.Author,
 		params.Publisher,
@@ -149,7 +178,7 @@ func (br *BookRepo) GetByParams(ctx context.Context, params *dto.BookParamsDTO) 
 		br.logger.Errorf("error selecting books with params")
 		return nil, err
 	}
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if errors.Is(err, sql.ErrNoRows) || len(books) == 0 {
 		br.logger.Warnf("books not found with this params")
 		return nil, errs.ErrBookDoesNotExists
 	}

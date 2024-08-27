@@ -87,6 +87,25 @@ func TestReservationService_Create(t *testing.T) {
 			},
 		},
 		{
+			name: "Error reservation already exists",
+			args: args{
+				readerID: uuid.New(),
+				bookID:   uuid.New(),
+			},
+			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
+				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 1}, nil)
+				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
+				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
+				res.EXPECT().GetByReaderAndBook(gomock.Any(), args.readerID, args.bookID).Return(&models.ReservationModel{BookID: args.bookID, ReaderID: args.readerID}, errs.ErrReservationAlreadyExists)
+			},
+			expected: func(t *testing.T, err error) {
+				expectedError := errs.ErrReservationAlreadyExists
+				assert.Equal(t, expectedError, err)
+			},
+		},
+		{
 			name: "Error invalid libCard",
 			args: args{
 				readerID: uuid.New(),
@@ -343,6 +362,97 @@ func TestReservationService_Update(t *testing.T) {
 			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, mockLibCardRepo, mockReservationRepo, testCase.args)
 
 			err := reservationService.Update(context.Background(), testCase.args.reservation)
+			testCase.expected(t, err)
+		})
+	}
+}
+
+func TestReaderService_GetByBookID(t *testing.T) {
+	type args struct {
+		reservation *models.ReservationModel
+	}
+	type mockBehaviour func(res *mockrepo.MockIReservationRepo, args args)
+	type expectedFunc func(t *testing.T, err error)
+
+	testTable := []struct {
+		name          string
+		args          args
+		mockBehaviour mockBehaviour
+		expected      expectedFunc
+	}{
+		{
+			name: "Success success get by book id",
+			args: args{
+				reservation: &models.ReservationModel{
+					ReaderID: uuid.New(),
+					BookID:   uuid.New(),
+					State:    impl.ReservationIssued,
+				},
+			},
+			mockBehaviour: func(res *mockrepo.MockIReservationRepo, args args) {
+				res.EXPECT().GetByBookID(gomock.Any(), args.reservation.BookID).Return([]*models.ReservationModel{args.reservation}, nil)
+			},
+			expected: func(t *testing.T, err error) {
+				assert.NoError(t, err)
+			},
+		},
+		{
+			name: "Error reservation does not exist",
+			args: args{
+				reservation: &models.ReservationModel{
+					ReaderID: uuid.New(),
+					BookID:   uuid.New(),
+					State:    impl.ReservationIssued,
+				},
+			},
+			mockBehaviour: func(res *mockrepo.MockIReservationRepo, args args) {
+				res.EXPECT().GetByBookID(gomock.Any(), args.reservation.BookID).Return(nil, errs.ErrReservationDoesNotExists)
+			},
+			expected: func(t *testing.T, err error) {
+				expiredError := errs.ErrReservationDoesNotExists
+				assert.Equal(t, expiredError, err)
+			},
+		},
+		{
+			name: "Error database error",
+			args: args{
+				reservation: &models.ReservationModel{
+					ReaderID: uuid.New(),
+					BookID:   uuid.New(),
+					State:    impl.ReservationIssued,
+				},
+			},
+			mockBehaviour: func(res *mockrepo.MockIReservationRepo, args args) {
+				res.EXPECT().GetByBookID(gomock.Any(), args.reservation.BookID).Return(nil, errors.New("database error"))
+			},
+			expected: func(t *testing.T, err error) {
+				expiredError := errors.New("database error")
+				assert.Equal(t, expiredError, err)
+			},
+		},
+	}
+
+	for _, testCase := range testTable {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+
+			mockReaderRepo := mockrepo.NewMockIReaderRepo(ctrl)
+			mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+			mockLibCardRepo := mockrepo.NewMockILibCardRepo(ctrl)
+			mockReservationRepo := mockrepo.NewMockIReservationRepo(ctrl)
+
+			reservationService := impl.NewReservationService(
+				mockReservationRepo,
+				mockBookRepo,
+				mockReaderRepo,
+				mockLibCardRepo,
+				nil,
+				logging.GetLoggerForTests(),
+			)
+
+			testCase.mockBehaviour(mockReservationRepo, testCase.args)
+
+			_, err := reservationService.GetByBookID(context.Background(), testCase.args.reservation.BookID)
 			testCase.expected(t, err)
 		})
 	}
