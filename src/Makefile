@@ -4,9 +4,6 @@ ifneq (,$(wildcard .env))
     export $(shell sed 's/=.*//' .env)
 endif
 
-migration_path := $(DB_MIGRATION_PATH)
-database_url := '$(DB_DSN)'
-
 .PHONY: run build utest-srv utest-repo itest migrate-up migrate-down clean
 
 all:build
@@ -27,10 +24,15 @@ itest:
 	go test -v ./internal/tests/integrationTests
 
 migrate-up:
-	migrate -database $(database_url) -path $(migration_path) up
+	migrate -database '$(POSTGRES_CREATE_DB_URL)' -path $(POSTGRES_CREATE_DB_MIGRATION_PATH) up
+	migrate -database '$(POSTGRES_CREATE_SCHEMA_URL)' -path $(POSTGRES_CREATE_SCHEMA_MIGRATION_PATH) up
+	migrate -database '$(POSTGRES_FILL_DB_URL)' -path $(POSTGRES_FILL_DB_MIGRATION_PATH) up
 
 migrate-down:
-	migrate -database $(database_url) -path $(migration_path) down
+	migrate -database '$(POSTGRES_FILL_DB_URL)' -path $(POSTGRES_FILL_DB_MIGRATION_PATH) down
+	migrate -database '$(POSTGRES_CREATE_SCHEMA_URL)' -path $(POSTGRES_CREATE_SCHEMA_MIGRATION_PATH) down
+	migrate -database '$(POSTGRES_CREATE_DB_URL)' -path $(POSTGRES_CREATE_DB_MIGRATION_PATH) down
+
 
 mmigrate-up:
 	cd internal/repoMongo/impl/migrations && migrate-mongo up

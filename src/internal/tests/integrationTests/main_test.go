@@ -18,7 +18,9 @@ import (
 	migrations "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -52,22 +54,22 @@ type IntegrationTestSuite struct {
 }
 
 func (s *IntegrationTestSuite) SetupSuite() {
-	dsn := os.Getenv("DB_DSN_TEST")
-
-	fmt.Printf("%s", dsn)
-
-	db, err := sqlx.Open("postgres", dsn)
-	if err != nil {
-		s.FailNow("Failed to connect to database: " + err.Error())
+	if err := godotenv.Load("../../../.env"); err != nil {
+		log.Fatal("Error loading .env file")
 	}
-
-	err = db.Ping()
+	if err := s.createDBMigration(); err != nil {
+		log.Fatal(err)
+	}
+	if err := s.createSchemaMigration(); err != nil {
+		log.Fatal(err)
+	}
+	db, err := s.fillDBMigration()
 	if err != nil {
-		s.FailNow("Failed to ping database: " + err.Error())
+		log.Fatal(err)
 	}
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     "0.0.0.0:6380",
+		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT_TEST"),
 		Username: os.Getenv("REDIS_USER"),
 		Password: os.Getenv("REDIS_USER_PASSWORD"),
 		DB:       0,
@@ -76,15 +78,99 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.db = db
 	s.client = client
 	s.initDeps()
+}
 
-	if err = s.migrateUpDB(); err != nil {
-		s.FailNowf("Failed to migrate up DB", err.Error())
+func (s *IntegrationTestSuite) createDBMigration() error {
+	dsn := os.Getenv("POSTGRES_CREATE_TEST_DB_URL")
+
+	db, err := sqlx.Open("postgres", dsn)
+	if err != nil {
+		s.FailNow("Failed to connect to database: " + err.Error())
+		return err
 	}
+
+	driver, err := migrations.WithInstance(db.DB, &migrations.Config{})
+	if err != nil {
+		return err
+	}
+
+	m1, err := migrate.NewWithDatabaseInstance(
+		os.Getenv("POSTGRES_CREATE_TEST_DB_MIGRATION_PATH"),
+		"postgres", driver,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = m1.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	return nil
+}
+
+func (s *IntegrationTestSuite) createSchemaMigration() error {
+	dsn := os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_URL")
+
+	db, err := sqlx.Open("postgres", dsn)
+	if err != nil {
+		s.FailNow("Failed to connect to database: " + err.Error())
+		return err
+	}
+
+	driver, err := migrations.WithInstance(db.DB, &migrations.Config{})
+	if err != nil {
+		return err
+	}
+
+	m1, err := migrate.NewWithDatabaseInstance(
+		os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_MIGRATION_PATH"),
+		"postgres", driver,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = m1.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	return nil
+}
+
+func (s *IntegrationTestSuite) fillDBMigration() (*sqlx.DB, error) {
+	dsn := os.Getenv("POSTGRES_FILL_TEST_DB_URL")
+
+	db, err := sqlx.Open("postgres", dsn)
+	if err != nil {
+		s.FailNow("Failed to connect to database: " + err.Error())
+		return nil, err
+	}
+
+	driver, err := migrations.WithInstance(db.DB, &migrations.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	m1, err := migrate.NewWithDatabaseInstance(
+		os.Getenv("POSTGRES_FILL_TEST_DB_MIGRATION_PATH"),
+		"postgres", driver,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m1.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return nil, err
+	}
+
+	return db, err
 }
 
 func (s *IntegrationTestSuite) initDeps() {
-	logger := logging.GetLoggerForTests()
-
 	tokenManager, err := auth.NewTokenManager("signing_key")
 	if err != nil {
 		s.FailNow("Failed to initialize token manager", err)
@@ -101,15 +187,15 @@ func (s *IntegrationTestSuite) initDeps() {
 	s.refreshTokenTTL = time.Hour * 24
 
 	transactionManager := transact.NewTransactionManager(_manager)
-	s.bookRepo = implRepo.NewBookRepo(s.db, logger)
-	s.libCardRepo = implRepo.NewLibCardRepo(s.db, logger)
-	s.readerRepo = implRepo.NewReaderRepo(s.db, s.client, logger)
-	s.reservationRepo = implRepo.NewReservationRepo(s.db, logger)
+	s.bookRepo = implRepo.NewBookRepo(s.db, logging.GetLoggerForTests())
+	s.libCardRepo = implRepo.NewLibCardRepo(s.db, logging.GetLoggerForTests())
+	s.readerRepo = implRepo.NewReaderRepo(s.db, s.client, logging.GetLoggerForTests())
+	s.reservationRepo = implRepo.NewReservationRepo(s.db, logging.GetLoggerForTests())
 
-	s.bookService = impl.NewBookService(s.bookRepo, logger)
-	s.libCardService = impl.NewLibCardService(s.libCardRepo, logger)
-	s.readerService = impl.NewReaderService(s.readerRepo, s.bookRepo, tokenManager, hasher, logger, s.accessTokenTTL, s.refreshTokenTTL)
-	s.reservationService = impl.NewReservationService(s.reservationRepo, s.bookRepo, s.readerRepo, s.libCardRepo, transactionManager, logger)
+	s.bookService = impl.NewBookService(s.bookRepo, logging.GetLoggerForTests())
+	s.libCardService = impl.NewLibCardService(s.libCardRepo, logging.GetLoggerForTests())
+	s.readerService = impl.NewReaderService(s.readerRepo, s.bookRepo, tokenManager, hasher, logging.GetLoggerForTests(), s.accessTokenTTL, s.refreshTokenTTL)
+	s.reservationService = impl.NewReservationService(s.reservationRepo, s.bookRepo, s.readerRepo, s.libCardRepo, transactionManager, logging.GetLoggerForTests())
 
 	s.hasher = hasher
 	s.tokenManager = tokenManager
@@ -117,32 +203,44 @@ func (s *IntegrationTestSuite) initDeps() {
 }
 
 func (s *IntegrationTestSuite) TearDownSuite() {
-	err := s.migrateDownDB()
-	if err != nil {
-		fmt.Println("Failed to migrate down DB")
+	if err := s.clearDBMigration(); err != nil {
+		fmt.Println("Failed clearDBMigration")
+	}
+	if err := s.dropSchemaMigration(); err != nil {
+		fmt.Println("Failed dropSchemaMigration")
+	}
+	if err := s.dropDBMigration(); err != nil {
+		fmt.Println("Failed dropDBMigration")
 	}
 
-	err = s.db.Close()
-	if err != nil {
+	if err := s.db.Close(); err != nil {
 		fmt.Println("Failed to close DB", err)
 	}
 }
 
-func (s *IntegrationTestSuite) migrateUpDB() error {
-	driver, err := migrations.WithInstance(s.db.DB, &migrations.Config{})
+func (s *IntegrationTestSuite) dropDBMigration() error {
+	dsn := os.Getenv("POSTGRES_CREATE_TEST_DB_URL")
+
+	db, err := sqlx.Open("postgres", dsn)
+	if err != nil {
+		s.FailNow("Failed to connect to database: " + err.Error())
+		return err
+	}
+
+	driver, err := migrations.WithInstance(db.DB, &migrations.Config{})
 	if err != nil {
 		return err
 	}
 
-	m, err := migrate.NewWithDatabaseInstance(
-		os.Getenv("DB_MIGRATION_PATH_TEST"),
+	m1, err := migrate.NewWithDatabaseInstance(
+		os.Getenv("POSTGRES_CREATE_TEST_DB_MIGRATION_PATH"),
 		"postgres", driver,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = m.Up()
+	err = m1.Down()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
@@ -150,26 +248,64 @@ func (s *IntegrationTestSuite) migrateUpDB() error {
 	return nil
 }
 
-func (s *IntegrationTestSuite) migrateDownDB() error {
-	driver, err := migrations.WithInstance(s.db.DB, &migrations.Config{})
+func (s *IntegrationTestSuite) dropSchemaMigration() error {
+	dsn := os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_URL")
+
+	db, err := sqlx.Open("postgres", dsn)
+	if err != nil {
+		s.FailNow("Failed to connect to database: " + err.Error())
+		return err
+	}
+
+	driver, err := migrations.WithInstance(db.DB, &migrations.Config{})
 	if err != nil {
 		return err
 	}
 
-	m, err := migrate.NewWithDatabaseInstance(
-		os.Getenv("DB_MIGRATION_PATH_TEST"),
+	m1, err := migrate.NewWithDatabaseInstance(
+		os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_MIGRATION_PATH"),
 		"postgres", driver,
 	)
 	if err != nil {
 		return err
 	}
 
-	err = m.Down()
+	err = m1.Down()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
 
 	return nil
+}
+
+func (s *IntegrationTestSuite) clearDBMigration() error {
+	dsn := os.Getenv("POSTGRES_FILL_TEST_DB_URL")
+
+	db, err := sqlx.Open("postgres", dsn)
+	if err != nil {
+		s.FailNow("Failed to connect to database: " + err.Error())
+		return err
+	}
+
+	driver, err := migrations.WithInstance(db.DB, &migrations.Config{})
+	if err != nil {
+		return err
+	}
+
+	m1, err := migrate.NewWithDatabaseInstance(
+		os.Getenv("POSTGRES_FILL_TEST_DB_MIGRATION_PATH"),
+		"postgres", driver,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = m1.Down()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	return err
 }
 
 func TestMain(m *testing.M) {

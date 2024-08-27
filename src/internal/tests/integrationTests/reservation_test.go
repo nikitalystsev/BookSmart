@@ -5,6 +5,7 @@ import (
 	"BookSmart-services/core/models"
 	"BookSmart-services/errs"
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -35,8 +36,8 @@ func (s *IntegrationTestSuite) TestReservation_Create_Success() {
 
 func (s *IntegrationTestSuite) TestReservation_Create_Error() {
 	readerDTO := &dto.ReaderSignInDTO{
-		PhoneNumber: "32534523451",
-		Password:    "rtjhhhgffr",
+		PhoneNumber: "76867456521",
+		Password:    "hghhfnnbdd",
 	}
 	_, err := s.readerService.SignIn(context.Background(), readerDTO)
 	s.NoError(err)
@@ -47,7 +48,7 @@ func (s *IntegrationTestSuite) TestReservation_Create_Error() {
 		Offset: 0,
 	}
 
-	readerID, _ := uuid.Parse("6800b3ee-9810-450e-9ca5-776aa1c6191d")
+	readerID, _ := uuid.Parse("3885b2d3-ef6e-4f62-8f86-d1454d108207")
 
 	var books []*models.BookModel
 	books, err = s.bookService.GetByParams(context.Background(), params)
@@ -95,8 +96,8 @@ func (s *IntegrationTestSuite) TestReservation_Update_Error() {
 	_, err := s.readerService.SignIn(context.Background(), readerDTO)
 	s.NoError(err)
 
-	readerID, err := uuid.Parse("75919792-c2d9-4685-92b2-e2a80b2ed5be")
-	bookID, err := uuid.Parse("f01107fb-4f7a-4f37-ba1e-6c6012c5203c")
+	readerID, err := uuid.Parse("5818061a-662d-45bb-a67c-0d2873038e65")
+	bookID, err := uuid.Parse("b33b30c8-254e-45f2-8314-0b93a6b8c561")
 
 	reservations, err := s.reservationService.GetAllReservationsByReaderID(context.Background(), readerID)
 	s.NoError(err)
@@ -109,6 +110,7 @@ func (s *IntegrationTestSuite) TestReservation_Update_Error() {
 		}
 	}
 
+	fmt.Println(testReservation)
 	err = s.reservationService.Update(context.Background(), testReservation)
 	s.Error(err)
 	s.Error(errs.ErrRareAndUniqueBookNotExtended, err)

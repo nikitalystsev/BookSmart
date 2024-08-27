@@ -1,3 +1,10 @@
+x-common-postgres: &common-postgres
+  image: postgres:latest
+  environment:
+    POSTGRES_USER: ${POSTGRES_USER}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    POSTGRES_DB: ${POSTGRES_DB}
+
 x-redis: &redis
   image: redis:latest
   environment:
@@ -33,14 +40,10 @@ services:
       - bs
 
   bs-postgres:
-    image: postgres:latest
+    <<: *common-postgres
     container_name: bs-postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_DB_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB_NAME}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - ./.data/postgres:/var/lib/postgresql/data
       - ${DB_DATASETS_PATH}:/data
@@ -57,10 +60,8 @@ services:
     container_name: bs-redis
     volumes:
       - ./.data/redis:/var/lib/redis
-    expose:
-      - 6379
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     networks:
       - bs
 
@@ -79,14 +80,10 @@ services:
       - bs
 
   bs-postgres-test:
-    image: postgres:latest
+    <<: *common-postgres
     container_name: bs-postgres-test
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: testdb
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT_TEST}:5432"
     volumes:
       - ${DB_DATASETS_PATH}:/data
     healthcheck:
@@ -101,7 +98,7 @@ services:
     <<: *redis
     container_name: bs-redis-test
     ports:
-      - "6380:6379"
+      - "${REDIS_PORT_TEST}:6379"
     networks:
       - bs-test
 
@@ -110,6 +107,7 @@ networks:
     driver: bridge
   bs-test:
     driver: bridge
+
 # https://www.mongodb.com/community/forums/t/v-6-docker-one-node-replica-set/219245/5 -- откуда взял репликации (без них не работали транзакции в mongo)
 #  log-influxdb:
 #    image: influxdb:latest

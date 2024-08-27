@@ -24,7 +24,7 @@ func (s *IntegrationTestSuite) TestLibCard_Create_Error() {
 }
 
 func (s *IntegrationTestSuite) TestLibCard_Update_Success() {
-	readerID, err := uuid.Parse("3885b2d3-ef6e-4f62-8f86-d1454d108207")
+	readerID, err := uuid.Parse("6800b3ee-9810-450e-9ca5-776aa1c6191d")
 
 	libCard, err := s.libCardRepo.GetByReaderID(context.Background(), readerID)
 	s.NoError(err)
