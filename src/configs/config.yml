@@ -1,11 +1,6 @@
 auth:
-  accessTokenTTL: 5m
-  refreshTokenTTL: 10m
-
-port: 8000
+  accessTokenTTL: 30m
+  refreshTokenTTL: 2h
 
 db:
   type: mongo # postgres | mongo
-
-ui:
-  type: full # tech | full

@@ -1,12 +1,12 @@
 package integrationTests
 
 import (
-	"BookSmart-services/core/dto"
-	"BookSmart-services/core/models"
-	"BookSmart-services/errs"
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-services/core/dto"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/errs"
 )
 
 func (s *IntegrationTestSuite) TestReader_SignUp_Success() {
@@ -20,6 +20,10 @@ func (s *IntegrationTestSuite) TestReader_SignUp_Success() {
 
 	err := s.readerService.SignUp(context.Background(), reader)
 	s.NoError(err)
+
+	expectedReader, err := s.readerService.GetByPhoneNumber(context.Background(), reader.PhoneNumber)
+	s.NoError(err)
+	s.Equal(reader, expectedReader)
 }
 
 func (s *IntegrationTestSuite) TestReader_SignUp_Error() {
@@ -43,8 +47,9 @@ func (s *IntegrationTestSuite) TestReader_SignIn_Success() {
 		Password:    "sdgdgsgsgd",
 	}
 
-	_, err := s.readerService.SignIn(context.Background(), readerDTO)
+	tokens, err := s.readerService.SignIn(context.Background(), readerDTO.PhoneNumber, readerDTO.Password)
 	s.NoError(err)
+	s.NotNil(tokens)
 }
 
 func (s *IntegrationTestSuite) TestReader_SignIn_Error() {
@@ -54,7 +59,7 @@ func (s *IntegrationTestSuite) TestReader_SignIn_Error() {
 		Password:    "hjghhgdgfs",
 	}
 
-	_, err := s.readerService.SignIn(context.Background(), readerDTO)
+	_, err := s.readerService.SignIn(context.Background(), readerDTO.PhoneNumber, readerDTO.Password)
 	s.Error(err)
 	s.Equal(errors.New("wrong password"), err)
 }

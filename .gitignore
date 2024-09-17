@@ -25,6 +25,7 @@ go.work.sum
 
 diagrams/scheme_drawio/*.bkp
 src/.env
+src/components
 src/docs/
 venv/
 .logs/

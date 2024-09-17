@@ -1,9 +1,6 @@
 package serviceTests
 
 import (
-	"BookSmart-services/core/models"
-	"BookSmart-services/errs"
-	"BookSmart-services/impl"
 	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
 	"Booksmart/pkg/logging"
 	"context"
@@ -11,6 +8,9 @@ import (
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/errs"
+	"github.com/nikitalystsev/BookSmart-services/impl"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -165,6 +165,11 @@ func TestReservationService_Create(t *testing.T) {
 				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
 				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
 				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 0}, nil)
+				res.EXPECT().GetByReaderAndBook(gomock.Any(), args.readerID, args.bookID).Return(nil, errs.ErrReservationDoesNotExists)
+				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 0}, nil)
+				trm.EXPECT().Do(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
+					return fn(ctx)
+				})
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errs.ErrBookNoCopiesNum

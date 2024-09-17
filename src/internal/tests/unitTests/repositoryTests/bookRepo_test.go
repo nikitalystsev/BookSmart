@@ -1,15 +1,15 @@
 package repositoryTests
 
 import (
-	"BookSmart-postgres/impl"
-	"BookSmart-services/core/dto"
-	"BookSmart-services/core/models"
-	"BookSmart-services/errs"
 	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-repo-postgres/impl"
+	"github.com/nikitalystsev/BookSmart-services/core/dto"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/errs"
 	"github.com/stretchr/testify/assert"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"
@@ -394,13 +394,32 @@ func TestBookRepo_Update(t *testing.T) {
 			name: "Success update book copies",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`update bs.book set (.+) where (.+)`).
-					WithArgs(args.book.CopiesNumber, args.book.ID).
+					WithArgs(
+						args.book.Title,
+						args.book.Author,
+						args.book.Publisher,
+						args.book.CopiesNumber,
+						args.book.Rarity,
+						args.book.Genre,
+						args.book.PublishingYear,
+						args.book.Language,
+						args.book.AgeLimit,
+						args.book.ID,
+					).
 					WillReturnResult(sqlxmock.NewResult(1, 1))
 			},
 			args: args{
 				book: &models.BookModel{
-					ID:           uuid.New(),
-					CopiesNumber: 5,
+					ID:             uuid.New(),
+					Title:          "test",
+					Author:         "test",
+					Publisher:      "test",
+					CopiesNumber:   5,
+					Rarity:         "Common",
+					Genre:          "test",
+					PublishingYear: 2010,
+					Language:       "test",
+					AgeLimit:       6,
 				},
 			},
 			expected: func(t *testing.T, err error) {
@@ -413,13 +432,32 @@ func TestBookRepo_Update(t *testing.T) {
 			name: "Error: executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`update bs.book set (.+) where (.+)`).
-					WithArgs(args.book.CopiesNumber, args.book.ID).
+					WithArgs(
+						args.book.Title,
+						args.book.Author,
+						args.book.Publisher,
+						args.book.CopiesNumber,
+						args.book.Rarity,
+						args.book.Genre,
+						args.book.PublishingYear,
+						args.book.Language,
+						args.book.AgeLimit,
+						args.book.ID,
+					).
 					WillReturnError(errors.New("update error"))
 			},
 			args: args{
 				book: &models.BookModel{
-					ID:           uuid.New(),
-					CopiesNumber: 5,
+					ID:             uuid.New(),
+					Title:          "test",
+					Author:         "test",
+					Publisher:      "test",
+					CopiesNumber:   5,
+					Rarity:         "Common",
+					Genre:          "test",
+					PublishingYear: 2010,
+					Language:       "test",
+					AgeLimit:       6,
 				},
 			},
 			expected: func(t *testing.T, err error) {

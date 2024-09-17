@@ -1,17 +1,6 @@
 package app
 
 import (
-	repoPostgres "BookSmart-postgres"
-	implPostgres "BookSmart-postgres/impl"
-	"BookSmart-services/impl"
-	"BookSmart-services/intfRepo"
-	"BookSmart-services/pkg/auth"
-	"BookSmart-services/pkg/hash"
-	"BookSmart-services/pkg/transact"
-	"BookSmart-techUI/handlers"
-	"BookSmart-techUI/requesters"
-	repoMongo "Booksmart-mongo"
-	implMongo "Booksmart-mongo/impl"
 	"Booksmart/internal/config"
 	"Booksmart/pkg/logging"
 	"fmt"
@@ -20,18 +9,27 @@ import (
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
+	repoMongo "github.com/nikitalystsev/BookSmart-repo-mongo"
+	implMongo "github.com/nikitalystsev/BookSmart-repo-mongo/impl"
+	repoPostgres "github.com/nikitalystsev/BookSmart-repo-postgres"
+	implPostgres "github.com/nikitalystsev/BookSmart-repo-postgres/impl"
+	"github.com/nikitalystsev/BookSmart-services/impl"
+	"github.com/nikitalystsev/BookSmart-services/intfRepo"
+	"github.com/nikitalystsev/BookSmart-services/pkg/auth"
+	"github.com/nikitalystsev/BookSmart-services/pkg/hash"
+	"github.com/nikitalystsev/BookSmart-services/pkg/transact"
+	"github.com/nikitalystsev/BookSmart-web-api/handlers"
 )
 
 func Run(configDir string) {
-	logger, err := logging.NewLogger()
+	cfg, err := config.Init(configDir)
 	if err != nil {
 		panic(err)
 	}
 
-	cfg, err := config.Init(configDir)
+	logger, err := logging.NewLogger()
 	if err != nil {
-		logger.Errorf("error initializing config: %v", err)
-		return
+		panic(err)
 	}
 
 	var (
@@ -39,6 +37,7 @@ func Run(configDir string) {
 		libCardRepo     intfRepo.ILibCardRepo
 		readerRepo      intfRepo.IReaderRepo
 		reservationRepo intfRepo.IReservationRepo
+		ratingRepo      intfRepo.IRatingRepo
 
 		trm *manager.Manager
 	)
@@ -66,13 +65,13 @@ func Run(configDir string) {
 		libCardRepo = implPostgres.NewLibCardRepo(db, logger)
 		readerRepo = implPostgres.NewReaderRepo(db, client, logger)
 		reservationRepo = implPostgres.NewReservationRepo(db, logger)
+		ratingRepo = implPostgres.NewRatingRepo(db, logger)
 
 		trm, err = manager.New(trmsqlx.NewDefaultFactory(db))
 		if err != nil {
 			logger.Errorf("error initializing manager: %v", err)
 			return
 		}
-
 	default:
 		mongoClient, err := repoMongo.NewClient(cfg.Mongo.URI, cfg.Mongo.Username, cfg.Mongo.Password, cfg.Mongo.DBName)
 		if err != nil {
@@ -85,6 +84,7 @@ func Run(configDir string) {
 		libCardRepo = implMongo.NewLibCardRepo(db, logger)
 		readerRepo = implMongo.NewReaderRepo(db, client, logger)
 		reservationRepo = implMongo.NewReservationRepo(db, logger)
+		ratingRepo = implMongo.NewRatingRepo(db, logger)
 
 		trm, err = manager.New(trmmongo.NewDefaultFactory(mongoClient))
 		if err != nil {
@@ -100,37 +100,31 @@ func Run(configDir string) {
 	}
 
 	hasher := hash.NewPasswordHasher(cfg.Auth.PasswordSalt)
+
 	transactionManager := transact.NewTransactionManager(trm)
 
 	bookService := impl.NewBookService(bookRepo, logger)
 	libCardService := impl.NewLibCardService(libCardRepo, logger)
 	readerService := impl.NewReaderService(readerRepo, bookRepo, tokenManager, hasher, logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
 	reservationService := impl.NewReservationService(reservationRepo, bookRepo, readerRepo, libCardRepo, transactionManager, logger)
+	ratingService := impl.NewRatingService(ratingRepo, reservationRepo, logger)
 
-	handler := handlers.NewHandler(bookService, libCardService, readerService, reservationService, tokenManager, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL, logger)
+	handler := handlers.NewHandler(
+		bookService,
+		libCardService,
+		readerService,
+		reservationService,
+		ratingService,
+		tokenManager,
+		cfg.Auth.JWT.AccessTokenTTL,
+		cfg.Auth.JWT.RefreshTokenTTL,
+	)
 
 	router := handler.InitRoutes()
 
-	switch cfg.UIType {
-	case "tech":
-		go func() {
-			err = router.Run(":" + cfg.Port)
-			if err != nil {
-				logger.Errorf("error running server: %v", err)
-				return
-			}
-		}()
-
-		// TODO переделать логику с временем жизни
-		requester := requesters.NewRequester(logger, cfg.Auth.JWT.AccessTokenTTL, cfg.Auth.JWT.RefreshTokenTTL)
-		requester.Run()
-	default:
-		fmt.Println("Server was successfully started!")
-
-		err = router.Run(":" + cfg.Port)
-		if err != nil {
-			logger.Errorf("error running server: %v", err)
-			return
-		}
+	err = router.Run(":" + cfg.Port)
+	if err != nil {
+		logger.Errorf("error running server: %v", err)
+		return
 	}
 }

@@ -1,12 +1,12 @@
 package integrationTests
 
 import (
-	"BookSmart-services/core/dto"
-	"BookSmart-services/core/models"
-	"BookSmart-services/errs"
 	"context"
-	"fmt"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-services/core/dto"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/errs"
+	"github.com/nikitalystsev/BookSmart-services/impl"
 )
 
 func (s *IntegrationTestSuite) TestReservation_Create_Success() {
@@ -14,7 +14,7 @@ func (s *IntegrationTestSuite) TestReservation_Create_Success() {
 		PhoneNumber: "79314562376",
 		Password:    "sdgdgsgsgd",
 	}
-	_, err := s.readerService.SignIn(context.Background(), readerDTO)
+	_, err := s.readerService.SignIn(context.Background(), readerDTO.PhoneNumber, readerDTO.Password)
 	s.NoError(err)
 
 	params := &dto.BookParamsDTO{
@@ -32,6 +32,20 @@ func (s *IntegrationTestSuite) TestReservation_Create_Success() {
 
 	err = s.reservationService.Create(context.Background(), readerID, books[0].ID)
 	s.NoError(err)
+
+	expectedReservations, err := s.reservationService.GetAllReservationsByReaderID(context.Background(), readerID)
+	s.NoError(err)
+	s.Len(expectedReservations, 3)
+
+	var expectedReservation *models.ReservationModel
+	for _, _expectedReservation := range expectedReservations {
+		if _expectedReservation.BookID == books[0].ID {
+			expectedReservation = _expectedReservation
+		}
+	}
+	s.Equal(expectedReservation.BookID, books[0].ID)
+	s.Equal(expectedReservation.ReaderID, readerID)
+
 }
 
 func (s *IntegrationTestSuite) TestReservation_Create_Error() {
@@ -39,7 +53,7 @@ func (s *IntegrationTestSuite) TestReservation_Create_Error() {
 		PhoneNumber: "76867456521",
 		Password:    "hghhfnnbdd",
 	}
-	_, err := s.readerService.SignIn(context.Background(), readerDTO)
+	_, err := s.readerService.SignIn(context.Background(), readerDTO.PhoneNumber, readerDTO.Password)
 	s.NoError(err)
 
 	params := &dto.BookParamsDTO{
@@ -66,7 +80,7 @@ func (s *IntegrationTestSuite) TestReservation_Update_Success() {
 		Password:    "sdgdgsgsgd",
 	}
 
-	_, err := s.readerService.SignIn(context.Background(), readerDTO)
+	_, err := s.readerService.SignIn(context.Background(), readerDTO.PhoneNumber, readerDTO.Password)
 	s.NoError(err)
 
 	readerID, err := uuid.Parse("75919792-c2d9-4685-92b2-e2a80b2ed5be")
@@ -83,8 +97,13 @@ func (s *IntegrationTestSuite) TestReservation_Update_Success() {
 		}
 	}
 
+	s.Equal(impl.ReservationIssued, testReservation.State)
+
 	err = s.reservationService.Update(context.Background(), testReservation)
 	s.NoError(err)
+	expectedReservation, err := s.reservationService.GetByID(context.Background(), testReservation.ID)
+	s.NoError(err)
+	s.Equal(impl.ReservationExtended, expectedReservation.State)
 }
 
 func (s *IntegrationTestSuite) TestReservation_Update_Error() {
@@ -93,7 +112,7 @@ func (s *IntegrationTestSuite) TestReservation_Update_Error() {
 		Password:    "sdgdgsgsgd",
 	}
 
-	_, err := s.readerService.SignIn(context.Background(), readerDTO)
+	_, err := s.readerService.SignIn(context.Background(), readerDTO.PhoneNumber, readerDTO.Password)
 	s.NoError(err)
 
 	readerID, err := uuid.Parse("5818061a-662d-45bb-a67c-0d2873038e65")
@@ -110,7 +129,6 @@ func (s *IntegrationTestSuite) TestReservation_Update_Error() {
 		}
 	}
 
-	fmt.Println(testReservation)
 	err = s.reservationService.Update(context.Background(), testReservation)
 	s.Error(err)
 	s.Error(errs.ErrRareAndUniqueBookNotExtended, err)

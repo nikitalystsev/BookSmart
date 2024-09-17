@@ -4,8 +4,10 @@ x-common-postgres: &common-postgres
     POSTGRES_USER: ${POSTGRES_USER}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     POSTGRES_DB: ${POSTGRES_DB}
+  volumes:
+    - ${DB_DATASETS_PATH}:/data
 
-x-redis: &redis
+x-common-redis: &common-redis
   image: redis:latest
   environment:
     REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -14,34 +16,37 @@ x-redis: &redis
   command: >
     sh -c '
       mkdir -p /usr/local/etc/redis &&
-      echo "requirepass $REDIS_PASSWORD" > /usr/local/etc/redis/redis.conf &&
+      echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
       echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
       echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
-      echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" > /usr/local/etc/redis/users.acl &&
+      echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+      echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
       redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
     '
 
 services:
-  bs-app:
+  bs-ppo-app:
     image: booksmart:local
-    container_name: bs-app
+    container_name: bs-ppo-app
     ports:
-      - "8000:8000"
-    depends_on:
-      bs-mongo:
-        condition: service_started
-      bs-postgres:
-        condition: service_healthy
-      bs-redis:
-        condition: service_started
+      - "${APP_PORT}:8000"
     volumes:
-      - ./.logs:/usr/local/src/.logs/
+      - ./.logs/:/usr/local/src/logs
+      - ./.env:/usr/local/src/.env
+      - ./configs/config.yml:/usr/local/src/configs/config.yml
+    depends_on:
+      bs-ppo-postgres:
+        condition: service_healthy
+      bs-ppo-redis:
+        condition: service_started
+      bs-ppo-mongo:
+        condition: service_started
     networks:
-      - bs
+      - bs-ppo
 
-  bs-postgres:
+  bs-ppo-postgres:
     <<: *common-postgres
-    container_name: bs-postgres
+    container_name: bs-ppo-postgres
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
@@ -53,38 +58,37 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - bs
+      - bs-ppo
 
-  bs-redis:
-    <<: *redis
-    container_name: bs-redis
+  bs-ppo-mongo:
+    container_name: bs-ppo-mongo
+    image: mongo:latest
+    ports:
+      - "${MONGO_DB_PORT}:27017"
+    volumes:
+      - ${MONGO_MIGRATION_PATH}/rs-initiate.js:/docker-entrypoint-initdb.d/rs-initiate.js
+      - ./.data/mongo/:/data/db/
+    command: [ "--replSet", "dbrs-ppo", "--bind_ip_all" ]
+    networks:
+      - bs-ppo
+
+  bs-ppo-redis:
+    <<: *common-redis
+    container_name: bs-ppo-redis
     volumes:
       - ./.data/redis:/var/lib/redis
     ports:
       - "${REDIS_PORT}:6379"
     networks:
-      - bs
+      - bs-ppo
 
-  bs-mongo:
-    container_name: bs-mongo
-    image: mongo:latest
-    expose:
-      - 27017
-    ports:
-      - "27017:27017"
-    volumes:
-      - ./internal/repoMongo/impl/migrations/rs-initiate.js:/docker-entrypoint-initdb.d/rs-initiate.js
-      - ./.data/mongo/:/data/db/
-    command: [ "--replSet", "dbrs", "--bind_ip_all" ]
-    networks:
-      - bs
-
-  bs-postgres-test:
+  bs-ppo-postgres-test:
     <<: *common-postgres
-    container_name: bs-postgres-test
+    container_name: bs-ppo-postgres-test
     ports:
       - "${POSTGRES_PORT_TEST}:5432"
     volumes:
+      - ./.data/postgresTest:/var/lib/postgresql/data
       - ${DB_DATASETS_PATH}:/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
@@ -92,31 +96,21 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - bs-test
+      - bs-ppo-test
 
-  bs-redis-test:
-    <<: *redis
-    container_name: bs-redis-test
+  bs-ppo-redis-test:
+    <<: *common-redis
+    container_name: bs-ppo-redis-test
+    volumes:
+      - ./.data/redisTest:/var/lib/redis
     ports:
       - "${REDIS_PORT_TEST}:6379"
     networks:
-      - bs-test
+      - bs-ppo-test
+
 
 networks:
-  bs:
+  bs-ppo:
     driver: bridge
-  bs-test:
+  bs-ppo-test:
     driver: bridge
-
-# https://www.mongodb.com/community/forums/t/v-6-docker-one-node-replica-set/219245/5 -- откуда взял репликации (без них не работали транзакции в mongo)
-#  log-influxdb:
-#    image: influxdb:latest
-#    environment:
-#      DOCKER_INFLUXDB_INIT_MODE: setup
-#      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_INIT_USERNAME}
-#      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_INIT_PASSWORD}
-#      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_INIT_ORG}
-#      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_INIT_BUCKET}
-#      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_INIT_ADMIN_TOKEN}
-#    ports:
-#      - "8086:8086"

@@ -5,13 +5,13 @@
 package mocks
 
 import (
-	models "BookSmart-services/core/models"
 	context "context"
 	reflect "reflect"
 	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/google/uuid"
+	models "github.com/nikitalystsev/BookSmart-services/core/models"
 )
 
 // MockIReaderRepo is a mock of IReaderRepo interface.

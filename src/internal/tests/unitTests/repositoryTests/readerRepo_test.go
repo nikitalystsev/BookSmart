@@ -1,9 +1,6 @@
 package repositoryTests
 
 import (
-	"BookSmart-postgres/impl"
-	"BookSmart-services/core/models"
-	"BookSmart-services/errs"
 	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
@@ -12,6 +9,9 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-repo-postgres/impl"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/errs"
 	"github.com/stretchr/testify/assert"
 	sqlmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"

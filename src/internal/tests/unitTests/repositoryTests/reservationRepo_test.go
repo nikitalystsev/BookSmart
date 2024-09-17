@@ -1,13 +1,13 @@
 package repositoryTests
 
 import (
-	"BookSmart-postgres/impl"
-	"BookSmart-services/core/models"
 	"Booksmart/pkg/logging"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-repo-postgres/impl"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
 	"github.com/stretchr/testify/assert"
 	sqlmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"
@@ -335,12 +335,21 @@ func TestReservationRepo_Update(t *testing.T) {
 			name: "Success update reservation",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`update bs.reservation set (.+) where (.+)`).
-					WithArgs(args.reservation.IssueDate, args.reservation.ReturnDate, args.reservation.State, args.reservation.ID).
+					WithArgs(
+						args.reservation.ReaderID,
+						args.reservation.BookID,
+						args.reservation.IssueDate,
+						args.reservation.ReturnDate,
+						args.reservation.State,
+						args.reservation.ID,
+					).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			args: args{
 				reservation: &models.ReservationModel{
 					ID:         uuid.New(),
+					ReaderID:   uuid.New(),
+					BookID:     uuid.New(),
 					IssueDate:  time.Now(),
 					ReturnDate: time.Now().AddDate(0, 0, 7),
 					State:      "Extended",
@@ -354,12 +363,21 @@ func TestReservationRepo_Update(t *testing.T) {
 			name: "Error updating reservation",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`update bs.reservation set (.+) where (.+)`).
-					WithArgs(args.reservation.IssueDate, args.reservation.ReturnDate, args.reservation.State, args.reservation.ID).
+					WithArgs(
+						args.reservation.ReaderID,
+						args.reservation.BookID,
+						args.reservation.IssueDate,
+						args.reservation.ReturnDate,
+						args.reservation.State,
+						args.reservation.ID,
+					).
 					WillReturnError(errors.New("update error"))
 			},
 			args: args{
 				reservation: &models.ReservationModel{
 					ID:         uuid.New(),
+					ReaderID:   uuid.New(),
+					BookID:     uuid.New(),
 					IssueDate:  time.Now(),
 					ReturnDate: time.Now().AddDate(0, 0, 7),
 					State:      "Extended",

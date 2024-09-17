@@ -1,10 +1,6 @@
 package serviceTests
 
 import (
-	"BookSmart-services/core/dto"
-	"BookSmart-services/core/models"
-	"BookSmart-services/errs"
-	"BookSmart-services/impl"
 	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
 	"Booksmart/pkg/logging"
 	"context"
@@ -12,6 +8,10 @@ import (
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-services/core/dto"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/errs"
+	"github.com/nikitalystsev/BookSmart-services/impl"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -428,7 +428,7 @@ func TestReaderService_SignIn(t *testing.T) {
 
 			testCase.mockBehaviour(mockReaderRepo, mockHasher, mockTokenManager, testCase.args)
 
-			_, err := readerService.SignIn(context.Background(), testCase.args.readerDTO)
+			_, err := readerService.SignIn(context.Background(), testCase.args.readerDTO.PhoneNumber, testCase.args.readerDTO.Password)
 
 			testCase.expected(t, err)
 		})

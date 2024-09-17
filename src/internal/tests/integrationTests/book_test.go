@@ -1,10 +1,10 @@
 package integrationTests
 
 import (
-	"BookSmart-services/core/models"
-	"BookSmart-services/errs"
 	"context"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/errs"
 )
 
 func (s *IntegrationTestSuite) TestBook_Create_Success() {
@@ -23,6 +23,10 @@ func (s *IntegrationTestSuite) TestBook_Create_Success() {
 
 	err := s.bookService.Create(context.Background(), book)
 	s.NoError(err)
+
+	expectedBook, err := s.bookService.GetByID(context.Background(), book.ID)
+	s.NoError(err)
+	s.Equal(book, expectedBook)
 }
 
 func (s *IntegrationTestSuite) TestBook_Create_Error() {
@@ -52,6 +56,10 @@ func (s *IntegrationTestSuite) TestBook_Delete_Success() {
 
 	err = s.bookService.Delete(context.Background(), book.ID)
 	s.NoError(err)
+
+	expectedBook, err := s.bookService.GetByID(context.Background(), id)
+	s.Error(errs.ErrBookDoesNotExists)
+	s.Nil(expectedBook)
 }
 
 func (s *IntegrationTestSuite) TestBook_Delete_Error() {

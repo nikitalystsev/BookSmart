@@ -1,14 +1,14 @@
 package repositoryTests
 
 import (
-	"BookSmart-postgres/impl"
-	"BookSmart-services/core/models"
-	"BookSmart-services/errs"
 	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-repo-postgres/impl"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/errs"
 	"github.com/stretchr/testify/assert"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"
@@ -305,7 +305,14 @@ func TestLibCardRepo_Update(t *testing.T) {
 			name: "Success update lib card",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`update bs.lib_card set (.+) where (.+)`).
-					WithArgs(args.libCard.IssueDate, args.libCard.ActionStatus, args.libCard.ID).
+					WithArgs(
+						args.libCard.ReaderID,
+						args.libCard.LibCardNum,
+						args.libCard.Validity,
+						args.libCard.IssueDate,
+						args.libCard.ActionStatus,
+						args.libCard.ID,
+					).
 					WillReturnResult(sqlxmock.NewResult(1, 1))
 			},
 			args: args{
@@ -328,7 +335,14 @@ func TestLibCardRepo_Update(t *testing.T) {
 			name: "Error executing query",
 			mockBehavior: func(args args) {
 				mock.ExpectExec(`update bs.lib_card set (.+) where (.+)`).
-					WithArgs(args.libCard.IssueDate, args.libCard.ActionStatus, args.libCard.ID).
+					WithArgs(
+						args.libCard.ReaderID,
+						args.libCard.LibCardNum,
+						args.libCard.Validity,
+						args.libCard.IssueDate,
+						args.libCard.ActionStatus,
+						args.libCard.ID,
+					).
 					WillReturnError(errors.New("update error"))
 			},
 			args: args{

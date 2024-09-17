@@ -1,17 +1,21 @@
 package integrationTests
 
 import (
-	"BookSmart-services/errs"
 	"context"
 	"github.com/google/uuid"
+	"github.com/nikitalystsev/BookSmart-services/errs"
 )
 
 func (s *IntegrationTestSuite) TestLibCard_Create_Success() {
 
-	readerID, _ := uuid.Parse("8d9b001f-5760-4c40-bc60-988e0ca54d18")
+	readerID, _ := uuid.Parse("362b79f6-d671-404a-b1a0-5a655aebc1b6")
 
 	err := s.libCardService.Create(context.Background(), readerID)
 	s.NoError(err)
+
+	expectedLibCard, err := s.libCardService.GetByReaderID(context.Background(), readerID)
+	s.NoError(err)
+	s.Equal(readerID, expectedLibCard.ReaderID)
 }
 
 func (s *IntegrationTestSuite) TestLibCard_Create_Error() {
@@ -29,9 +33,15 @@ func (s *IntegrationTestSuite) TestLibCard_Update_Success() {
 	libCard, err := s.libCardRepo.GetByReaderID(context.Background(), readerID)
 	s.NoError(err)
 	s.NotNil(libCard)
+	s.Equal(false, libCard.ActionStatus)
 
 	err = s.libCardService.Update(context.Background(), libCard)
 	s.NoError(err)
+
+	expectedLibCard, err := s.libCardService.GetByReaderID(context.Background(), readerID)
+	s.NoError(err)
+	s.Equal(readerID, expectedLibCard.ReaderID)
+	s.Equal(true, expectedLibCard.ActionStatus)
 }
 
 func (s *IntegrationTestSuite) TestLibCard_Update_Error() {

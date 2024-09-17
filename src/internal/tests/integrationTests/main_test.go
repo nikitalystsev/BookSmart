@@ -1,13 +1,6 @@
 package integrationTests
 
 import (
-	implRepo "BookSmart-postgres/impl"
-	"BookSmart-services/impl"
-	"BookSmart-services/intf"
-	"BookSmart-services/intfRepo"
-	"BookSmart-services/pkg/auth"
-	"BookSmart-services/pkg/hash"
-	"BookSmart-services/pkg/transact"
 	"Booksmart/pkg/logging"
 	"errors"
 	"fmt"
@@ -19,6 +12,13 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
+	implRepo "github.com/nikitalystsev/BookSmart-repo-postgres/impl"
+	"github.com/nikitalystsev/BookSmart-services/impl"
+	"github.com/nikitalystsev/BookSmart-services/intf"
+	"github.com/nikitalystsev/BookSmart-services/intfRepo"
+	"github.com/nikitalystsev/BookSmart-services/pkg/auth"
+	"github.com/nikitalystsev/BookSmart-services/pkg/hash"
+	"github.com/nikitalystsev/BookSmart-services/pkg/transact"
 	"github.com/stretchr/testify/suite"
 	"log"
 	"os"
@@ -69,7 +69,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	}
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT_TEST"),
+		Addr:     os.Getenv("REDIS_HOST_TEST") + ":" + os.Getenv("REDIS_PORT_TEST"),
 		Username: os.Getenv("REDIS_USER"),
 		Password: os.Getenv("REDIS_USER_PASSWORD"),
 		DB:       0,
@@ -99,6 +99,8 @@ func (s *IntegrationTestSuite) createDBMigration() error {
 		"postgres", driver,
 	)
 	if err != nil {
+		fmt.Println(os.Getenv("POSTGRES_CREATE_TEST_DB_MIGRATION_PATH"))
+		fmt.Println("error")
 		return err
 	}
 
