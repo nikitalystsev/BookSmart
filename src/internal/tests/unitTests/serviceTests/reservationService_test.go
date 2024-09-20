@@ -39,7 +39,6 @@ func TestReservationService_Create(t *testing.T) {
 			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
 				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
 				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 1}, nil)
-				res.EXPECT().GetByReaderAndBook(gomock.Any(), args.readerID, args.bookID).Return(nil, nil)
 				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
 				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
 				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
@@ -83,25 +82,6 @@ func TestReservationService_Create(t *testing.T) {
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := fmt.Errorf("book not found")
-				assert.Equal(t, expectedError, err)
-			},
-		},
-		{
-			name: "Error reservation already exists",
-			args: args{
-				readerID: uuid.New(),
-				bookID:   uuid.New(),
-			},
-			mockBehaviour: func(r *mockrepo.MockIReaderRepo, b *mockrepo.MockIBookRepo, l *mockrepo.MockILibCardRepo, res *mockrepo.MockIReservationRepo, trm *mockrepo.MockITransactionManager, args args) {
-				r.EXPECT().GetByID(gomock.Any(), args.readerID).Return(&models.ReaderModel{}, nil)
-				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 1}, nil)
-				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
-				res.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
-				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
-				res.EXPECT().GetByReaderAndBook(gomock.Any(), args.readerID, args.bookID).Return(&models.ReservationModel{BookID: args.bookID, ReaderID: args.readerID}, errs.ErrReservationAlreadyExists)
-			},
-			expected: func(t *testing.T, err error) {
-				expectedError := errs.ErrReservationAlreadyExists
 				assert.Equal(t, expectedError, err)
 			},
 		},
@@ -165,7 +145,6 @@ func TestReservationService_Create(t *testing.T) {
 				res.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, nil)
 				l.EXPECT().GetByReaderID(gomock.Any(), args.readerID).Return(&models.LibCardModel{ActionStatus: true}, nil)
 				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 0}, nil)
-				res.EXPECT().GetByReaderAndBook(gomock.Any(), args.readerID, args.bookID).Return(nil, errs.ErrReservationDoesNotExists)
 				b.EXPECT().GetByID(gomock.Any(), args.bookID).Return(&models.BookModel{CopiesNumber: 0}, nil)
 				trm.EXPECT().Do(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
 					return fn(ctx)

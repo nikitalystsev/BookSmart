@@ -96,10 +96,10 @@ func (mr *MockIReservationRepoMockRecorder) GetByID(ctx, ID interface{}) *gomock
 }
 
 // GetByReaderAndBook mocks base method.
-func (m *MockIReservationRepo) GetByReaderAndBook(ctx context.Context, readerID, bookID uuid.UUID) (*models.ReservationModel, error) {
+func (m *MockIReservationRepo) GetByReaderAndBook(ctx context.Context, readerID, bookID uuid.UUID) ([]*models.ReservationModel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByReaderAndBook", ctx, readerID, bookID)
-	ret0, _ := ret[0].(*models.ReservationModel)
+	ret0, _ := ret[0].([]*models.ReservationModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

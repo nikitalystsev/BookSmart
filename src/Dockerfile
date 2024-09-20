@@ -4,8 +4,6 @@ WORKDIR /usr/local/src
 
 COPY ["./go.mod", "./go.sum", "./"]
 
-COPY ./components ./components
-
 RUN go mod download
 
 COPY ./cmd/app ./cmd/app

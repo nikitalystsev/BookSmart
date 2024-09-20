@@ -109,7 +109,7 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 		name         string
 		mockBehavior func(args args)
 		args         args
-		expected     func(t *testing.T, reservation *models.ReservationModel, err error)
+		expected     func(t *testing.T, reservations []*models.ReservationModel, err error)
 	}{
 		{
 			name: "Success get reservation by reader and book",
@@ -124,10 +124,10 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			expected: func(t *testing.T, reservation *models.ReservationModel, err error) {
+			expected: func(t *testing.T, reservations []*models.ReservationModel, err error) {
 				assert.NoError(t, err)
-				assert.NotNil(t, reservation)
-				assert.Equal(t, "active", reservation.State)
+				assert.NotNil(t, reservations)
+				assert.Equal(t, "active", reservations[0].State)
 			},
 		},
 		{
@@ -140,7 +140,7 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 				readerID: uuid.New(),
 				bookID:   uuid.New(),
 			},
-			expected: func(t *testing.T, reservation *models.ReservationModel, err error) {
+			expected: func(t *testing.T, reservation []*models.ReservationModel, err error) {
 				assert.Error(t, err)
 				assert.Nil(t, reservation)
 				expectedError := errors.New("query error")
@@ -153,10 +153,10 @@ func TestReservationRepo_GetByReaderAndBook(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			testCase.mockBehavior(testCase.args)
 
-			var reservation *models.ReservationModel
-			reservation, err = rr.GetByReaderAndBook(context.Background(), testCase.args.readerID, testCase.args.bookID)
+			var reservations []*models.ReservationModel
+			reservations, err = rr.GetByReaderAndBook(context.Background(), testCase.args.readerID, testCase.args.bookID)
 
-			testCase.expected(t, reservation, err)
+			testCase.expected(t, reservations, err)
 		})
 	}
 }

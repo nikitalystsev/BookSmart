@@ -14,9 +14,9 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
-	github.com/nikitalystsev/BookSmart-repo-mongo v0.0.0-20240917101236-600cc18ab499
-	github.com/nikitalystsev/BookSmart-repo-postgres v0.0.0-20240916214101-6236fef20c1a
-	github.com/nikitalystsev/BookSmart-services v0.0.0-20240916222624-af98d7e69fe9
+	github.com/nikitalystsev/BookSmart-repo-mongo v0.0.0-20240919132004-cf82a55397e0
+	github.com/nikitalystsev/BookSmart-repo-postgres v0.0.0-20240919125803-657171e87086
+	github.com/nikitalystsev/BookSmart-services v0.0.0-20240919123005-14b28ba85ee2
 	github.com/nikitalystsev/BookSmart-tech-ui v0.0.0-20240916214145-91d9febdf4d3
 	github.com/nikitalystsev/BookSmart-web-api v0.0.0-20240916214124-d26a2da6e20f
 	github.com/sirupsen/logrus v1.9.3
@@ -80,7 +80,7 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
-	go.mongodb.org/mongo-driver v1.16.1 // indirect
+	go.mongodb.org/mongo-driver v1.17.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
