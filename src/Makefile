@@ -18,15 +18,22 @@ run-app: build-app
 build-app:
 	docker build -t booksmart:local .
 
+# тесты ППО
+#utest-srv:
+#	go test -v ./internal/tests/unitTests/serviceTests/
+#
+#utest-repo:
+#	go test -v ./internal/tests/unitTests/repositoryTests/
+#
+#itest:
+#	docker compose up -d bs-ppo-postgres-test bs-ppo-redis-test
+#	go test -v ./internal/tests/integrationTests
+#
+
+# тесты тестирования
 utest-srv:
-	go test -v ./internal/tests/unitTests/serviceTests/
-
-utest-repo:
-	go test -v ./internal/tests/unitTests/repositoryTests/
-
-itest:
-	docker compose up -d bs-ppo-postgres-test bs-ppo-redis-test
-	go test -v ./internal/tests/integrationTests
+	go test -v ./internal/tests_for_testing/unitTests/serviceTests/
+	cd ./internal/tests_for_testing/unitTests/serviceTests/ && allure serve
 
 migrate-up:
 	migrate -database '$(POSTGRES_CREATE_DB_URL)' -path $(POSTGRES_CREATE_DB_MIGRATION_PATH) up

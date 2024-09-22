@@ -30,3 +30,4 @@ venv/
 .logs/
 src/.data
 src/components/
+src/internal/tests_for_testing/unitTests/serviceTests/allure-results/
