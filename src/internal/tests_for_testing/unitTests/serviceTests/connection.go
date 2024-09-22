@@ -77,7 +77,7 @@ func createDBMigration(port string) error {
 		return err
 	}
 
-	m1, err := migrate.NewWithDatabaseInstance(
+	m, err := migrate.NewWithDatabaseInstance(
 		os.Getenv("POSTGRES_CREATE_TEST_DB_MIGRATION_PATH"),
 		"postgres", driver,
 	)
@@ -85,7 +85,7 @@ func createDBMigration(port string) error {
 		return err
 	}
 
-	err = m1.Up()
+	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
@@ -106,7 +106,7 @@ func createSchemaMigration(port string) error {
 		return err
 	}
 
-	m1, err := migrate.NewWithDatabaseInstance(
+	m, err := migrate.NewWithDatabaseInstance(
 		os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_MIGRATION_PATH"),
 		"postgres", driver,
 	)
@@ -114,7 +114,7 @@ func createSchemaMigration(port string) error {
 		return err
 	}
 
-	err = m1.Up()
+	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
@@ -135,7 +135,7 @@ func fillDBMigration(port string) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	m1, err := migrate.NewWithDatabaseInstance(
+	m, err := migrate.NewWithDatabaseInstance(
 		os.Getenv("POSTGRES_FILL_TEST_DB_MIGRATION_PATH"),
 		"postgres", driver,
 	)
@@ -143,7 +143,7 @@ func fillDBMigration(port string) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	err = m1.Up()
+	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return nil, err
 	}
