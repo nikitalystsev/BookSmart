@@ -2,10 +2,12 @@ package serviceTests
 
 import (
 	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
+	dto2 "Booksmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/dto"
 	models2 "Booksmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
 	"Booksmart/pkg/logging"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/jmoiron/sqlx"
 	implRepo "github.com/nikitalystsev/BookSmart-repo-postgres/impl"
@@ -155,23 +157,49 @@ func TestBookService_GetByParams_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	var (
 		err      error
-		findBook *models.BookModel
+		findBook []*models.BookModel
 	)
 
 	// Arrange
 	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
 	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
 	book := models2.NewBookModelObjectMother().DefaultBook()
-	mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrBookDoesNotExists)
+	params := dto2.NewBookParamsDTOObjectMother().DefaultBookParams()
 
-	runner.Run(t, "error get book by id", func(t provider.T) {
+	mockBookRepo.EXPECT().GetByParams(gomock.Any(), params).Return([]*models.BookModel{book}, nil)
+
+	runner.Run(t, "success get books by params", func(t provider.T) {
 		// Act
-		findBook, err = bookService.GetByID(context.Background(), book.ID)
+		findBook, err = bookService.GetByParams(context.Background(), params)
+	})
+
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, []*models.BookModel{book}, findBook)
+}
+
+func TestBookService_GetByParams_ErrorGetBooks(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	var (
+		err      error
+		findBook []*models.BookModel
+	)
+
+	// Arrange
+	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
+	params := dto2.NewBookParamsDTOObjectMother().DefaultBookParams()
+
+	mockBookRepo.EXPECT().GetByParams(gomock.Any(), params).Return(nil, fmt.Errorf("database error"))
+
+	runner.Run(t, "error get books by params", func(t provider.T) {
+		// Act
+		findBook, err = bookService.GetByParams(context.Background(), params)
 	})
 
 	// Assert
 	assert.NotNil(t, err)
-	assert.Equal(t, errs.ErrBookDoesNotExists, err)
+	assert.Equal(t, fmt.Errorf("database error"), err)
 	assert.Nil(t, findBook)
 }
 

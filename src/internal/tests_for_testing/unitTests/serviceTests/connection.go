@@ -44,7 +44,6 @@ func getConnectionsForClassicUnitTests() (*postgres.PostgresContainer, *sqlx.DB,
 		fmt.Printf("Failed to start postgres container: %v\n", err)
 		return nil, nil, err
 	}
-
 	port, err := postgresContainer.MappedPort(ctx, "5432/tcp")
 	if err != nil {
 		return nil, nil, err
