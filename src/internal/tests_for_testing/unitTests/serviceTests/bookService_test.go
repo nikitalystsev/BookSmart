@@ -2,13 +2,14 @@ package serviceTests
 
 import (
 	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
-	"Booksmart/internal/tests_for_testing/unitTests/serviceTests/objectMother"
+	models2 "Booksmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
 	"Booksmart/pkg/logging"
 	"context"
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/jmoiron/sqlx"
 	implRepo "github.com/nikitalystsev/BookSmart-repo-postgres/impl"
+	"github.com/nikitalystsev/BookSmart-services/core/models"
 	"github.com/nikitalystsev/BookSmart-services/errs"
 	"github.com/nikitalystsev/BookSmart-services/impl"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
@@ -17,28 +18,28 @@ import (
 	"testing"
 )
 
-// Лондонский вариант
+/*
+	Лондонский вариант
+*/
 
 func TestBookService_Create_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	var err error
 
-	// Arrange
-	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
-	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
-	book := objectMother.NewBookModelObjectMother().DefaultBook()
-	mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrBookDoesNotExists)
-	mockBookRepo.EXPECT().Create(gomock.Any(), book).Return(nil)
-
 	runner.Run(t, "success create book", func(t provider.T) {
+		// Arrange
+		mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+		bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
+		book := models2.NewBookModelObjectMother().DefaultBook()
+		mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrBookDoesNotExists)
+		mockBookRepo.EXPECT().Create(gomock.Any(), book).Return(nil)
 
 		// Act
 		err = bookService.Create(context.Background(), book)
 
+		// Assert
+		assert.Nil(t, err)
 	})
-
-	// Assert
-	assert.Nil(t, err)
 }
 
 func TestBookService_Create_ErrorCheckBookExistence(t *testing.T) {
@@ -48,7 +49,7 @@ func TestBookService_Create_ErrorCheckBookExistence(t *testing.T) {
 	// Arrange
 	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
 	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
-	book := objectMother.NewBookModelObjectMother().DefaultBook()
+	book := models2.NewBookModelObjectMother().DefaultBook()
 	mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errors.New("database error"))
 
 	runner.Run(t, "error check book existence", func(t provider.T) {
@@ -63,7 +64,120 @@ func TestBookService_Create_ErrorCheckBookExistence(t *testing.T) {
 	assert.Equal(t, errors.New("database error"), err)
 }
 
-// Классический вариант
+func TestBookService_Delete_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	var err error
+
+	// Arrange
+	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
+	book := models2.NewBookModelObjectMother().DefaultBook()
+	mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(book, nil)
+	mockBookRepo.EXPECT().Delete(gomock.Any(), book.ID).Return(nil)
+
+	runner.Run(t, "success delete book", func(t provider.T) {
+		// Act
+		err = bookService.Delete(context.Background(), book.ID)
+	})
+
+	// Assert
+	assert.Nil(t, err)
+}
+
+func TestBookService_Delete_ErrorGetBook(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	var err error
+
+	// Arrange
+	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
+	book := models2.NewBookModelObjectMother().DefaultBook()
+	mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errors.New("database error"))
+
+	runner.Run(t, "error get book", func(t provider.T) {
+		// Act
+		err = bookService.Delete(context.Background(), book.ID)
+	})
+
+	// Assert
+	assert.NotNil(t, err)
+	assert.Equal(t, errors.New("database error"), err)
+}
+
+func TestBookService_GetByID_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	var (
+		err      error
+		findBook *models.BookModel
+	)
+
+	// Arrange
+	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
+	book := models2.NewBookModelObjectMother().DefaultBook()
+	mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(book, nil)
+
+	runner.Run(t, "success get book by id", func(t provider.T) {
+		// Act
+		findBook, err = bookService.GetByID(context.Background(), book.ID)
+	})
+
+	// Assert
+	assert.Nil(t, err)
+	assert.Equal(t, book, findBook)
+}
+
+func TestBookService_GetByID_ErrorGetBook(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	var (
+		err      error
+		findBook *models.BookModel
+	)
+
+	// Arrange
+	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
+	book := models2.NewBookModelObjectMother().DefaultBook()
+	mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrBookDoesNotExists)
+
+	runner.Run(t, "error get book by id", func(t provider.T) {
+		// Act
+		findBook, err = bookService.GetByID(context.Background(), book.ID)
+	})
+
+	// Assert
+	assert.NotNil(t, err)
+	assert.Equal(t, errs.ErrBookDoesNotExists, err)
+	assert.Nil(t, findBook)
+}
+
+func TestBookService_GetByParams_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	var (
+		err      error
+		findBook *models.BookModel
+	)
+
+	// Arrange
+	mockBookRepo := mockrepo.NewMockIBookRepo(ctrl)
+	bookService := impl.NewBookService(mockBookRepo, logging.GetLoggerForTests())
+	book := models2.NewBookModelObjectMother().DefaultBook()
+	mockBookRepo.EXPECT().GetByID(gomock.Any(), book.ID).Return(nil, errs.ErrBookDoesNotExists)
+
+	runner.Run(t, "error get book by id", func(t provider.T) {
+		// Act
+		findBook, err = bookService.GetByID(context.Background(), book.ID)
+	})
+
+	// Assert
+	assert.NotNil(t, err)
+	assert.Equal(t, errs.ErrBookDoesNotExists, err)
+	assert.Nil(t, findBook)
+}
+
+/*
+	Классический вариант
+*/
 
 func TestBookService_Create_Success_Classic(t *testing.T) {
 	var err error
@@ -76,7 +190,7 @@ func TestBookService_Create_Success_Classic(t *testing.T) {
 	}
 	bookRepo := implRepo.NewBookRepo(db, logging.GetLoggerForTests())
 	bookService := impl.NewBookService(bookRepo, logging.GetLoggerForTests())
-	book := objectMother.NewBookModelObjectMother().DefaultBook()
+	book := models2.NewBookModelObjectMother().DefaultBook()
 	defer func(db *sqlx.DB) {
 		if err = db.Close(); err != nil {
 			t.Fatalf("failed to close database connection: %v\n", err)
@@ -114,7 +228,7 @@ func TestBookService_Create_ErrorCheckBookExistence_Classic(t *testing.T) {
 	}
 	bookRepo := implRepo.NewBookRepo(db, logging.GetLoggerForTests())
 	bookService := impl.NewBookService(bookRepo, logging.GetLoggerForTests())
-	book := objectMother.NewBookModelObjectMother().DefaultBook()
+	book := models2.NewBookModelObjectMother().DefaultBook()
 
 	defer func() {
 		if err = container.Terminate(ctx); err != nil {

@@ -1,7 +1,7 @@
-package objectMother
+package models
 
 import (
-	"Booksmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder"
+	models2 "Booksmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
 	"github.com/nikitalystsev/BookSmart-services/core/models"
 )
 
@@ -13,5 +13,5 @@ func NewBookModelObjectMother() *BookModelObjectMother {
 }
 
 func (bmom *BookModelObjectMother) DefaultBook() *models.BookModel {
-	return testDataBuilder.NewBookModelBuilder().Build()
+	return models2.NewBookModelBuilder().Build()
 }
