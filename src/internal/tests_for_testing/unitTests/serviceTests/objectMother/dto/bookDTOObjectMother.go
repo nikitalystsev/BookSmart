@@ -1,7 +1,7 @@
 package dto
 
 import (
-	dto2 "Booksmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/dto"
+	tdbdto "Booksmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/dto"
 	"github.com/nikitalystsev/BookSmart-services/core/dto"
 )
 
@@ -13,5 +13,5 @@ func NewBookParamsDTOObjectMother() *BookParamsDTOObjectMother {
 }
 
 func (bmom *BookParamsDTOObjectMother) DefaultBookParams() *dto.BookParamsDTO {
-	return dto2.NewBookParamsDTOBuilder().Build()
+	return tdbdto.NewBookParamsDTOBuilder().Build()
 }

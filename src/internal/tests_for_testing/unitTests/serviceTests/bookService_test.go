@@ -212,7 +212,11 @@ func TestBookService_Create_Success_Classic(t *testing.T) {
 	ctx := context.Background()
 
 	// Arrange
-	container, db, err := getConnectionsForClassicUnitTests()
+	container, err := getContainerForClassicUnitTests()
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := applyMigrations(container)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,7 +251,11 @@ func TestBookService_Create_ErrorCheckBookExistence_Classic(t *testing.T) {
 	ctx := context.Background()
 
 	// Arrange
-	container, db, err := getConnectionsForClassicUnitTests()
+	container, err := getContainerForClassicUnitTests()
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := applyMigrations(container)
 	if err != nil {
 		t.Fatal(err)
 	}

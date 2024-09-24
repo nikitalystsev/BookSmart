@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-func getConnectionsForClassicUnitTests() (*postgres.PostgresContainer, *sqlx.DB, error) {
+func getContainerForClassicUnitTests() (*postgres.PostgresContainer, error) {
 	ctx := context.Background()
 
 	postgresContainer, err := postgres.Run(
@@ -42,25 +42,32 @@ func getConnectionsForClassicUnitTests() (*postgres.PostgresContainer, *sqlx.DB,
 
 	if err != nil {
 		fmt.Printf("Failed to start postgres container: %v\n", err)
-		return nil, nil, err
+		return nil, err
 	}
-	port, err := postgresContainer.MappedPort(ctx, "5432/tcp")
+
+	return postgresContainer, err
+}
+
+func applyMigrations(container *postgres.PostgresContainer) (*sqlx.DB, error) {
+	ctx := context.Background()
+
+	port, err := container.MappedPort(ctx, "5432/tcp")
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if err = createDBMigration(port.Port()); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	if err = createSchemaMigration(port.Port()); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	db, err := fillDBMigration(port.Port())
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return postgresContainer, db, err
+	return db, nil
 }
 
 func createDBMigration(port string) error {

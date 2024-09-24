@@ -162,21 +162,24 @@ func TestLibCardService_Create_Success_Classic(t *testing.T) {
 	var err error
 
 	// Arrange
-	container, db, err := getConnectionsForClassicUnitTests()
+	container, err := getContainerForClassicUnitTests()
 	if err != nil {
 		t.Fatal(err)
 	}
-	readerID := uuid.New()
+	db, err := applyMigrations(container)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader := ommodels.NewReaderModelObjectMother().DefaultReader()
 
-	// Builder-ом
 	_, _ = db.ExecContext(
 		ctx, `insert into bs.reader values ($1, $2, $3, $4, $5, $6)`,
-		readerID,
-		"test fio",
-		"88005553535",
-		20,
-		"password00",
-		"Reader",
+		reader.ID,
+		reader.Fio,
+		reader.PhoneNumber,
+		reader.Age,
+		reader.Password,
+		reader.Role,
 	)
 	libCardRepo := implRepo.NewLibCardRepo(db, logging.GetLoggerForTests())
 	libCardService := impl.NewLibCardService(libCardRepo, logging.GetLoggerForTests())
@@ -195,7 +198,7 @@ func TestLibCardService_Create_Success_Classic(t *testing.T) {
 	runner.Run(t, "success create libCard", func(t provider.T) {
 
 		// Act
-		err = libCardService.Create(context.Background(), readerID)
+		err = libCardService.Create(context.Background(), reader.ID)
 	})
 
 	// Assert
@@ -207,22 +210,25 @@ func TestLibCardService_Create_ErrorLibCardAlreadyExists_Classic(t *testing.T) {
 	var err error
 
 	// Arrange
-	container, db, err := getConnectionsForClassicUnitTests()
+	container, err := getContainerForClassicUnitTests()
 	if err != nil {
 		t.Fatal(err)
 	}
-	readerID := uuid.New()
-	libCard := tdbmodels.NewLibCardModelBuilder().WithReaderID(readerID).Build()
+	db, err := applyMigrations(container)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader := ommodels.NewReaderModelObjectMother().DefaultReader()
+	libCard := tdbmodels.NewLibCardModelBuilder().WithReaderID(reader.ID).Build()
 
-	// Builder
 	_, _ = db.ExecContext(
 		ctx, `insert into bs.reader values ($1, $2, $3, $4, $5, $6)`,
-		readerID,
-		"test fio",
-		"88005553535",
-		20,
-		"password00",
-		"Reader",
+		reader.ID,
+		reader.Fio,
+		reader.PhoneNumber,
+		reader.Age,
+		reader.Password,
+		reader.Role,
 	)
 
 	_, _ = db.ExecContext(
@@ -251,7 +257,7 @@ func TestLibCardService_Create_ErrorLibCardAlreadyExists_Classic(t *testing.T) {
 	runner.Run(t, "error libCard already exist", func(t provider.T) {
 
 		// Act
-		err = libCardService.Create(context.Background(), readerID)
+		err = libCardService.Create(context.Background(), reader.ID)
 	})
 
 	// Assert
