@@ -1,8 +1,8 @@
 package main
 
 import (
-	"Booksmart/internal/app"
 	"github.com/joho/godotenv"
+	"github.com/nikitalystsev/Booksmart/internal/app"
 	"log"
 )
 
