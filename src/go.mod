@@ -1,4 +1,4 @@
-module github.com/nikitalystsev/BookSmart/src
+module github.com/nikitalystsev/BookSmart
 
 go 1.22.5
 
@@ -14,7 +14,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
-	github.com/nikitalystsev/BookSmart-repo-mongo v0.0.0-20240919132004-cf82a55397e0
+	github.com/nikitalystsev/BookSmart-repo-mongo v0.0.0-20240921135753-b2a899602bec
 	github.com/nikitalystsev/BookSmart-repo-postgres v0.0.0-20240919125803-657171e87086
 	github.com/nikitalystsev/BookSmart-services v0.0.0-20240919123005-14b28ba85ee2
 	github.com/nikitalystsev/BookSmart-tech-ui v0.0.0-20240920055453-10c2ee7d7ef2
