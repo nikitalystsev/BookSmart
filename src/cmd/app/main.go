@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/nikitalystsev/Booksmart/internal/app"
+	"github.com/nikitalystsev/BookSmart/internal/app"
 	"log"
 )
 
