@@ -1,4 +1,4 @@
-module Booksmart
+module github.com/nikitalystsev/Booksmart
 
 go 1.22.5
 
