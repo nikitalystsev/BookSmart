@@ -24,9 +24,9 @@ go.work.sum
 .idea/
 
 diagrams/scheme_drawio/*.bkp
-src/.env
+.env
 venv/
 .logs/
-src/.data
-src/components/
-src/internal/tests_for_testing/unitTests/serviceTests/allure-results/
+.data
+components/
+internal/tests_for_testing/unitTests/serviceTests/allure-results/

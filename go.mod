@@ -15,9 +15,9 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/nikitalystsev/BookSmart-repo-mongo v0.0.0-20240921135753-b2a899602bec
-	github.com/nikitalystsev/BookSmart-repo-postgres v0.0.0-20240919125803-657171e87086
+	github.com/nikitalystsev/BookSmart-repo-postgres v0.0.0-20240921135822-dd637fe07d4d
 	github.com/nikitalystsev/BookSmart-services v0.0.0-20240919123005-14b28ba85ee2
-	github.com/nikitalystsev/BookSmart-tech-ui v0.0.0-20240920055453-10c2ee7d7ef2
+	github.com/nikitalystsev/BookSmart-tech-ui v0.0.0-20240921135907-2c2d32ea8605
 	github.com/nikitalystsev/BookSmart-web-api v0.0.0-20240916214124-d26a2da6e20f
 	github.com/ozontech/allure-go/pkg/framework v0.6.32
 	github.com/sirupsen/logrus v1.9.3
