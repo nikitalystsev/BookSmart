@@ -8,7 +8,1336 @@
     },
     "host": "localhost:8000",
     "basePath": "/",
-    "paths": {},
+    "paths": {
+        "/auth/refresh": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Метод обновления токенов",
+                "operationId": "refresh",
+                "parameters": [
+                    {
+                        "description": "Токен обновления",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RefreshTokenInputDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление токенов",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RefreshTokenOutputDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Читателя не существует",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sign-in": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Метод аутентификации пользователя",
+                "operationId": "signIn",
+                "parameters": [
+                    {
+                        "description": "DTO c номером телефона и паролем пользователя",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SignInInputDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный вход пользователя",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SignInOutputDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Читателя не существует",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Неверный логин или пароль",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sign-up": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Метод регистрации пользователя",
+                "operationId": "signUp",
+                "parameters": [
+                    {
+                        "description": "DTO c данными пользователя",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SignUpInputDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное создание пользователя"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь уже существует",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/books": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "book"
+                ],
+                "summary": "Метод получения книг по параметрам",
+                "operationId": "getPageBooks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Название книги",
+                        "name": "title",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Автор книги",
+                        "name": "author",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Издательство книги",
+                        "name": "publisher",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Редкость книги",
+                        "name": "rarity",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Жанр книги",
+                        "name": "genre",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Язык книги",
+                        "name": "language",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Количество копий",
+                        "name": "copies_number",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Год издания",
+                        "name": "publishing_year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Возрастное ограничение",
+                        "name": "age_limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Номер страницы для пагинации",
+                        "name": "page_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список книг",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JSONBookModel"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Книги не найдены",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/{id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "book"
+                ],
+                "summary": "Метод получения книги по идентификатору",
+                "operationId": "getBookByID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор книги",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение книги по идентификатору",
+                        "schema": {
+                            "$ref": "#/definitions/models.JSONBookModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Книги нет",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/{id}/ratings": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "book_ratings"
+                ],
+                "summary": "Метод получения рейтингов книги",
+                "operationId": "getRatingsByBookID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор книги",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение отзывов на книгу",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.RatingOutputDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "У книги нет отзывов",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "book_ratings"
+                ],
+                "summary": "Метод добавления отзыва на книгу",
+                "operationId": "addNewRating",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор книги",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "DTO с данными отзыва",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RatingInputDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное добавление отзыва"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь никогда не бронировал книгу",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Пользователь уже оценил книгу",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/{id}/ratings/avg": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "book_ratings"
+                ],
+                "summary": "Метод получения среднего рейтинга книги",
+                "operationId": "getAvgRatingByBookID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор книги",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение среднего рейтинга книги",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AvgRatingOutputDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "У книги нет отзывов",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/readers": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader"
+                ],
+                "summary": "Метод получения читателя по номеру телефона",
+                "operationId": "getReaderByPhoneNumber",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Номер телефона читателя",
+                        "name": "phone_number",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение читателя",
+                        "schema": {
+                            "$ref": "#/definitions/models.JSONReaderModel"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Читатель не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/readers/{id}/favorite_books": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader"
+                ],
+                "summary": "Метод добавления книги в избранное",
+                "operationId": "addBookToFavorites",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Идентификатор книги",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.FavoriteBookInputDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное добавление книги в избранное"
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Читатель не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": " Книга уже добавлена в избранное",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/readers/{id}/lib_card": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader_lib_card"
+                ],
+                "summary": "Метод получения читательского билета",
+                "operationId": "getLibCardByReaderID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение читательского билета",
+                        "schema": {
+                            "$ref": "#/definitions/models.JSONLibCardModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный идентификатор пользователя",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Читательский билет не найден",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader_lib_card"
+                ],
+                "summary": "Метод обновления читательского билета",
+                "operationId": "updateLibCard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление читательского билета"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Читательского билета не существует",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Читательский билет актуален",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader_lib_card"
+                ],
+                "summary": "Метод обновления читательского билета",
+                "operationId": "createLibCard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное создание читательского билета"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Читательский билет уже существует",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/readers/{id}/reservations": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader_reservations"
+                ],
+                "summary": "Метод получения всех броней читателя",
+                "operationId": "getReservationsByReaderID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Идентификатор книги",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReservationInputDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное получение броней",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.ReservationOutputDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Нет броней",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader_reservations"
+                ],
+                "summary": "Метод бронирования книги",
+                "operationId": "createLibCard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Идентификатор книги",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReservationInputDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное бронирование книги"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Нет читательского билета или книги",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Бронирование невозможно из-за нарушения некоторых условий",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/readers/{id}/reservations/{reservation_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader_reservations"
+                ],
+                "summary": "Метод получения брони читателя по идентификатору",
+                "operationId": "getReservationByID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Идентификатор брони",
+                        "name": "reservation_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное получение брони",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReservationOutputDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": " Бронь не найдена",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reader_reservations"
+                ],
+                "summary": "Метод обновления брони читателя по идентификатору",
+                "operationId": "updateReservation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Идентификатор брони",
+                        "name": "reservation_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "description": "Срок продления брони",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReservationExtentionPeriodDaysInputDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное продление брони"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Бронь не найдена",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Нарушение каких либо условий для успешного продления брони",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.AvgRatingOutputDTO": {
+            "type": "object",
+            "properties": {
+                "avg_rating": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error_msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FavoriteBookInputDTO": {
+            "type": "object",
+            "properties": {
+                "book_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RatingInputDTO": {
+            "type": "object",
+            "properties": {
+                "rating": {
+                    "type": "integer"
+                },
+                "reader_id": {
+                    "type": "string"
+                },
+                "review": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RatingOutputDTO": {
+            "type": "object",
+            "properties": {
+                "rating": {
+                    "type": "integer"
+                },
+                "reader_fio": {
+                    "type": "string"
+                },
+                "review": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RefreshTokenInputDTO": {
+            "type": "object",
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RefreshTokenOutputDTO": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expired_at": {
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ReservationExtentionPeriodDaysInputDTO": {
+            "type": "object",
+            "properties": {
+                "extention_period_days": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.ReservationInputDTO": {
+            "type": "object",
+            "properties": {
+                "book_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ReservationOutputDTO": {
+            "type": "object",
+            "properties": {
+                "book_title_and_author": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "issue_date": {
+                    "type": "string"
+                },
+                "return_date": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SignInInputDTO": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SignInOutputDTO": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expired_at": {
+                    "type": "integer"
+                },
+                "reader_id": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SignUpInputDTO": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "fio": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.JSONBookModel": {
+            "type": "object",
+            "properties": {
+                "age_limit": {
+                    "type": "integer"
+                },
+                "author": {
+                    "type": "string"
+                },
+                "copies_number": {
+                    "type": "integer"
+                },
+                "genre": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "publisher": {
+                    "type": "string"
+                },
+                "publishing_year": {
+                    "type": "integer"
+                },
+                "rarity": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.JSONLibCardModel": {
+            "type": "object",
+            "properties": {
+                "action_status": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "issue_date": {
+                    "type": "string"
+                },
+                "lib_card_num": {
+                    "type": "string"
+                },
+                "reader_id": {
+                    "type": "string"
+                },
+                "validity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.JSONReaderModel": {
+            "type": "object",
+            "properties": {
+                "age": {
+                    "type": "integer"
+                },
+                "fio": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        }
+    },
     "securityDefinitions": {
         "ApiKeyAuth": {
             "type": "apiKey",

@@ -1,8 +1,6 @@
 package app
 
 import (
-	"Booksmart/internal/config"
-	"Booksmart/pkg/logging"
 	"fmt"
 	trmmongo "github.com/avito-tech/go-transaction-manager/drivers/mongo/v2"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
@@ -19,6 +17,8 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/pkg/hash"
 	"github.com/nikitalystsev/BookSmart-services/pkg/transact"
 	"github.com/nikitalystsev/BookSmart-web-api/handlers"
+	"github.com/nikitalystsev/BookSmart/internal/config"
+	"github.com/nikitalystsev/BookSmart/pkg/logging"
 )
 
 func Run(configDir string) {
