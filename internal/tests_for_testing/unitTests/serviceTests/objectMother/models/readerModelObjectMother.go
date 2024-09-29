@@ -1,8 +1,8 @@
 package models
 
 import (
-	tdbmodels "Booksmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
 	"github.com/nikitalystsev/BookSmart-services/core/models"
+	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
 )
 
 type ReaderModelObjectMother struct {

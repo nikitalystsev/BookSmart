@@ -1,8 +1,8 @@
 package models
 
 import (
-	models2 "Booksmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
 	"github.com/nikitalystsev/BookSmart-services/core/models"
+	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
 )
 
 type BookModelObjectMother struct {
@@ -13,5 +13,5 @@ func NewBookModelObjectMother() *BookModelObjectMother {
 }
 
 func (bmom *BookModelObjectMother) DefaultBook() *models.BookModel {
-	return models2.NewBookModelBuilder().Build()
+	return tdbmodels.NewBookModelBuilder().Build()
 }

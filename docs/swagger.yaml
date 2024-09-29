@@ -272,47 +272,38 @@ paths:
       - description: Название книги
         in: query
         name: title
-        required: true
         type: string
       - description: Автор книги
         in: query
         name: author
-        required: true
         type: string
       - description: Издательство книги
         in: query
         name: publisher
-        required: true
         type: string
       - description: Редкость книги
         in: query
         name: rarity
-        required: true
         type: string
       - description: Жанр книги
         in: query
         name: genre
-        required: true
         type: string
       - description: Язык книги
         in: query
         name: language
-        required: true
         type: string
       - description: Количество копий
         in: query
         name: copies_number
-        required: true
         type: integer
       - description: Год издания
         in: query
         name: publishing_year
-        required: true
         type: integer
       - description: Возрастное ограничение
         in: query
         name: age_limit
-        required: true
         type: integer
       - description: Номер страницы для пагинации
         in: query
@@ -490,15 +481,15 @@ paths:
       summary: Метод получения среднего рейтинга книги
       tags:
       - book_ratings
-  /readers:
+  /readers/{id}:
     get:
       consumes:
       - application/json
       operationId: getReaderByPhoneNumber
       parameters:
-      - description: Номер телефона читателя
-        in: query
-        name: phone_number
+      - description: Идентификатор читателя
+        in: path
+        name: id
         required: true
         type: string
       produces:
@@ -522,7 +513,7 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Метод получения читателя по номеру телефона
+      summary: Метод получения читателя по идентификатору
       tags:
       - reader
   /readers/{id}/favorite_books:
@@ -568,7 +559,7 @@ paths:
       summary: Метод добавления книги в избранное
       tags:
       - reader
-  /readers/{id}/lib_card:
+  /readers/{id}/lib_cards:
     get:
       consumes:
       - application/json
@@ -585,7 +576,9 @@ paths:
         "200":
           description: Успешное получение читательского билета
           schema:
-            $ref: '#/definitions/models.JSONLibCardModel'
+            items:
+              $ref: '#/definitions/models.JSONLibCardModel'
+            type: array
         "400":
           description: Некорректный идентификатор пользователя
           schema:

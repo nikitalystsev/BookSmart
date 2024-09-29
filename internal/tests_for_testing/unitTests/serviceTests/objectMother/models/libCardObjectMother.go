@@ -1,8 +1,8 @@
 package models
 
 import (
-	models2 "Booksmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
 	"github.com/nikitalystsev/BookSmart-services/core/models"
+	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
 	"time"
 )
 
@@ -14,11 +14,11 @@ func NewLibCardModelObjectMother() *LibCardModelObjectMother {
 }
 
 func (lcmom *LibCardModelObjectMother) DefaultLibCard() *models.LibCardModel {
-	return models2.NewLibCardModelBuilder().Build()
+	return tdbmodels.NewLibCardModelBuilder().Build()
 }
 
 func (lcmom *LibCardModelObjectMother) ExpiredLibCard() *models.LibCardModel {
-	return models2.NewLibCardModelBuilder().
+	return tdbmodels.NewLibCardModelBuilder().
 		WithIssueDate(time.Now().AddDate(0, 0, -370)).
 		WithActionStatus(false).
 		Build()

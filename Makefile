@@ -33,7 +33,7 @@ build-app:
 # тесты тестирования
 utest-srv:
 	go test -v ./internal/tests_for_testing/unitTests/serviceTests/
-	#cd ./internal/tests_for_testing/unitTests/serviceTests/ && allure serve
+	cd ./internal/tests_for_testing/unitTests/serviceTests/ && allure serve
 
 migrate-up:
 	migrate -database '$(POSTGRES_CREATE_DB_URL)' -path $(POSTGRES_CREATE_DB_MIGRATION_PATH) up

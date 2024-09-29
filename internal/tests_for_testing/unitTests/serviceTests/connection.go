@@ -34,7 +34,7 @@ func getContainerForClassicUnitTests() (*postgres.PostgresContainer, error) {
 		),
 		testcontainers.WithHostConfigModifier(func(hostConfig *container.HostConfig) {
 			hostConfig.Binds = []string{
-				"/c/Users/nikitalystsev/Documents/bmstu/ppo/BookSmart/src/docs/data/mydatasets:/data",
+				"/c/Users/nikitalystsev/Documents/bmstu/ppo/BookSmart/docs/data/mydatasets:/data",
 			}
 		}),
 		testcontainers.WithLogger(log.New(io.Discard, "", 0)),

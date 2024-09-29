@@ -192,64 +192,55 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Название книги",
                         "name": "title",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "Автор книги",
                         "name": "author",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "Издательство книги",
                         "name": "publisher",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "Редкость книги",
                         "name": "rarity",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "Жанр книги",
                         "name": "genre",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "Язык книги",
                         "name": "language",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "integer",
                         "description": "Количество копий",
                         "name": "copies_number",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "integer",
                         "description": "Год издания",
                         "name": "publishing_year",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "integer",
                         "description": "Возрастное ограничение",
                         "name": "age_limit",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -514,7 +505,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/readers": {
+        "/readers/{id}": {
             "get": {
                 "security": [
                     {
@@ -530,14 +521,14 @@ const docTemplate = `{
                 "tags": [
                     "reader"
                 ],
-                "summary": "Метод получения читателя по номеру телефона",
+                "summary": "Метод получения читателя по идентификатору",
                 "operationId": "getReaderByPhoneNumber",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Номер телефона читателя",
-                        "name": "phone_number",
-                        "in": "query",
+                        "description": "Идентификатор читателя",
+                        "name": "id",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -636,7 +627,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/readers/{id}/lib_card": {
+        "/readers/{id}/lib_cards": {
             "get": {
                 "security": [
                     {
@@ -667,7 +658,10 @@ const docTemplate = `{
                     "200": {
                         "description": "Успешное получение читательского билета",
                         "schema": {
-                            "$ref": "#/definitions/models.JSONLibCardModel"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.JSONLibCardModel"
+                            }
                         }
                     },
                     "400": {

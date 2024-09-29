@@ -14,8 +14,8 @@ func NewReaderSignInDTOBuilder() *ReaderSignInDTOBuilder {
 	}
 }
 
-func (builder *ReaderSignInDTOBuilder) Build() *dto.ReaderSignInDTO {
-	return &dto.ReaderSignInDTO{
+func (builder *ReaderSignInDTOBuilder) Build() *dto.SignInInputDTO {
+	return &dto.SignInInputDTO{
 		PhoneNumber: builder.PhoneNumber,
 		Password:    builder.Password,
 	}
