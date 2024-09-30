@@ -15,6 +15,7 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/intf"
 	"github.com/nikitalystsev/BookSmart-services/pkg/transact"
 	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
+	"github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests"
 	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
 	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
@@ -517,16 +518,20 @@ func (rsts *ReservationServiceTestsSuite) Test_Create_Success_Classic(t provider
 	t.Description("The new reservation was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		if postgresContainer, err = getPostgresForClassicUnitTests(); err != nil {
+		postgresContainer, err = unitTests.GetPostgresForClassicUnitTests()
+		if err != nil {
 			t.Fatal(err)
 		}
-		if db, err = applyMigrations(postgresContainer); err != nil {
+		db, err = unitTests.ApplyMigrations(postgresContainer)
+		if err != nil {
 			t.Fatal(err)
 		}
-		if redisContainer, err = getRedisForClassicUnitTests(); err != nil {
+		redisContainer, err = unitTests.GetRedisForClassicUnitTests()
+		if err != nil {
 			t.Fatal(err)
 		}
-		if redisClient, err = getRedisClientForClassicUnitTests(redisContainer); err != nil {
+		redisClient, err = unitTests.GetRedisClientForClassicUnitTests(redisContainer)
+		if err != nil {
 			t.Fatal(err)
 		}
 		if trm, err = manager.New(trmsqlx.NewDefaultFactory(db)); err != nil {
@@ -635,16 +640,20 @@ func (rsts *ReservationServiceTestsSuite) Test_Create_ErrorExpiredLibCard_Classi
 	t.Description("Reservation cannot be made due to expired libCard")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		if postgresContainer, err = getPostgresForClassicUnitTests(); err != nil {
+		postgresContainer, err = unitTests.GetPostgresForClassicUnitTests()
+		if err != nil {
 			t.Fatal(err)
 		}
-		if db, err = applyMigrations(postgresContainer); err != nil {
+		db, err = unitTests.ApplyMigrations(postgresContainer)
+		if err != nil {
 			t.Fatal(err)
 		}
-		if redisContainer, err = getRedisForClassicUnitTests(); err != nil {
+		redisContainer, err = unitTests.GetRedisForClassicUnitTests()
+		if err != nil {
 			t.Fatal(err)
 		}
-		if redisClient, err = getRedisClientForClassicUnitTests(redisContainer); err != nil {
+		redisClient, err = unitTests.GetRedisClientForClassicUnitTests(redisContainer)
+		if err != nil {
 			t.Fatal(err)
 		}
 		if trm, err = manager.New(trmsqlx.NewDefaultFactory(db)); err != nil {

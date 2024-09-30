@@ -15,6 +15,7 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/pkg/auth"
 	"github.com/nikitalystsev/BookSmart-services/pkg/hash"
 	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
+	"github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests"
 	omdto "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/dto"
 	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
@@ -426,19 +427,19 @@ func (rsts *ReaderServiceTestsSuite) Test_SignUp_Success_Classic(t provider.T) {
 	t.Description("The new reader was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = getPostgresForClassicUnitTests()
+		container, err = unitTests.GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = applyMigrations(container)
+		db, err = unitTests.ApplyMigrations(container)
 		if err != nil {
 			t.Fatal(err)
 		}
-		redisContainer, err = getRedisForClassicUnitTests()
+		redisContainer, err = unitTests.GetRedisForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		client, err = getRedisClientForClassicUnitTests(redisContainer)
+		client, err = unitTests.GetRedisClientForClassicUnitTests(redisContainer)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -498,19 +499,19 @@ func (rsts *ReaderServiceTestsSuite) Test_SingUp_ErrorCheckReaderExistence_Class
 	t.Description("The reader was not created successfully due to an error checking its existence")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = getPostgresForClassicUnitTests()
+		container, err = unitTests.GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = applyMigrations(container)
+		db, err = unitTests.ApplyMigrations(container)
 		if err != nil {
 			t.Fatal(err)
 		}
-		redisContainer, err = getRedisForClassicUnitTests()
+		redisContainer, err = unitTests.GetRedisForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		client, err = getRedisClientForClassicUnitTests(redisContainer)
+		client, err = unitTests.GetRedisClientForClassicUnitTests(redisContainer)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -1,4 +1,4 @@
-package serviceTests
+package unitTests
 
 import (
 	"context"
@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-func getRedisForClassicUnitTests() (*testredis.RedisContainer, error) {
+func GetRedisForClassicUnitTests() (*testredis.RedisContainer, error) {
 	ctx := context.Background()
 
 	redisContainer, err := testredis.Run(
@@ -37,7 +37,7 @@ func getRedisForClassicUnitTests() (*testredis.RedisContainer, error) {
 	return redisContainer, nil
 }
 
-func getRedisClientForClassicUnitTests(container *testredis.RedisContainer) (*redis.Client, error) {
+func GetRedisClientForClassicUnitTests(container *testredis.RedisContainer) (*redis.Client, error) {
 	ctx := context.Background()
 	uri, err := container.ConnectionString(ctx)
 	if err != nil {
@@ -56,7 +56,7 @@ func getRedisClientForClassicUnitTests(container *testredis.RedisContainer) (*re
 	return client, nil
 }
 
-func getPostgresForClassicUnitTests() (*postgres.PostgresContainer, error) {
+func GetPostgresForClassicUnitTests() (*postgres.PostgresContainer, error) {
 	ctx := context.Background()
 
 	postgresContainer, err := postgres.Run(
@@ -86,7 +86,7 @@ func getPostgresForClassicUnitTests() (*postgres.PostgresContainer, error) {
 	return postgresContainer, err
 }
 
-func applyMigrations(container *postgres.PostgresContainer) (*sqlx.DB, error) {
+func ApplyMigrations(container *postgres.PostgresContainer) (*sqlx.DB, error) {
 	ctx := context.Background()
 
 	port, err := container.MappedPort(ctx, "5432/tcp")

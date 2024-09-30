@@ -12,6 +12,7 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/impl"
 	"github.com/nikitalystsev/BookSmart-services/intf"
 	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
+	"github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests"
 	omdto "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/dto"
 	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
@@ -314,11 +315,11 @@ func (bsts *BookServiceTestsSuite) Test_Create_Success_Classic(t provider.T) {
 	t.Description("The new book was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = getPostgresForClassicUnitTests()
+		container, err = unitTests.GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = applyMigrations(container)
+		db, err = unitTests.ApplyMigrations(container)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -362,11 +363,11 @@ func (bsts *BookServiceTestsSuite) Test_Create_ErrorCheckBookExistence_Classic(t
 	t.Description("The new book was not created successfully due to an error checking its existence")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = getPostgresForClassicUnitTests()
+		container, err = unitTests.GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = applyMigrations(container)
+		db, err = unitTests.ApplyMigrations(container)
 		if err != nil {
 			t.Fatal(err)
 		}
