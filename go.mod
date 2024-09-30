@@ -3,6 +3,7 @@ module github.com/nikitalystsev/BookSmart
 go 1.22.5
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/alicebob/miniredis/v2 v2.33.0
 	github.com/avito-tech/go-transaction-manager/drivers/mongo/v2 v2.0.0
 	github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2 v2.0.0
@@ -27,6 +28,7 @@ require (
 	github.com/swaggo/swag v1.8.12
 	github.com/testcontainers/testcontainers-go v0.33.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.33.0
+	github.com/testcontainers/testcontainers-go/modules/redis v0.33.0
 	github.com/zhashkevych/go-sqlxmock v1.5.1
 )
 
@@ -118,7 +120,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.6.0 // indirect
-	github.com/testcontainers/testcontainers-go/modules/redis v0.33.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
