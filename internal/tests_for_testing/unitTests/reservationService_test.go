@@ -1,4 +1,4 @@
-package serviceTests
+package unitTests
 
 import (
 	"context"
@@ -15,9 +15,8 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/intf"
 	"github.com/nikitalystsev/BookSmart-services/pkg/transact"
 	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
-	"github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests"
-	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
-	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
+	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/objectMother/models"
+	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/testDataBuilder/models"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
@@ -518,19 +517,19 @@ func (rsts *ReservationServiceTestsSuite) Test_Create_Success_Classic(t provider
 	t.Description("The new reservation was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		postgresContainer, err = unitTests.GetPostgresForClassicUnitTests()
+		postgresContainer, err = GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = unitTests.ApplyMigrations(postgresContainer)
+		db, err = ApplyMigrations(postgresContainer)
 		if err != nil {
 			t.Fatal(err)
 		}
-		redisContainer, err = unitTests.GetRedisForClassicUnitTests()
+		redisContainer, err = GetRedisForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		redisClient, err = unitTests.GetRedisClientForClassicUnitTests(redisContainer)
+		redisClient, err = GetRedisClientForClassicUnitTests(redisContainer)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -640,19 +639,19 @@ func (rsts *ReservationServiceTestsSuite) Test_Create_ErrorExpiredLibCard_Classi
 	t.Description("Reservation cannot be made due to expired libCard")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		postgresContainer, err = unitTests.GetPostgresForClassicUnitTests()
+		postgresContainer, err = GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = unitTests.ApplyMigrations(postgresContainer)
+		db, err = ApplyMigrations(postgresContainer)
 		if err != nil {
 			t.Fatal(err)
 		}
-		redisContainer, err = unitTests.GetRedisForClassicUnitTests()
+		redisContainer, err = GetRedisForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		redisClient, err = unitTests.GetRedisClientForClassicUnitTests(redisContainer)
+		redisClient, err = GetRedisClientForClassicUnitTests(redisContainer)
 		if err != nil {
 			t.Fatal(err)
 		}

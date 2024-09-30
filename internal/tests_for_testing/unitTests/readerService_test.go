@@ -1,4 +1,4 @@
-package serviceTests
+package unitTests
 
 import (
 	"context"
@@ -15,9 +15,8 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/pkg/auth"
 	"github.com/nikitalystsev/BookSmart-services/pkg/hash"
 	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
-	"github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests"
-	omdto "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/dto"
-	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
+	omdto "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/objectMother/dto"
+	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/objectMother/models"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
@@ -427,19 +426,19 @@ func (rsts *ReaderServiceTestsSuite) Test_SignUp_Success_Classic(t provider.T) {
 	t.Description("The new reader was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = unitTests.GetPostgresForClassicUnitTests()
+		container, err = GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = unitTests.ApplyMigrations(container)
+		db, err = ApplyMigrations(container)
 		if err != nil {
 			t.Fatal(err)
 		}
-		redisContainer, err = unitTests.GetRedisForClassicUnitTests()
+		redisContainer, err = GetRedisForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		client, err = unitTests.GetRedisClientForClassicUnitTests(redisContainer)
+		client, err = GetRedisClientForClassicUnitTests(redisContainer)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -499,19 +498,19 @@ func (rsts *ReaderServiceTestsSuite) Test_SingUp_ErrorCheckReaderExistence_Class
 	t.Description("The reader was not created successfully due to an error checking its existence")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = unitTests.GetPostgresForClassicUnitTests()
+		container, err = GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = unitTests.ApplyMigrations(container)
+		db, err = ApplyMigrations(container)
 		if err != nil {
 			t.Fatal(err)
 		}
-		redisContainer, err = unitTests.GetRedisForClassicUnitTests()
+		redisContainer, err = GetRedisForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		client, err = unitTests.GetRedisClientForClassicUnitTests(redisContainer)
+		client, err = GetRedisClientForClassicUnitTests(redisContainer)
 		if err != nil {
 			t.Fatal(err)
 		}

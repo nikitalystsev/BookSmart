@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/nikitalystsev/BookSmart-services/core/models"
-	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
+	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/testDataBuilder/models"
 	"time"
 )
 

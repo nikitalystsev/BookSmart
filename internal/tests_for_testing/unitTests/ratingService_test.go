@@ -1,4 +1,4 @@
-package serviceTests
+package unitTests
 
 import (
 	"context"
@@ -12,9 +12,8 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/impl"
 	"github.com/nikitalystsev/BookSmart-services/intf"
 	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
-	"github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests"
-	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
-	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
+	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/objectMother/models"
+	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/testDataBuilder/models"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
@@ -274,11 +273,11 @@ func (bsts *RatingServiceTestsSuite) Test_Create_Success_Classic(t provider.T) {
 	t.Description("The new rating was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		postgresContainer, err = unitTests.GetPostgresForClassicUnitTests()
+		postgresContainer, err = GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = unitTests.ApplyMigrations(postgresContainer)
+		db, err = ApplyMigrations(postgresContainer)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -365,11 +364,11 @@ func (bsts *RatingServiceTestsSuite) Test_Create_ErrorRatingAlreadyExists_Classi
 	t.Description("Rating already exists")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		postgresContainer, err = unitTests.GetPostgresForClassicUnitTests()
+		postgresContainer, err = GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = unitTests.ApplyMigrations(postgresContainer)
+		db, err = ApplyMigrations(postgresContainer)
 		if err != nil {
 			t.Fatal(err)
 		}

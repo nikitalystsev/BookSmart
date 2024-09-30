@@ -1,4 +1,4 @@
-package serviceTests_test
+package unitTests
 
 import (
 	"context"
@@ -12,9 +12,8 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/impl"
 	"github.com/nikitalystsev/BookSmart-services/intf"
 	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
-	"github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests"
-	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/objectMother/models"
-	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/serviceTests/testDataBuilder/models"
+	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/objectMother/models"
+	tdbmodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/testDataBuilder/models"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
@@ -225,11 +224,11 @@ func (lcsts *LibCardServiceTestsSuite) Test_Create_Success_Classic(t provider.T)
 	t.Description("The new libCard was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = unitTests.GetPostgresForClassicUnitTests()
+		container, err = GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = unitTests.ApplyMigrations(container)
+		db, err = ApplyMigrations(container)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -281,11 +280,11 @@ func (lcsts *LibCardServiceTestsSuite) Test_Create_ErrorLibCardAlreadyExists_Cla
 	t.Description("A new library card was not created because the reader already has one")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = unitTests.GetPostgresForClassicUnitTests()
+		container, err = GetPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
-		db, err = unitTests.ApplyMigrations(container)
+		db, err = ApplyMigrations(container)
 		if err != nil {
 			t.Fatal(err)
 		}
