@@ -224,7 +224,7 @@ func (lcsts *LibCardServiceTestsSuite) Test_Create_Success_Classic(t provider.T)
 	t.Description("The new libCard was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = getContainerForClassicUnitTests()
+		container, err = getPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -280,7 +280,7 @@ func (lcsts *LibCardServiceTestsSuite) Test_Create_ErrorLibCardAlreadyExists_Cla
 	t.Description("A new library card was not created because the reader already has one")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = getContainerForClassicUnitTests()
+		container, err = getPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}

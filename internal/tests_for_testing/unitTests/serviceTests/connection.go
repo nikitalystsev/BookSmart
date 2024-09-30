@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/docker/docker/api/types/container"
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-migrate/migrate/v4"
 	migrations "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	testredis "github.com/testcontainers/testcontainers-go/modules/redis"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"io"
 	"log"
@@ -18,7 +20,43 @@ import (
 	"time"
 )
 
-func getContainerForClassicUnitTests() (*postgres.PostgresContainer, error) {
+func getRedisForClassicUnitTests() (*testredis.RedisContainer, error) {
+	ctx := context.Background()
+
+	redisContainer, err := testredis.Run(
+		ctx,
+		"redis:latest",
+		testcontainers.WithLogger(log.New(io.Discard, "", 0)),
+	)
+
+	if err != nil {
+		fmt.Printf("Failed to start postgres container: %v\n", err)
+		return nil, err
+	}
+
+	return redisContainer, nil
+}
+
+func getRedisClientForClassicUnitTests(container *testredis.RedisContainer) (*redis.Client, error) {
+	ctx := context.Background()
+	uri, err := container.ConnectionString(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	client := redis.NewClient(&redis.Options{
+		Addr: uri[8:],
+	})
+
+	_, err = client.Ping(ctx).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func getPostgresForClassicUnitTests() (*postgres.PostgresContainer, error) {
 	ctx := context.Background()
 
 	postgresContainer, err := postgres.Run(

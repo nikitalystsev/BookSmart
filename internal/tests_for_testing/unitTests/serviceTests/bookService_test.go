@@ -314,7 +314,7 @@ func (bsts *BookServiceTestsSuite) Test_Create_Success_Classic(t provider.T) {
 	t.Description("The new book was successfully created")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = getContainerForClassicUnitTests()
+		container, err = getPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -362,7 +362,7 @@ func (bsts *BookServiceTestsSuite) Test_Create_ErrorCheckBookExistence_Classic(t
 	t.Description("The new book was not created successfully due to an error checking its existence")
 
 	t.WithNewStep("Arrange", func(sCtx provider.StepCtx) {
-		container, err = getContainerForClassicUnitTests()
+		container, err = getPostgresForClassicUnitTests()
 		if err != nil {
 			t.Fatal(err)
 		}
