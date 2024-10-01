@@ -3,7 +3,6 @@ package unitTests
 import (
 	"context"
 	"errors"
-	"github.com/go-redis/redis/v8"
 	"github.com/golang/mock/gomock"
 	"github.com/jmoiron/sqlx"
 	implRepo "github.com/nikitalystsev/BookSmart-repo-postgres/impl"
@@ -20,6 +19,7 @@ import (
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
+	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	testredis "github.com/testcontainers/testcontainers-go/modules/redis"
 	"log"
