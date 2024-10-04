@@ -39,7 +39,6 @@ func (bsts *BookServiceTestsSuite) Test_Create_Success(t provider.T) {
 		book        *models.BookModel
 		err         error
 	)
-
 	t.Title("Test Create Book Success")
 	t.Description("The new book was successfully created")
 

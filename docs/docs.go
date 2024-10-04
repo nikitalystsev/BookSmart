@@ -583,7 +583,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Идентификатор читателя",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -599,6 +599,12 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "Успешное добавление книги в избранное"
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
                     },
                     "401": {
                         "description": "Неавторизованный пользователь",
@@ -650,7 +656,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Идентификатор читателя",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -712,7 +718,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Идентификатор читателя",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -767,14 +773,14 @@ const docTemplate = `{
                 "tags": [
                     "reader_lib_card"
                 ],
-                "summary": "Метод обновления читательского билета",
+                "summary": "Метод создания читательского билета",
                 "operationId": "createLibCard",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Идентификатор читателя",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -832,21 +838,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Идентификатор читателя",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Идентификатор книги",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.ReservationInputDTO"
-                        }
                     }
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Успешное получение броней",
                         "schema": {
                             "type": "array",
@@ -897,13 +894,13 @@ const docTemplate = `{
                     "reader_reservations"
                 ],
                 "summary": "Метод бронирования книги",
-                "operationId": "createLibCard",
+                "operationId": "reserveBook",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Идентификатор читателя",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -976,19 +973,19 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Идентификатор читателя",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Идентификатор брони",
                         "name": "reservation_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Успешное получение брони",
                         "schema": {
                             "$ref": "#/definitions/dto.ReservationOutputDTO"
@@ -1042,14 +1039,14 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Идентификатор читателя",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Идентификатор брони",
                         "name": "reservation_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {

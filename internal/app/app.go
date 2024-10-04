@@ -5,7 +5,6 @@ import (
 	trmmongo "github.com/avito-tech/go-transaction-manager/drivers/mongo/v2"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
-	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
 	repoMongo "github.com/nikitalystsev/BookSmart-repo-mongo"
 	implMongo "github.com/nikitalystsev/BookSmart-repo-mongo/impl"
@@ -19,6 +18,7 @@ import (
 	"github.com/nikitalystsev/BookSmart-web-api/handlers"
 	"github.com/nikitalystsev/BookSmart/internal/config"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
+	"github.com/redis/go-redis/v9"
 )
 
 func Run(configDir string) {

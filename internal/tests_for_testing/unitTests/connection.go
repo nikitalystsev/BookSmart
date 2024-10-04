@@ -9,6 +9,7 @@ import (
 	migrations "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -87,6 +88,10 @@ func GetPostgresForClassicUnitTests() (*postgres.PostgresContainer, error) {
 }
 
 func ApplyMigrations(container *postgres.PostgresContainer) (*sqlx.DB, error) {
+	if err := godotenv.Load("../../../.env"); err != nil {
+		log.Print("No .env file found")
+	}
+
 	ctx := context.Background()
 
 	port, err := container.MappedPort(ctx, "5432/tcp")

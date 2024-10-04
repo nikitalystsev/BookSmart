@@ -523,7 +523,7 @@ paths:
       operationId: addBookToFavorites
       parameters:
       - description: Идентификатор читателя
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -538,6 +538,10 @@ paths:
       responses:
         "201":
           description: Успешное добавление книги в избранное
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Неавторизованный пользователь
           schema:
@@ -566,7 +570,7 @@ paths:
       operationId: getLibCardByReaderID
       parameters:
       - description: Идентификатор читателя
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -606,7 +610,7 @@ paths:
       operationId: createLibCard
       parameters:
       - description: Идентификатор читателя
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -633,7 +637,7 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
       security:
       - ApiKeyAuth: []
-      summary: Метод обновления читательского билета
+      summary: Метод создания читательского билета
       tags:
       - reader_lib_card
     put:
@@ -642,7 +646,7 @@ paths:
       operationId: updateLibCard
       parameters:
       - description: Идентификатор читателя
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -683,20 +687,14 @@ paths:
       operationId: getReservationsByReaderID
       parameters:
       - description: Идентификатор читателя
-        in: query
+        in: path
         name: id
         required: true
         type: string
-      - description: Идентификатор книги
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/dto.ReservationInputDTO'
       produces:
       - application/json
       responses:
-        "201":
+        "200":
           description: Успешное получение броней
           schema:
             items:
@@ -726,10 +724,10 @@ paths:
     post:
       consumes:
       - application/json
-      operationId: createLibCard
+      operationId: reserveBook
       parameters:
       - description: Идентификатор читателя
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -776,19 +774,19 @@ paths:
       operationId: getReservationByID
       parameters:
       - description: Идентификатор читателя
-        in: query
+        in: path
         name: id
         required: true
         type: string
       - description: Идентификатор брони
-        in: query
+        in: path
         name: reservation_id
         required: true
         type: string
       produces:
       - application/json
       responses:
-        "201":
+        "200":
           description: Успешное получение брони
           schema:
             $ref: '#/definitions/dto.ReservationOutputDTO'
@@ -819,12 +817,12 @@ paths:
       operationId: updateReservation
       parameters:
       - description: Идентификатор читателя
-        in: query
+        in: path
         name: id
         required: true
         type: string
       - description: Идентификатор брони
-        in: query
+        in: path
         name: reservation_id
         required: true
         type: string

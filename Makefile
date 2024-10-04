@@ -18,7 +18,7 @@ run-app: build-app
 build-app:
 	docker build -t booksmart:local .
 
-# тесты ППО
+# тесты ППО (исправить)
 #utest-srv:
 #	go test -v ./internal/tests/unitTests/serviceTests/
 #
@@ -32,7 +32,8 @@ build-app:
 
 # тесты тестирования
 utest-srv:
-	go test -v ./internal/tests_for_testing/unitTests/
+	go test -v  -shuffle on ./internal/tests_for_testing/unitTests/
+	cp ./internal/tests_for_testing/unitTests/environment.properties ./internal/tests_for_testing/unitTests/allure-results
 	cd ./internal/tests_for_testing/unitTests/ && allure serve
 
 migrate-up:
