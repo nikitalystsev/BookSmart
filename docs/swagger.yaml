@@ -431,6 +431,10 @@ paths:
           description: Неавторизованный пользователь
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Доступ запрещен
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Пользователь никогда не бронировал книгу
           schema:
@@ -503,6 +507,10 @@ paths:
           description: Неавторизованный пользователь
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Доступ запрещен
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Читатель не найден
           schema:
@@ -544,6 +552,10 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Неавторизованный пользователь
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Доступ запрещен
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
         "404":
@@ -591,6 +603,10 @@ paths:
           description: Неавторизованный пользователь
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Доступ запрещен
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Читательский билет не найден
           schema:
@@ -627,6 +643,10 @@ paths:
           description: Неавторизованный пользователь
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Доступ запрещен
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "409":
           description: Читательский билет уже существует
           schema:
@@ -661,6 +681,10 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Неавторизованный пользователь
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Доступ запрещен
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
         "404":
@@ -708,6 +732,10 @@ paths:
           description: Неавторизованный пользователь
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Доступ запрещен
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Нет броней
           schema:
@@ -748,6 +776,10 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Неавторизованный пользователь
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: доступ запрещен
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
         "404":
@@ -796,6 +828,10 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Неавторизованный пользователь
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Доступ запрещен
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
         "404":

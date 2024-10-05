@@ -434,6 +434,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Доступ запрещен",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Пользователь никогда не бронировал книгу",
                         "schema": {
@@ -545,6 +551,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Доступ запрещен",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Читатель не найден",
                         "schema": {
@@ -608,6 +620,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Доступ запрещен",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -682,6 +700,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Доступ запрещен",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Читательский билет не найден",
                         "schema": {
@@ -734,6 +758,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Доступ запрещен",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -796,6 +826,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Доступ запрещен",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -864,6 +900,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Доступ запрещен",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Нет броней",
                         "schema": {
@@ -925,6 +967,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "доступ запрещен",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -999,6 +1047,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Неавторизованный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Доступ запрещен",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
