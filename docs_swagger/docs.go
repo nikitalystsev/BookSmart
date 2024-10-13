@@ -1408,8 +1408,6 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "API Server for BookSmart Application",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	LeftDelim:        "{{",
-	RightDelim:       "}}",
 }
 
 func init() {

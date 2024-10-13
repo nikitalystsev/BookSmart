@@ -25,7 +25,7 @@ COPY ./components/component-services/ ./components/component-services/
 COPY ./components/component-web-api/ ./components/component-web-api/
 
 COPY ./cmd/app ./cmd/app
-COPY ./docs ./docs
+COPY ./data ./data
 COPY ./internal/app ./internal/app
 COPY ./internal/config ./internal/config
 COPY ./pkg ./pkg
