@@ -38,6 +38,18 @@ services:
     networks:
       - bs-ppo
 
+  bs-ppo-pgadmin:
+    container_name: bs-ppo-pgadmin
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - bs-ppo
+
   bs-ppo-mongo:
     container_name: bs-ppo-mongo
     image: mongo:latest
@@ -81,9 +93,11 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./components/component-ui/templates:/usr/share/nginx/html
+#      - ./components/component-ui/templates:/usr/share/nginx/html
+      - ./components/component-ui/static:/usr/share/nginx/static
       - ./README.md:/usr/share/nginx/documentation/README.md
-      - ./diagrams:/usr/share/nginx/documentation/diagrams
+      - ./docs/diagrams:/usr/share/nginx/documentation/docs/diagrams
+      - ./docs/readme.html:/usr/share/nginx/documentation/readme.html
     depends_on:
       - bs-ppo-app
     networks:

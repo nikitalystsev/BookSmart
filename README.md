@@ -81,11 +81,11 @@
 
 ## 7. Use-Case - диаграмма
 
-![use-case](./diagrams/use-case.drawio.png)
+![use-case](docs/diagrams/use-case.drawio.png)
 
 ## 8. ER-диаграмма сущностей
 
-![use-case](./diagrams/er.drawio.png)
+![use-case](docs/diagrams/er.drawio.png)
 
 ## 9. Пользовательские сценарии
 
@@ -127,7 +127,7 @@ __Администратор__:
 
 ## 10. Формализация ключевых бизнес-процессов
 
-![use-case](./diagrams/bpmn.drawio.png)
+![use-case](docs/diagrams/bpmn.drawio.png)
 
 
 # ППО. Лабораторная №2
@@ -146,13 +146,13 @@ __Администратор__:
 
 ## 2. Верхнеуровневое разбиение на компоненты
 
-![top-level-components](./diagrams/top-level-components.drawio.png)
+![top-level-components](docs/diagrams/top-level-components.drawio.png)
 
 ## 3. UML диаграммы классов для двух отдельных компонентов - компонента доступа к данным и компонента с бизнес-логикой
 
 ### UML диаграмма классов:
 
-![uml](./diagrams/uml_new.drawio.png)
+![uml](docs/diagrams/uml_new.drawio.png)
 
 ## PS 
 
