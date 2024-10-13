@@ -1,5 +1,7 @@
 package integrationTests
 
+// убрал тестовые контейнеры
+
 import (
 	"Booksmart/pkg/logging"
 	"errors"

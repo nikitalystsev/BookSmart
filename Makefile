@@ -13,11 +13,19 @@ build-ui:
 	go build -o techUI cmd/techUI/main.go
 
 run-app: build-app
-	docker compose up -d bs-ppo-app bs-ppo-postgres bs-ppo-mongo bs-ppo-redis
+	docker compose up -d bs-ppo-app bs-ppo-postgres bs-ppo-mongo bs-ppo-redis bs-ppo-nginx
 
 build-app:
 	docker build -t booksmart:local .
 
+stop-app:
+	docker stop bs-ppo-app bs-ppo-postgres bs-ppo-mongo bs-ppo-redis bs-ppo-nginx
+
+rerun-app:
+	make stop-app && make run-app
+
+get-swagger:
+	swag init -g cmd/app/main.go -o ./docs_swagger
 # тесты ППО (исправить)
 #utest-srv:
 #	go test -v ./internal/tests/unitTests/serviceTests/
@@ -48,7 +56,7 @@ migrate-down:
 
 mmigrate-up:
 	cd ./components/component-repo-mongo/impl/migrations && migrate-mongo up
-	cd docs/data/mydatasets/ && python to_mongodb.py
+	cd data/mydatasets/ && python to_mongodb.py
 
 mmigrate-down:
 	cd ./components/component-repo-mongo/impl/migrations && migrate-mongo down

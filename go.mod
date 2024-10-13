@@ -3,7 +3,6 @@ module github.com/nikitalystsev/BookSmart
 go 1.22.5
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/alicebob/miniredis/v2 v2.33.0
 	github.com/avito-tech/go-transaction-manager/drivers/mongo/v2 v2.0.0
 	github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2 v2.0.0
