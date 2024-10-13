@@ -26,6 +26,7 @@ rerun-app:
 
 get-swagger:
 	swag init -g cmd/app/main.go -o ./docs_swagger
+
 # тесты ППО (исправить)
 #utest-srv:
 #	go test -v ./internal/tests/unitTests/serviceTests/
