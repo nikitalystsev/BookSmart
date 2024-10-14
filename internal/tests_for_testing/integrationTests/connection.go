@@ -1,4 +1,4 @@
-package unitTests
+package integrationTest
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	testpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
 	testredis "github.com/testcontainers/testcontainers-go/modules/redis"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"io"
@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-func GetRedisForClassicUnitTests() (*testredis.RedisContainer, error) {
+func GetRedisForIntegrationTests() (*testredis.RedisContainer, error) {
 	ctx := context.Background()
 
 	redisContainer, err := testredis.Run(
@@ -38,7 +38,7 @@ func GetRedisForClassicUnitTests() (*testredis.RedisContainer, error) {
 	return redisContainer, nil
 }
 
-func GetRedisClientForClassicUnitTests(container *testredis.RedisContainer) (*redis.Client, error) {
+func GetRedisClientForIntegrationTests(container *testredis.RedisContainer) (*redis.Client, error) {
 	ctx := context.Background()
 	uri, err := container.ConnectionString(ctx)
 	if err != nil {
@@ -57,15 +57,15 @@ func GetRedisClientForClassicUnitTests(container *testredis.RedisContainer) (*re
 	return client, nil
 }
 
-func GetPostgresForClassicUnitTests() (*postgres.PostgresContainer, error) {
+func GetPostgresForIntegrationTests() (*testpostgres.PostgresContainer, error) {
 	ctx := context.Background()
 
-	postgresContainer, err := postgres.Run(
+	postgresContainer, err := testpostgres.Run(
 		ctx,
 		"postgres:latest",
-		postgres.WithDatabase("postgres"),
-		postgres.WithUsername("postgres"),
-		postgres.WithPassword("postgres"),
+		testpostgres.WithDatabase("postgres"),
+		testpostgres.WithUsername("postgres"),
+		testpostgres.WithPassword("postgres"),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).
@@ -84,10 +84,21 @@ func GetPostgresForClassicUnitTests() (*postgres.PostgresContainer, error) {
 		return nil, err
 	}
 
+	db, err := ApplyMigrations(postgresContainer)
+	if err != nil {
+		fmt.Printf("Failed to apply migrations: %v\n", err)
+		return nil, err
+	}
+
+	if err = db.Close(); err != nil {
+		fmt.Printf("Failed to close postgres container: %v\n", err)
+		return nil, err
+	}
+
 	return postgresContainer, err
 }
 
-func ApplyMigrations(container *postgres.PostgresContainer) (*sqlx.DB, error) {
+func ApplyMigrations(container *testpostgres.PostgresContainer) (*sqlx.DB, error) {
 	if err := godotenv.Load("../../../.env"); err != nil {
 		log.Print("No .env file found")
 	}
@@ -198,4 +209,19 @@ func fillDBMigration(port string) (*sqlx.DB, error) {
 	}
 
 	return db, err
+}
+
+func GetPostgresClientForIntegrationTests(url string) (*sqlx.DB, error) {
+	fmt.Printf("url: %s\n", url)
+	db, err := sqlx.Open("postgres", url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

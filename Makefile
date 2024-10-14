@@ -29,21 +29,22 @@ get-swagger:
 
 # тесты ППО (исправить)
 #utest-srv:
-#	go test -v ./internal/tests/unitTests/serviceTests/
+#	go tests_for_testing -v ./internal/tests/unitTests/serviceTests/
 #
 #utest-repo:
-#	go test -v ./internal/tests/unitTests/repositoryTests/
+#	go tests_for_testing -v ./internal/tests/unitTests/repositoryTests/
 #
 #itest:
-#	docker compose up -d bs-ppo-postgres-test bs-ppo-redis-test
-#	go test -v ./internal/tests/integrationTests
+#	docker compose up -d bs-ppo-postgres-tests_for_testing bs-ppo-redis-tests_for_testing
+#	go tests_for_testing -v ./internal/tests/integrationTests
 #
 
 # тесты тестирования
 utest-srv:
-	go test -v  -shuffle on ./internal/tests_for_testing/unitTests/
-	cp ./internal/tests_for_testing/unitTests/environment.properties ./internal/tests_for_testing/unitTests/allure-results
-	cd ./internal/tests_for_testing/unitTests/ && allure serve
+	export ALLURE_OUTPUT_PATH=$(ALLURE_OUTPUT_PATH) && go test -shuffle on ./internal/tests_for_testing/unitTests/
+	export ALLURE_OUTPUT_PATH=$(ALLURE_OUTPUT_PATH) && go test -shuffle on ./internal/tests_for_testing/integrationTests/
+#	cp ./internal/tests_for_testing/unitTests/environment.properties ./internal/tests_for_testing/unitTests/allure-results
+#	cd ./internal/tests_for_testing/unitTests/ && allure serve
 
 migrate-up:
 	migrate -database '$(POSTGRES_CREATE_DB_URL)' -path $(POSTGRES_CREATE_DB_MIGRATION_PATH) up

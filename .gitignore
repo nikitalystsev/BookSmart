@@ -8,7 +8,7 @@
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
+# Test binary, built with `go tests_for_testing -c`
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE
@@ -29,4 +29,4 @@ venv/
 .logs/
 .data
 components/
-internal/tests_for_testing/unitTests/allure-results/
+internal/tests_for_testing/allure-results/
