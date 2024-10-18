@@ -98,6 +98,8 @@ services:
       - ./README.md:/usr/share/nginx/documentation/README.md
       - ./docs/diagrams:/usr/share/nginx/documentation/docs/diagrams
       - ./docs/readme.html:/usr/share/nginx/documentation/readme.html
+      - ./docs/legacy.html:/usr/share/nginx/legacy/legacy.html
+      - ./docs/tech-ui.zip:/usr/share/nginx/legacy/tech-ui.zip
     depends_on:
       - bs-ppo-app
     networks:
