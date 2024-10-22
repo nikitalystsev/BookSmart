@@ -30,8 +30,8 @@ func (bsts *RatingServiceTestsSuite) BeforeEach(t provider.T) {
 }
 
 /*
-Лондонский вариант
-*/
+ * Лондонский вариант
+ */
 func (bsts *RatingServiceTestsSuite) Test_Create_Success(t provider.T) {
 	var (
 		ratingService intf.IRatingService

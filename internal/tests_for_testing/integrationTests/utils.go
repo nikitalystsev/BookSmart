@@ -1,15 +1,18 @@
-package integrationTest
+package integrationTests
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
+	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/docker/docker/api/types/container"
 	"github.com/golang-migrate/migrate/v4"
 	migrations "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
+	"github.com/nikitalystsev/BookSmart-services/pkg/transact"
 	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
 	testpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -17,7 +20,9 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	"io"
 	"log"
+	"net/url"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -60,6 +65,10 @@ func GetRedisClientForIntegrationTests(container *testredis.RedisContainer) (*re
 func GetPostgresForIntegrationTests() (*testpostgres.PostgresContainer, error) {
 	ctx := context.Background()
 
+	if err := godotenv.Load("../../../.env"); err != nil {
+		log.Print("No .env file found")
+	}
+
 	postgresContainer, err := testpostgres.Run(
 		ctx,
 		"postgres:latest",
@@ -73,7 +82,7 @@ func GetPostgresForIntegrationTests() (*testpostgres.PostgresContainer, error) {
 		),
 		testcontainers.WithHostConfigModifier(func(hostConfig *container.HostConfig) {
 			hostConfig.Binds = []string{
-				"/c/Users/nikitalystsev/Documents/bmstu/ppo/BookSmart/data/mydatasets:/data",
+				os.Getenv("DB_DATASETS_PATH_FOR_TESTS") + ":/data",
 			}
 		}),
 		testcontainers.WithLogger(log.New(io.Discard, "", 0)),
@@ -104,19 +113,18 @@ func ApplyMigrations(container *testpostgres.PostgresContainer) (*sqlx.DB, error
 	}
 
 	ctx := context.Background()
-
-	port, err := container.MappedPort(ctx, "5432/tcp")
+	genericConnStr, err := getGenericPostgresConnectionString(ctx, container)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = createDBMigration(port.Port()); err != nil {
+	if err = createDBMigration(genericConnStr); err != nil {
 		return nil, err
 	}
-	if err = createSchemaMigration(port.Port()); err != nil {
+	if err = createSchemaMigration(genericConnStr); err != nil {
 		return nil, err
 	}
-	db, err := fillDBMigration(port.Port())
+	db, err := fillDBMigration(genericConnStr)
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +132,8 @@ func ApplyMigrations(container *testpostgres.PostgresContainer) (*sqlx.DB, error
 	return db, nil
 }
 
-func createDBMigration(port string) error {
-	dsn := fmt.Sprintf("postgres://postgres:postgres@0.0.0.0:%s/?sslmode=disable", port)
+func createDBMigration(genericConnStr string) error {
+	dsn := fmt.Sprintf("%s?sslmode=disable", genericConnStr)
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
@@ -137,8 +145,13 @@ func createDBMigration(port string) error {
 		return err
 	}
 
+	genericMigrationPath, err := getGenericPostgresMigrationPath()
+	if err != nil {
+		return err
+	}
+
 	m, err := migrate.NewWithDatabaseInstance(
-		os.Getenv("POSTGRES_CREATE_TEST_DB_MIGRATION_PATH"),
+		"file://"+genericMigrationPath+"/create_db",
 		"postgres", driver,
 	)
 	if err != nil {
@@ -153,8 +166,8 @@ func createDBMigration(port string) error {
 	return nil
 }
 
-func createSchemaMigration(port string) error {
-	dsn := fmt.Sprintf("postgres://postgres:postgres@0.0.0.0:%s/booksmart?sslmode=disable", port)
+func createSchemaMigration(genericConnStr string) error {
+	dsn := fmt.Sprintf("%sbooksmart?sslmode=disable", genericConnStr)
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
@@ -166,10 +179,16 @@ func createSchemaMigration(port string) error {
 		return err
 	}
 
+	genericMigrationPath, err := getGenericPostgresMigrationPath()
+	if err != nil {
+		return err
+	}
+
 	m, err := migrate.NewWithDatabaseInstance(
-		os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_MIGRATION_PATH"),
+		"file://"+genericMigrationPath+"/create_schema",
 		"postgres", driver,
 	)
+
 	if err != nil {
 		return err
 	}
@@ -182,8 +201,8 @@ func createSchemaMigration(port string) error {
 	return nil
 }
 
-func fillDBMigration(port string) (*sqlx.DB, error) {
-	dsn := fmt.Sprintf("postgres://postgres:postgres@0.0.0.0:%s/booksmart?sslmode=disable&search_path=bs", port)
+func fillDBMigration(genericConnStr string) (*sqlx.DB, error) {
+	dsn := fmt.Sprintf("%sbooksmart?sslmode=disable&search_path=bs", genericConnStr)
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
@@ -195,8 +214,13 @@ func fillDBMigration(port string) (*sqlx.DB, error) {
 		return nil, err
 	}
 
+	genericMigrationPath, err := getGenericPostgresMigrationPath()
+	if err != nil {
+		return nil, err
+	}
+
 	m, err := migrate.NewWithDatabaseInstance(
-		os.Getenv("POSTGRES_FILL_TEST_DB_MIGRATION_PATH"),
+		"file://"+genericMigrationPath+"/fill_db",
 		"postgres", driver,
 	)
 	if err != nil {
@@ -212,7 +236,6 @@ func fillDBMigration(port string) (*sqlx.DB, error) {
 }
 
 func GetPostgresClientForIntegrationTests(url string) (*sqlx.DB, error) {
-	fmt.Printf("url: %s\n", url)
 	db, err := sqlx.Open("postgres", url)
 	if err != nil {
 		return nil, err
@@ -224,4 +247,71 @@ func GetPostgresClientForIntegrationTests(url string) (*sqlx.DB, error) {
 	}
 
 	return db, nil
+}
+
+func parsePostgresURL(postgresURL string) (string, error) {
+	parsedURL, err := url.Parse(postgresURL)
+	if err != nil {
+		return "", err
+	}
+
+	password, isSet := parsedURL.User.Password()
+	if !isSet {
+		return "", errors.New("postgres URL does not contain a password")
+	}
+
+	result := fmt.Sprintf(
+		"%s://%s:%s@%s:%s/",
+		parsedURL.Scheme,
+		parsedURL.User.Username(),
+		password,
+		parsedURL.Hostname(),
+		parsedURL.Port(),
+	)
+
+	return result, nil
+}
+
+func getGenericPostgresConnectionString(ctx context.Context, container *testpostgres.PostgresContainer) (string, error) {
+	connectionString, err := container.ConnectionString(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	genericConnectionString, err := parsePostgresURL(connectionString)
+	if err != nil {
+		return "", err
+	}
+
+	return genericConnectionString, nil
+}
+
+func getGenericPostgresMigrationPath() (string, error) {
+	relativePath := "../../../components/component-repo-postgres/impl/migrations"
+	absolutePath, err := filepath.Abs(relativePath)
+
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.ToSlash(absolutePath), nil
+}
+
+func isUnitTestsFailed() bool {
+	if os.Getenv("UNIT_TESTS_IS_SUCCESS") == "1" {
+		return false
+	}
+
+	return true
+}
+
+func getTransactionManagerForIntegrationTests(db *sqlx.DB) (transact.ITransactionManager, error) {
+	trm, err := manager.New(trmsqlx.NewDefaultFactory(db))
+	if err != nil {
+		return nil, err
+	}
+
+	transactionManager := transact.NewTransactionManager(trm)
+
+	return transactionManager, err
 }

@@ -27,7 +27,7 @@ func NewBookParamsDTOBuilder() *BookParamsDTOBuilder {
 		PublishingYear: 2021,
 		Language:       "english",
 		AgeLimit:       0,
-		Limit:          1,
+		Limit:          5000,
 		Offset:         0,
 	}
 }
@@ -43,6 +43,8 @@ func (builder *BookParamsDTOBuilder) Build() *dto.BookParamsDTO {
 		PublishingYear: builder.PublishingYear,
 		Language:       builder.Language,
 		AgeLimit:       builder.AgeLimit,
+		Limit:          builder.Limit,
+		Offset:         builder.Offset,
 	}
 }
 

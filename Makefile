@@ -40,11 +40,9 @@ get-swagger:
 #
 
 # тесты тестирования
-utest-srv:
-	export ALLURE_OUTPUT_PATH=$(ALLURE_OUTPUT_PATH) && go test -shuffle on ./internal/tests_for_testing/unitTests/
-	export ALLURE_OUTPUT_PATH=$(ALLURE_OUTPUT_PATH) && go test -shuffle on ./internal/tests_for_testing/integrationTests/
-#	cp ./internal/tests_for_testing/unitTests/environment.properties ./internal/tests_for_testing/unitTests/allure-results
-#	cd ./internal/tests_for_testing/unitTests/ && allure serve
+tests:
+	./run_tests.sh
+
 
 migrate-up:
 	migrate -database '$(POSTGRES_CREATE_DB_URL)' -path $(POSTGRES_CREATE_DB_MIGRATION_PATH) up

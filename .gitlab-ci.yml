@@ -1,90 +1,83 @@
-services:
-  - name: docker:dind
-    command: ["--tls=false"]
-
 variables:
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_DRIVER: overlay2
   TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
-  ALLURE_OUTPUT_PATH: "/builds/mta21u184/sigma-music-test"
 
 stages:
-  - report history
-  - unit-test
-  - integration-test
-  - e2e-test
-  - report
+  - unit_tests
+  - integration_tests
+  - e2e_test
+  - allure_report_history
+  - allure_report
 
-collect_report_history:
-  stage: report history
+run_unit_tests:
+  stage: unit_tests
+  image: golang:latest
   script:
-    - echo $CI_COMMIT_BRANCH
-    - echo $REPORT_TOKEN
-    - 'curl --header "PRIVATE-TOKEN: $REPORT_TOKEN" --location "https://git.iu7.bmstu.ru/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_BRANCH/download?job=report" --output artifacts.zip'
-    - unzip artifacts.zip
-    - mkdir -p ./allure-results
-    - cp -r ./allure-report/history ./allure-results
+    - echo UNIT_TESTS_IS_SUCCESS=0 | tee >> $GITLAB_ENV
+    - export UNIT_TESTS_IS_SUCCESS=0
+    - export ALLURE_OUTPUT_PATH=$CI_PROJECT_DIR/internal/tests_for_testing
+    - go test -v -shuffle on ./internal/tests_for_testing/unitTests/
+    - echo UNIT_TESTS_IS_SUCCESS=1 | tee >> $GITLAB_ENV
+  allow_failure: true # Тесты упали -- не останавливаем работу, т. к. отчет должен создаться
   artifacts:
+    when: always # Всегда сохраняем артефакты
     paths:
-      - ./allure-results
+      - ./internal/tests_for_testing/allure-results
     expire_in: 1 day
-  rules:
-    - when: always
-  allow_failure: true
 
-unit:
-  stage: unit-test
-  image: golang:1.22
+run_integration_tests:
+  stage: integration_tests
+  image: golang:latest
   script:
-    - echo UNIT_SUCCESS=0 | tee >> $GITLAB_ENV
-    - export UNIT_SUCCESS=0
-    - printenv
-    - go test -shuffle on ./internal/service/test/unit ./internal/adapters/repository/postgres/test/ -v --parallel 4
-    - echo UNIT_SUCCESS=1 | tee >> $GITLAB_ENV
-  artifacts:
-    when: always
-    paths:
-      - allure-results
-  rules:
-    - when: always
+    - echo $UNIT_TESTS_IS_SUCCESS
+    - echo INTEGRATION_TESTS_IS_SUCCESS=0 | tee >> $GITLAB_ENV
+    - export INTEGRATION_TESTS_IS_SUCCESS=0
+    - export ALLURE_OUTPUT_PATH=$CI_PROJECT_DIR/internal/tests_for_testing
+    - go test -v -shuffle on ./internal/tests_for_testing/integrationTests/ --parallel 2
+    - echo INTEGRATION_TESTS_IS_SUCCESS=1 | tee >> $GITLAB_ENV
   allow_failure: true
+  artifacts:
+    when: always # Всегда сохраняем артефакты
+    paths:
+      - ./internal/tests_for_testing/allure-results
+    expire_in: 1 day
 
-integration:
-  stage: integration-test
-  image: golang:1.22
+run_e2e_test:
+  stage: e2e_test
+  image: golang:latest
   script:
-    - echo INTEGRATION_SUCCESS=0 | tee >> $GITLAB_ENV
-    - export INTEGRATION_SUCCESS=0
-    - printenv
-    - go test -shuffle on ./internal/service/test/integration/ -v --parallel 4
-    - echo INTEGRATION_SUCCESS=1 | tee >> $GITLAB_ENV
+    - export ALLURE_OUTPUT_PATH=$CI_PROJECT_DIR/internal/tests_for_testing
+    - go test -v -shuffle on ./internal/tests_for_testing/e2eTest/
+  allow_failure: true
+  artifacts:
+    when: always # Всегда сохраняем артефакты
+    paths:
+      - ./internal/tests_for_testing/allure-results
+    expire_in: 1 day
+
+collect_allure_report_history:
+  stage: allure_report_history
+  image: storytel/alpine-bash-curl
+  script:
+    - 'curl --location --output artifacts.zip "https://git.iu7.bmstu.ru/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_BRANCH/download?job=create_allure_report&job_token=$CI_JOB_TOKEN"'
+    - apk add unzip
+    - unzip artifacts.zip
+    - mkdir -p ./internal/tests_for_testing/allure-results
+    - cp -r ./internal/tests_for_testing/allure-report/history ./internal/tests_for_testing/allure-results
+  allow_failure: true # Так как при первом запуске пайплайна истории нет, это позволит нам избежать падения пайплайна. В дальнейшем эту строчку можно спокойно удалить.
   artifacts:
     when: always
     paths:
-      - allure-results
-  rules:
-    - when: always
-  allow_failure: true
+      - ./internal/tests_for_testing/allure-results
+    expire_in: 1 day
 
-e2e:
-  stage: e2e-test
-  image: golang:1.22
-  script: go test -shuffle on ./internal/service/test/e2e/ -v
+create_allure_report:
+  stage: allure_report
+  image: frankescobar/allure-docker-service:latest # Образ с allure. В нем мы будем генерировать отчет.
+  script:
+    - cd ./internal/tests_for_testing/ && allure generate
   artifacts:
     when: always
     paths:
-      - allure-results
-  rules:
-    - when: always
-  allow_failure: true
-
-report:
-  stage: report
-  image: frankescobar/allure-docker-service:latest
-  script: allure generate allure-results -o allure-report
-  artifacts:
-    paths:
-      - allure-report
-  rules:
-    - when: always
-  allow_failure: true
+      - ./internal/tests_for_testing/allure-results
+      - ./internal/tests_for_testing/allure-report
+    expire_in: 1 day

@@ -30,3 +30,4 @@ venv/
 .data
 components/
 internal/tests_for_testing/allure-results/
+internal/tests_for_testing/allure-report/

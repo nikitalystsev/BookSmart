@@ -1,4 +1,4 @@
-package integrationTest
+package integrationTests
 
 import (
 	"context"
@@ -6,8 +6,10 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	testpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
+	testredis "github.com/testcontainers/testcontainers-go/modules/redis"
 	"testing"
 )
 
@@ -16,7 +18,9 @@ type IntegrationTestSuite struct {
 
 	logger           *logrus.Entry
 	postgreContainer *testpostgres.PostgresContainer
+	redisContainer   *testredis.RedisContainer
 	db               *sqlx.DB
+	client           *redis.Client
 }
 
 func (its *IntegrationTestSuite) BeforeAll(t provider.T) {
@@ -25,32 +29,38 @@ func (its *IntegrationTestSuite) BeforeAll(t provider.T) {
 	if its.postgreContainer, err = GetPostgresForIntegrationTests(); err != nil {
 		t.Fatal(err)
 	}
+
+	if its.redisContainer, err = GetRedisForIntegrationTests(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func (its *IntegrationTestSuite) BeforeEach(t provider.T) {
-	port, err := its.postgreContainer.MappedPort(context.Background(), "5432/tcp")
+	connectionString, err := getGenericPostgresConnectionString(context.Background(), its.postgreContainer)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	url := fmt.Sprintf(
-		"postgres://postgres:postgres@0.0.0.0:%s/booksmart?sslmode=disable&search_path=bs",
-		port.Port(),
+		"%sbooksmart?sslmode=disable&search_path=bs",
+		connectionString,
 	)
 
 	if its.db, err = GetPostgresClientForIntegrationTests(url); err != nil {
 		t.Fatal(err)
 	}
-}
 
-func (its *IntegrationTestSuite) AfterEach(t provider.T) {
-	if err := its.db.Close(); err != nil {
-		t.Fatalf("failed to close connection to postgres container: %s", err)
+	if its.client, err = GetRedisClientForIntegrationTests(its.redisContainer); err != nil {
+		t.Fatal(err)
 	}
 }
 
 func (its *IntegrationTestSuite) AfterAll(t provider.T) {
 	if err := its.postgreContainer.Terminate(context.Background()); err != nil {
+		t.Fatalf("failed to terminate container: %s", err)
+	}
+
+	if err := its.redisContainer.Terminate(context.Background()); err != nil {
 		t.Fatalf("failed to terminate container: %s", err)
 	}
 }

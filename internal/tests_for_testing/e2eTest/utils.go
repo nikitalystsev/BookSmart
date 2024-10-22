@@ -1,15 +1,18 @@
-package unitTests
+package e2eTest
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
+	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
 	"github.com/docker/docker/api/types/container"
 	"github.com/golang-migrate/migrate/v4"
 	migrations "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
+	"github.com/nikitalystsev/BookSmart-services/pkg/transact"
 	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
 	testpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -23,7 +26,7 @@ import (
 	"time"
 )
 
-func GetRedisForClassicUnitTests() (*testredis.RedisContainer, error) {
+func GetRedisForE2ETests() (*testredis.RedisContainer, error) {
 	ctx := context.Background()
 
 	redisContainer, err := testredis.Run(
@@ -40,7 +43,7 @@ func GetRedisForClassicUnitTests() (*testredis.RedisContainer, error) {
 	return redisContainer, nil
 }
 
-func GetRedisClientForClassicUnitTests(container *testredis.RedisContainer) (*redis.Client, error) {
+func GetRedisClientForE2ETests(container *testredis.RedisContainer) (*redis.Client, error) {
 	ctx := context.Background()
 	uri, err := container.ConnectionString(ctx)
 	if err != nil {
@@ -59,14 +62,12 @@ func GetRedisClientForClassicUnitTests(container *testredis.RedisContainer) (*re
 	return client, nil
 }
 
-func GetPostgresForClassicUnitTests() (*testpostgres.PostgresContainer, error) {
+func GetPostgresForE2ETests() (*testpostgres.PostgresContainer, error) {
 	ctx := context.Background()
 
 	if err := godotenv.Load("../../../.env"); err != nil {
 		log.Print("No .env file found")
 	}
-
-	fmt.Printf("os db path: %s\n", os.Getenv("DB_DATASETS_PATH_FOR_TESTS"))
 
 	postgresContainer, err := testpostgres.Run(
 		ctx,
@@ -92,6 +93,17 @@ func GetPostgresForClassicUnitTests() (*testpostgres.PostgresContainer, error) {
 		return nil, err
 	}
 
+	db, err := ApplyMigrations(postgresContainer)
+	if err != nil {
+		fmt.Printf("Failed to apply migrations: %v\n", err)
+		return nil, err
+	}
+
+	if err = db.Close(); err != nil {
+		fmt.Printf("Failed to close postgres container: %v\n", err)
+		return nil, err
+	}
+
 	return postgresContainer, err
 }
 
@@ -100,7 +112,8 @@ func ApplyMigrations(container *testpostgres.PostgresContainer) (*sqlx.DB, error
 		log.Print("No .env file found")
 	}
 
-	genericConnStr, err := getGenericPostgresConnectionString(context.Background(), container)
+	ctx := context.Background()
+	genericConnStr, err := getGenericPostgresConnectionString(ctx, container)
 	if err != nil {
 		return nil, err
 	}
@@ -222,6 +235,54 @@ func fillDBMigration(genericConnStr string) (*sqlx.DB, error) {
 	return db, err
 }
 
+func clearDBMigration(genericConnStr string) error {
+	dsn := fmt.Sprintf("%sbooksmart?sslmode=disable&search_path=bs", genericConnStr)
+
+	db, err := sqlx.Open("postgres", dsn)
+	if err != nil {
+		return err
+	}
+
+	driver, err := migrations.WithInstance(db.DB, &migrations.Config{})
+	if err != nil {
+		return err
+	}
+
+	genericMigrationPath, err := getGenericPostgresMigrationPath()
+	if err != nil {
+		return err
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://"+genericMigrationPath+"/fill_db",
+		"postgres", driver,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = m.Down()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	return err
+}
+
+func GetPostgresClientForE2ETests(url string) (*sqlx.DB, error) {
+	db, err := sqlx.Open("postgres", url)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
 func parsePostgresURL(postgresURL string) (string, error) {
 	parsedURL, err := url.Parse(postgresURL)
 	if err != nil {
@@ -268,4 +329,23 @@ func getGenericPostgresMigrationPath() (string, error) {
 	}
 
 	return filepath.ToSlash(absolutePath), nil
+}
+
+func isIntegrationTestsFailed() bool {
+	if os.Getenv("INTEGRATION_TESTS_IS_SUCCESS") == "1" {
+		return false
+	}
+
+	return true
+}
+
+func getTransactionManagerForE2ETests(db *sqlx.DB) (transact.ITransactionManager, error) {
+	trm, err := manager.New(trmsqlx.NewDefaultFactory(db))
+	if err != nil {
+		return nil, err
+	}
+
+	transactionManager := transact.NewTransactionManager(trm)
+
+	return transactionManager, err
 }

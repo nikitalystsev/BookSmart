@@ -442,7 +442,7 @@ func (brts *ReservationRepoTestsSuite) Test_GetExpiredByReaderID_Success(t provi
 				reservation.IssueDate, reservation.ReturnDate, reservation.State)
 
 		mock.ExpectQuery(`select (.+) from bs.reservation_view where (.+)`).
-			WithArgs(reader.ID, time.Now()).WillReturnRows(rows)
+			WithArgs(reader.ID, time.Now().Format("2006-01-02")).WillReturnRows(rows)
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
@@ -477,7 +477,7 @@ func (brts *ReservationRepoTestsSuite) Test_GetExpiredByReaderID_ErrorExecutionQ
 		reservationRepo = implRepo.NewReservationRepo(db, logging.GetLoggerForTests())
 
 		mock.ExpectQuery(`select (.+) from bs.reservation_view where (.+)`).
-			WithArgs(reader.ID, time.Now()).WillReturnError(errors.New("select error"))
+			WithArgs(reader.ID, time.Now().Format("2006-01-02")).WillReturnError(errors.New("select error"))
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
