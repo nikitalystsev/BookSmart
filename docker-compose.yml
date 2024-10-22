@@ -1,22 +1,39 @@
+x-bs-ppo-app-common: &bs-ppo-app-common
+  volumes:
+    - ./.logs/:/usr/local/src/logs
+    - ./.env:/usr/local/src/.env
+    - ./configs/config.yml:/usr/local/src/configs/config.yml
+  depends_on:
+    bs-ppo-postgres:
+      condition: service_healthy
+    bs-ppo-redis:
+      condition: service_started
+    bs-ppo-mongo:
+      condition: service_started
+  networks:
+    - bs-ppo
+
 services:
   bs-ppo-app:
+    <<: *bs-ppo-app-common
     image: booksmart:local
     container_name: bs-ppo-app
     ports:
       - "${APP_PORT}:8000"
-    volumes:
-      - ./.logs/:/usr/local/src/logs
-      - ./.env:/usr/local/src/.env
-      - ./configs/config.yml:/usr/local/src/configs/config.yml
-    depends_on:
-      bs-ppo-postgres:
-        condition: service_healthy
-      bs-ppo-redis:
-        condition: service_started
-      bs-ppo-mongo:
-        condition: service_started
-    networks:
-      - bs-ppo
+
+  bs-ppo-app2:
+    <<: *bs-ppo-app-common
+    image: booksmart:local
+    container_name: bs-ppo-app2
+    ports:
+      - "${APP_PORT_2}:8000"
+
+  bs-ppo-app3:
+    <<: *bs-ppo-app-common
+    image: booksmart:local
+    container_name: bs-ppo-app3
+    ports:
+      - "${APP_PORT_3}:8000"
 
   bs-ppo-postgres:
     image: postgres:latest
