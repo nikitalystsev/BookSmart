@@ -12,7 +12,6 @@ x-bs-ppo-app-common: &bs-ppo-app-common
 #      condition: service_started
 
 x-bs-ppo-postgres-common: &bs-ppo-postgres-common
-  image: postgres:latest
   environment:
     POSTGRES_USER: ${POSTGRES_USER}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -53,6 +52,7 @@ services:
 
   bs-ppo-postgres:
     <<: *bs-ppo-postgres-common
+    image: postgres:latest
     container_name: bs-ppo-postgres
     ports:
       - "${POSTGRES_PORT}:5432"
@@ -64,6 +64,7 @@ services:
 
   bs-ppo-postgres2: # slave
     <<: *bs-ppo-postgres-common
+    image: postgres:latest
     container_name: bs-ppo-postgres2
     ports:
       - "${POSTGRES_PORT_2}:5432"
