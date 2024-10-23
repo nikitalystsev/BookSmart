@@ -8,10 +8,20 @@ x-bs-ppo-app-common: &bs-ppo-app-common
       condition: service_healthy
     bs-ppo-redis:
       condition: service_started
-    bs-ppo-mongo:
-      condition: service_started
-  networks:
-    - bs-ppo
+#    bs-ppo-mongo:
+#      condition: service_started
+
+x-bs-ppo-postgres-common: &bs-ppo-postgres-common
+  image: postgres:latest
+  environment:
+    POSTGRES_USER: ${POSTGRES_USER}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    POSTGRES_DB: ${POSTGRES_DB}
+  healthcheck:
+    test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+    interval: 5s
+    timeout: 5s
+    retries: 5
 
 services:
   bs-ppo-app:
@@ -20,6 +30,8 @@ services:
     container_name: bs-ppo-app
     ports:
       - "${APP_PORT}:8000"
+    networks:
+      - bs-ppo
 
   bs-ppo-app2:
     <<: *bs-ppo-app-common
@@ -27,6 +39,8 @@ services:
     container_name: bs-ppo-app2
     ports:
       - "${APP_PORT_2}:8000"
+    networks:
+      - bs-ppo
 
   bs-ppo-app3:
     <<: *bs-ppo-app-common
@@ -34,24 +48,28 @@ services:
     container_name: bs-ppo-app3
     ports:
       - "${APP_PORT_3}:8000"
+    networks:
+      - bs-ppo
 
   bs-ppo-postgres:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    <<: *bs-ppo-postgres-common
     container_name: bs-ppo-postgres
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - ./.data/postgres:/var/lib/postgresql/data
       - ${DB_DATASETS_PATH}:/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    networks:
+      - bs-ppo
+
+  bs-ppo-postgres2: # slave
+    <<: *bs-ppo-postgres-common
+    container_name: bs-ppo-postgres2
+    ports:
+      - "${POSTGRES_PORT_2}:5432"
+    volumes:
+      - ./.data/postgres2:/var/lib/postgresql/data
+      - ${DB_DATASETS_PATH}:/data
     networks:
       - bs-ppo
 
@@ -110,7 +128,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-#      - ./components/component-ui/templates:/usr/share/nginx/html
+      #      - ./components/component-ui/templates:/usr/share/nginx/html
       - ./components/component-ui/static:/usr/share/nginx/static
       - ./README.md:/usr/share/nginx/documentation/README.md
       - ./docs/diagrams:/usr/share/nginx/documentation/docs/diagrams
