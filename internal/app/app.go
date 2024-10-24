@@ -27,6 +27,10 @@ func Run(configDir string) {
 		panic(err)
 	}
 
+	fmt.Printf("postgres db name: %s\n", cfg.Postgres.DBName)
+	fmt.Printf("postgres db user: %s\n", cfg.Postgres.Username)
+	fmt.Printf("postgres db password: %s\n", cfg.Postgres.Password)
+
 	logger, err := logging.NewLogger()
 	if err != nil {
 		panic(err)

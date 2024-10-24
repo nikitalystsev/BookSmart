@@ -27,6 +27,10 @@ services:
     <<: *bs-ppo-app-common
     image: booksmart:local
     container_name: bs-ppo-app
+    environment:
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_DB_USER: ${POSTGRES_DB_ADMIN}
+      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_ADMIN_PASSWORD}
     ports:
       - "${APP_PORT}:8000"
     networks:
@@ -36,6 +40,10 @@ services:
     <<: *bs-ppo-app-common
     image: booksmart:local
     container_name: bs-ppo-app2
+    environment:
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_DB_USER: ${POSTGRES_DB_READER}
+      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_READER_PASSWORD}
     ports:
       - "${APP_PORT_2}:8000"
     networks:
@@ -45,6 +53,10 @@ services:
     <<: *bs-ppo-app-common
     image: booksmart:local
     container_name: bs-ppo-app3
+    environment:
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_DB_USER: ${POSTGRES_DB_READER}
+      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_READER_PASSWORD}
     ports:
       - "${APP_PORT_3}:8000"
     networks:
