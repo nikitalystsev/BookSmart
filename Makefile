@@ -22,7 +22,7 @@ stop-app:
 	docker stop bs-ppo-app bs-ppo-app2 bs-ppo-app3 bs-ppo-postgres bs-ppo-postgres2 bs-ppo-redis bs-ppo-nginx bs-ppo-pgadmin
 
 rerun-app:
-	make stop-app && make run-app
+	make stop-app && docker rm bs-ppo-nginx && make run-app
 
 get-swagger:
 	swag init -g cmd/app/main.go -o ./docs_swagger
