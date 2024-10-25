@@ -12,14 +12,14 @@ run: build-ui run-app
 build-ui:
 	go build -o techUI cmd/techUI/main.go
 
-run-app: build-app
-	docker compose up -d bs-ppo-app bs-ppo-app2 bs-ppo-app3 bs-ppo-postgres bs-ppo-postgres2 bs-ppo-redis bs-ppo-nginx bs-ppo-pgadmin
+run-app: build-all
+	docker compose up -d bs-ppo-app bs-ppo-app2 bs-ppo-app3 bs-ppo-app-mirror1 bs-ppo-postgres bs-ppo-postgres2 bs-ppo-redis bs-ppo-nginx bs-ppo-pgadmin
 
-build-app:
-	docker build -t booksmart:local .
+build-all:
+	docker compose build
 
 stop-app:
-	docker stop bs-ppo-app bs-ppo-app2 bs-ppo-app3 bs-ppo-postgres bs-ppo-postgres2 bs-ppo-redis bs-ppo-nginx bs-ppo-pgadmin
+	docker stop bs-ppo-app bs-ppo-app2 bs-ppo-app3 bs-ppo-app-mirror1 bs-ppo-postgres bs-ppo-postgres2 bs-ppo-redis bs-ppo-nginx bs-ppo-pgadmin
 
 rerun-app:
 	make stop-app && docker rm bs-ppo-nginx && make run-app
