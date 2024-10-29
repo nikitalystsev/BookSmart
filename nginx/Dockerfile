@@ -1,3 +1,5 @@
+# откуда взял содержимое -- https://github.com/max4com/docker-nginx-with-modules/tree/master
+
 ARG nginx_version=latest
 FROM nginx:${nginx_version} AS build
 

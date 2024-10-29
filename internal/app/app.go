@@ -30,6 +30,7 @@ func Run(configDir string) {
 	fmt.Printf("postgres db name: %s\n", cfg.Postgres.DBName)
 	fmt.Printf("postgres db user: %s\n", cfg.Postgres.Username)
 	fmt.Printf("postgres db password: %s\n", cfg.Postgres.Password)
+	fmt.Printf("postgres host: %s\n", cfg.Postgres.Host)
 
 	logger, err := logging.NewLogger()
 	if err != nil {

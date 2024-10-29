@@ -13,16 +13,18 @@ build-ui:
 	go build -o techUI cmd/techUI/main.go
 
 run-app: build-all
-	docker compose up -d bs-ppo-app bs-ppo-app2 bs-ppo-app3 bs-ppo-app-mirror1 bs-ppo-postgres bs-ppo-postgres2 bs-ppo-redis bs-ppo-nginx bs-ppo-pgadmin
+	docker compose up -d bs-app-main bs-app-inst1 bs-app-inst2 bs-app-mirror1 \
+ 		bs-postgres-master bs-postgres-slave bs-redis bs-nginx bs-pgadmin
 
 build-all:
 	docker compose build
 
 stop-app:
-	docker stop bs-ppo-app bs-ppo-app2 bs-ppo-app3 bs-ppo-app-mirror1 bs-ppo-postgres bs-ppo-postgres2 bs-ppo-redis bs-ppo-nginx bs-ppo-pgadmin
+	docker stop bs-app-main bs-app-inst1 bs-app-inst2 bs-app-mirror1 \
+		bs-postgres-master bs-postgres-slave bs-redis bs-nginx bs-pgadmin
 
 rerun-app:
-	make stop-app && docker rm bs-ppo-nginx && make run-app
+	make stop-app && docker rm bs-nginx && make run-app
 
 get-swagger:
 	swag init -g cmd/app/main.go -o ./docs_swagger
@@ -35,7 +37,7 @@ get-swagger:
 #	go tests_for_testing -v ./internal/tests/unitTests/repositoryTests/
 #
 #itest:
-#	docker compose up -d bs-ppo-postgres-tests_for_testing bs-ppo-redis-tests_for_testing
+#	docker compose up -d bs-postgres-tests_for_testing bs-redis-tests_for_testing
 #	go tests_for_testing -v ./internal/tests/integrationTests
 #
 
@@ -45,14 +47,10 @@ tests:
 
 
 migrate-up:
-	migrate -database '$(POSTGRES_CREATE_DB_URL)' -path $(POSTGRES_CREATE_DB_MIGRATION_PATH) up
-	migrate -database '$(POSTGRES_CREATE_SCHEMA_URL)' -path $(POSTGRES_CREATE_SCHEMA_MIGRATION_PATH) up
-	migrate -database '$(POSTGRES_FILL_DB_URL)' -path $(POSTGRES_FILL_DB_MIGRATION_PATH) up
+	./migrate.sh up
 
 migrate-down:
-	migrate -database '$(POSTGRES_FILL_DB_URL)' -path $(POSTGRES_FILL_DB_MIGRATION_PATH) down
-	migrate -database '$(POSTGRES_CREATE_SCHEMA_URL)' -path $(POSTGRES_CREATE_SCHEMA_MIGRATION_PATH) down
-	migrate -database '$(POSTGRES_CREATE_DB_URL)' -path $(POSTGRES_CREATE_DB_MIGRATION_PATH) down
+	./migrate.sh down
 
 mmigrate-up:
 	cd ./components/component-repo-mongo/impl/migrations && migrate-mongo up

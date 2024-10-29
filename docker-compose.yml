@@ -1,4 +1,4 @@
-x-bs-ppo-app-common: &bs-ppo-app-common
+x-bs-app-common: &bs-app-common
   build:
     context: .
     dockerfile: Dockerfile
@@ -6,19 +6,8 @@ x-bs-ppo-app-common: &bs-ppo-app-common
     - ./.logs/app/:/usr/local/src/logs
     - ./.env:/usr/local/src/.env
     - ./configs/config.yml:/usr/local/src/configs/config.yml
-  depends_on:
-    bs-ppo-postgres:
-      condition: service_healthy
-    bs-ppo-redis:
-      condition: service_started
-#    bs-ppo-mongo:
-#      condition: service_started
 
-x-bs-ppo-postgres-common: &bs-ppo-postgres-common
-  environment:
-    POSTGRES_USER: ${POSTGRES_USER}
-    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    POSTGRES_DB: ${POSTGRES_DB}
+x-bs-postgres-common: &bs-postgres-common
   healthcheck:
     test: [ "CMD-SHELL", "pg_isready -U postgres" ]
     interval: 5s
@@ -26,96 +15,134 @@ x-bs-ppo-postgres-common: &bs-ppo-postgres-common
     retries: 5
 
 services:
-  bs-ppo-app:
-    <<: *bs-ppo-app-common
+  bs-app-main:
+    <<: *bs-app-common
     image: booksmart:local
-    container_name: bs-ppo-app
+    container_name: bs-app-main
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
       POSTGRES_DB_USER: ${POSTGRES_DB_ADMIN}
       POSTGRES_DB_PASSWORD: ${POSTGRES_DB_ADMIN_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST_MASTER}
+    depends_on:
+      bs-postgres-master:
+        condition: service_healthy
+      bs-redis:
+        condition: service_started
     ports:
       - "${APP_PORT}:8000"
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-app2:
-    <<: *bs-ppo-app-common
+  bs-app-inst1:
+    <<: *bs-app-common
     image: booksmart:local
-    container_name: bs-ppo-app2
+    container_name: bs-app-inst1
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
       POSTGRES_DB_USER: ${POSTGRES_DB_READER}
       POSTGRES_DB_PASSWORD: ${POSTGRES_DB_READER_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST_SLAVE}
+    depends_on:
+      bs-postgres-slave:
+        condition: service_healthy
+      bs-redis:
+        condition: service_started
     ports:
       - "${APP_PORT_2}:8000"
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-app3:
-    <<: *bs-ppo-app-common
+  bs-app-inst2:
+    <<: *bs-app-common
     image: booksmart:local
-    container_name: bs-ppo-app3
+    container_name: bs-app-inst2
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
       POSTGRES_DB_USER: ${POSTGRES_DB_READER}
       POSTGRES_DB_PASSWORD: ${POSTGRES_DB_READER_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST_SLAVE}
+    depends_on:
+      bs-postgres-slave:
+        condition: service_healthy
+      bs-redis:
+        condition: service_started
     ports:
       - "${APP_PORT_3}:8000"
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-app-mirror1: # mirror1
-    <<: *bs-ppo-app-common
+  bs-app-mirror1: # mirror1
+    <<: *bs-app-common
     image: booksmart:local
-    container_name: bs-ppo-app-mirror1
+    container_name: bs-app-mirror1
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
       POSTGRES_DB_USER: ${POSTGRES_DB_ADMIN}
       POSTGRES_DB_PASSWORD: ${POSTGRES_DB_ADMIN_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST_MASTER}
+    depends_on:
+      bs-postgres-master:
+        condition: service_healthy
+      bs-redis:
+        condition: service_started
     ports:
       - "${APP_PORT_4}:8000"
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-postgres:
-    <<: *bs-ppo-postgres-common
-    image: postgres:latest
-    container_name: bs-ppo-postgres
+  bs-postgres-master:
+    <<: *bs-postgres-common
+    image: bitnami/postgresql:latest
+    container_name: bs-postgres-master
+    environment:
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_REPLICATION_USER: ${POSTGRES_REPL_USER}
+      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRES_REPL_PASSWORD}
+      POSTGRESQL_USERNAME: ${POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${POSTGRES_DB_NAME}
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - ./.data/postgres:/var/lib/postgresql/data
+      - ${POSTGRES_ALL_MIGRATIONS_PATH}:/docker-entrypoint-initdb.d/
       - ${DB_DATASETS_PATH}:/data
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-postgres2: # slave
-    <<: *bs-ppo-postgres-common
-    image: postgres:latest
-    container_name: bs-ppo-postgres2
+  bs-postgres-slave:
+    <<: *bs-postgres-common
+    image: bitnami/postgresql:latest
+    container_name: bs-postgres-slave
+    environment:
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_REPLICATION_USER: ${POSTGRES_REPL_USER}
+      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRES_REPL_PASSWORD}
+      POSTGRESQL_USERNAME: ${POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${POSTGRES_DB_NAME}
+      POSTGRESQL_MASTER_HOST: bs-postgres-master
     ports:
       - "${POSTGRES_PORT_2}:5432"
     volumes:
-      - ./.data/postgres2:/var/lib/postgresql/data
+      - ${POSTGRES_ALL_MIGRATIONS_PATH}:/docker-entrypoint-initdb.d/
       - ${DB_DATASETS_PATH}:/data
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-pgadmin:
-    container_name: bs-ppo-pgadmin
+  bs-pgadmin:
+    container_name: bs-pgadmin
     image: dpage/pgadmin4:latest
-    restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-mongo:
-    container_name: bs-ppo-mongo
+  bs-mongo:
+    container_name: bs-mongo
     image: mongo:latest
     ports:
       - "${MONGO_DB_PORT}:27017"
@@ -124,9 +151,9 @@ services:
       - ./.data/mongo/:/data/db/
     command: [ "--replSet", "dbrs-ppo", "--bind_ip_all" ]
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-redis:
+  bs-redis:
     image: redis:latest
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -142,22 +169,22 @@ services:
         echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
         redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
       '
-    container_name: bs-ppo-redis
+    container_name: bs-redis
     volumes:
       - ./.data/redis:/var/lib/redis
     ports:
       - "${REDIS_PORT}:6379"
     networks:
-      - bs-ppo
+      - bs-net
 
-  bs-ppo-nginx:
+  bs-nginx:
     image: nginx:local
     build:
       context: ./nginx
       dockerfile: Dockerfile
       args:
         modules: "https://github.com/openresty/headers-more-nginx-module.git,https://github.com/openresty/echo-nginx-module.git"
-    container_name: bs-ppo-nginx
+    container_name: bs-nginx
     ports:
       - "80:80"
     volumes:
@@ -171,10 +198,11 @@ services:
       - ./docs/legacy.html:/usr/share/nginx/legacy/legacy.html
       - ./docs/tech-ui.zip:/usr/share/nginx/legacy/tech-ui.zip
     depends_on:
-      - bs-ppo-app
+      - bs-app-main
     networks:
-      - bs-ppo
+      - bs-net
 
 networks:
-  bs-ppo:
+  bs-net:
+    name: bs-net
     driver: bridge
