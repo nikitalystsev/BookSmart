@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/refresh": {
+        "/api/v1/auth/refresh": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -67,7 +67,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/sign-in": {
+        "/api/v1/auth/sign-in": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -125,7 +125,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/sign-up": {
+        "/api/v1/auth/sign-up": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -174,7 +174,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/books": {
+        "/api/v1/books": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -281,7 +281,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/books/{id}": {
+        "/api/v1/books/{id}": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -331,7 +331,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/books/{id}/ratings": {
+        "/api/v1/books/{id}/ratings": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -461,7 +461,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/books/{id}/ratings/avg": {
+        "/api/v1/books/{id}/ratings/avg": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -511,7 +511,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/readers/{id}": {
+        "/api/v1/readers/{id}": {
             "get": {
                 "security": [
                     {
@@ -572,7 +572,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/readers/{id}/favorite_books": {
+        "/api/v1/readers/{id}/favorite_books": {
             "post": {
                 "security": [
                     {
@@ -651,7 +651,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/readers/{id}/lib_cards": {
+        "/api/v1/readers/{id}/lib_cards": {
             "get": {
                 "security": [
                     {
@@ -851,7 +851,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/readers/{id}/reservations": {
+        "/api/v1/readers/{id}/reservations": {
             "get": {
                 "security": [
                     {
@@ -998,7 +998,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/readers/{id}/reservations/{reservation_id}": {
+        "/api/v1/readers/{id}/reservations/{reservation_id}": {
             "get": {
                 "security": [
                     {

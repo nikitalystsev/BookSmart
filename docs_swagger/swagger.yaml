@@ -159,7 +159,7 @@ info:
   title: BookSmart API
   version: "1.0"
 paths:
-  /auth/refresh:
+  /api/v1/auth/refresh:
     post:
       consumes:
       - application/json
@@ -193,7 +193,7 @@ paths:
       summary: Метод обновления токенов
       tags:
       - auth
-  /auth/sign-in:
+  /api/v1/auth/sign-in:
     post:
       consumes:
       - application/json
@@ -231,7 +231,7 @@ paths:
       summary: Метод аутентификации пользователя
       tags:
       - auth
-  /auth/sign-up:
+  /api/v1/auth/sign-up:
     post:
       consumes:
       - application/json
@@ -263,7 +263,7 @@ paths:
       summary: Метод регистрации пользователя
       tags:
       - auth
-  /books:
+  /api/v1/books:
     get:
       consumes:
       - application/json
@@ -334,7 +334,7 @@ paths:
       summary: Метод получения книг по параметрам
       tags:
       - book
-  /books/{id}:
+  /api/v1/books/{id}:
     get:
       consumes:
       - application/json
@@ -367,7 +367,7 @@ paths:
       summary: Метод получения книги по идентификатору
       tags:
       - book
-  /books/{id}/ratings:
+  /api/v1/books/{id}/ratings:
     get:
       consumes:
       - application/json
@@ -452,7 +452,7 @@ paths:
       summary: Метод добавления отзыва на книгу
       tags:
       - book_ratings
-  /books/{id}/ratings/avg:
+  /api/v1/books/{id}/ratings/avg:
     get:
       consumes:
       - application/json
@@ -485,7 +485,7 @@ paths:
       summary: Метод получения среднего рейтинга книги
       tags:
       - book_ratings
-  /readers/{id}:
+  /api/v1/readers/{id}:
     get:
       consumes:
       - application/json
@@ -524,7 +524,7 @@ paths:
       summary: Метод получения читателя по идентификатору
       tags:
       - reader
-  /readers/{id}/favorite_books:
+  /api/v1/readers/{id}/favorite_books:
     post:
       consumes:
       - application/json
@@ -575,7 +575,7 @@ paths:
       summary: Метод добавления книги в избранное
       tags:
       - reader
-  /readers/{id}/lib_cards:
+  /api/v1/readers/{id}/lib_cards:
     get:
       consumes:
       - application/json
@@ -704,7 +704,7 @@ paths:
       summary: Метод обновления читательского билета
       tags:
       - reader_lib_card
-  /readers/{id}/reservations:
+  /api/v1/readers/{id}/reservations:
     get:
       consumes:
       - application/json
@@ -799,7 +799,7 @@ paths:
       summary: Метод бронирования книги
       tags:
       - reader_reservations
-  /readers/{id}/reservations/{reservation_id}:
+  /api/v1/readers/{id}/reservations/{reservation_id}:
     get:
       consumes:
       - application/json
