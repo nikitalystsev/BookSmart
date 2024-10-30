@@ -3,12 +3,13 @@ import csv
 import matplotlib.pyplot as plt
 
 
-def parse_stats_history(filepath: str, out_filepath: str, latex_out_path: str = None):
+def parse_stats_history(filepath: str, out_filepath: str, md_out_path: str):
     """
     Функция парсит историю статистики исследования
     """
     stats_file = open(file=filepath, newline='', encoding='utf-8')
     out_file = open(file=out_filepath, mode='w', newline='', encoding='utf-8')
+    md_file = open(file=md_out_path, mode='w', newline='', encoding='utf-8')
 
     reader = csv.DictReader(stats_file)
 
@@ -33,6 +34,11 @@ def parse_stats_history(filepath: str, out_filepath: str, latex_out_path: str = 
             'Requests/s': round(float(row['Requests/s']))
         })
 
+        md_file.write(
+            f"{round(float(row['Requests/s']))} {float(row['Total Average Response Time']):.3f}\n"
+        )
+
+    md_file.close()
     out_file.close()
     stats_file.close()
 
@@ -81,4 +87,4 @@ def build_comparative_graphic(
 
     plt.savefig(output_svg, format='svg')
 
-# locust --host=http://localhost:8000 --headless --csv=../locust_stats/without_cache -u 500 -r 10 -t 1m
+# locust --host=http://localhost --headless --csv=../locust_stats/with_balance -u 500 -r 10 -t 1m
