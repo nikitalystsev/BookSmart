@@ -1,0 +1,4 @@
+Method,Name,Error,Occurrences
+GET,test_requests,RemoteDisconnected('Remote end closed connection without response'),112
+GET,test_requests,HTTPError('500 Server Error: Internal Server Error for url: test_requests'),135
+T,test_requests,HTTPError('404 Client Error: Not Found for url: test_requests'),4104

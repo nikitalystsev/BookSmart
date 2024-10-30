@@ -189,7 +189,7 @@ services:
       - "80:80"
     volumes:
       - ./.logs/nginx/:/var/log/nginx/
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx-without-balance.conf:/etc/nginx/nginx.conf
       #      - ./components/component-ui/templates:/usr/share/nginx/html
       - ./components/component-ui/static:/usr/share/nginx/static
       - ./README.md:/usr/share/nginx/documentation/README.md
