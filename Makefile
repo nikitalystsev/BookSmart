@@ -45,7 +45,6 @@ get-swagger:
 tests:
 	./run_tests.sh
 
-
 migrate-up:
 	./migrate.sh up
 
@@ -61,3 +60,5 @@ mmigrate-down:
 
 clean:
 	rm *.exe ./app ./techUI
+
+# docker inspect --format='{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end}}' $INSTANCE_ID -- посмотреть ip адрес сервера
