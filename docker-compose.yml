@@ -17,7 +17,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: booksmart:local
+    image: booksmart-gin:local
     container_name: bs-app-gin
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
@@ -39,7 +39,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-bench
-    image: booksmart:local
+    image: booksmart-echo:local
     container_name: bs-app-echo
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}

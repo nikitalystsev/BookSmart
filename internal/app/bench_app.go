@@ -1,4 +1,4 @@
-package bench_app
+package app
 
 import (
 	"BookSmart-web-api-echo/handlers"
@@ -22,7 +22,7 @@ import (
 	"os"
 )
 
-func Run(configDir string) {
+func RunEcho(configDir string) {
 	cfg, err := config.Init(configDir)
 	if err != nil {
 		panic(err)

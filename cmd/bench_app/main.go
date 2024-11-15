@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/nikitalystsev/BookSmart/internal/bench_app"
+	"github.com/nikitalystsev/BookSmart/internal/app"
 	"log"
 )
 
@@ -15,5 +15,5 @@ func init() {
 }
 
 func main() {
-	bench_app.Run(configsDir)
+	app.RunEcho(configsDir)
 }
