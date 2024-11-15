@@ -1,7 +1,4 @@
 x-bs-app-common: &bs-app-common
-  build:
-    context: .
-    dockerfile: Dockerfile
   volumes:
     - ./.logs/app/:/usr/local/src/logs
     - ./.env:/usr/local/src/.env
@@ -15,10 +12,13 @@ x-bs-postgres-common: &bs-postgres-common
     retries: 5
 
 services:
-  bs-app-main:
+  bs-app-gin:
     <<: *bs-app-common
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: booksmart:local
-    container_name: bs-app-main
+    container_name: bs-app-gin
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
       POSTGRES_DB_USER: ${POSTGRES_DB_ADMIN}
@@ -34,48 +34,13 @@ services:
     networks:
       - bs-net
 
-  bs-app-inst1:
+  bs-app-echo:
     <<: *bs-app-common
+    build:
+      context: .
+      dockerfile: Dockerfile-bench
     image: booksmart:local
-    container_name: bs-app-inst1
-    environment:
-      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
-      POSTGRES_DB_USER: ${POSTGRES_DB_READER}
-      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_READER_PASSWORD}
-      POSTGRES_HOST: ${POSTGRES_HOST_SLAVE}
-    depends_on:
-      bs-postgres-slave:
-        condition: service_healthy
-      bs-redis:
-        condition: service_started
-    ports:
-      - "${APP_PORT_2}:8000"
-    networks:
-      - bs-net
-
-  bs-app-inst2:
-    <<: *bs-app-common
-    image: booksmart:local
-    container_name: bs-app-inst2
-    environment:
-      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
-      POSTGRES_DB_USER: ${POSTGRES_DB_READER}
-      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_READER_PASSWORD}
-      POSTGRES_HOST: ${POSTGRES_HOST_SLAVE}
-    depends_on:
-      bs-postgres-slave:
-        condition: service_healthy
-      bs-redis:
-        condition: service_started
-    ports:
-      - "${APP_PORT_3}:8000"
-    networks:
-      - bs-net
-
-  bs-app-mirror1: # mirror1
-    <<: *bs-app-common
-    image: booksmart:local
-    container_name: bs-app-mirror1
+    container_name: bs-app-echo
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
       POSTGRES_DB_USER: ${POSTGRES_DB_ADMIN}
@@ -87,7 +52,7 @@ services:
       bs-redis:
         condition: service_started
     ports:
-      - "${APP_PORT_4}:8000"
+      - "${APP_PORT_2}:8000"
     networks:
       - bs-net
 
@@ -107,49 +72,6 @@ services:
     volumes:
       - ${POSTGRES_ALL_MIGRATIONS_PATH}:/docker-entrypoint-initdb.d/
       - ${DB_DATASETS_PATH}:/data
-    networks:
-      - bs-net
-
-  bs-postgres-slave:
-    <<: *bs-postgres-common
-    image: bitnami/postgresql:latest
-    container_name: bs-postgres-slave
-    environment:
-      POSTGRESQL_REPLICATION_MODE: slave
-      POSTGRESQL_REPLICATION_USER: ${POSTGRES_REPL_USER}
-      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRES_REPL_PASSWORD}
-      POSTGRESQL_USERNAME: ${POSTGRES_USER}
-      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRESQL_DATABASE: ${POSTGRES_DB_NAME}
-      POSTGRESQL_MASTER_HOST: bs-postgres-master
-    ports:
-      - "${POSTGRES_PORT_2}:5432"
-    volumes:
-      - ${POSTGRES_ALL_MIGRATIONS_PATH}:/docker-entrypoint-initdb.d/
-      - ${DB_DATASETS_PATH}:/data
-    networks:
-      - bs-net
-
-  bs-pgadmin:
-    container_name: bs-pgadmin
-    image: dpage/pgadmin4:latest
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    networks:
-      - bs-net
-
-  bs-mongo:
-    container_name: bs-mongo
-    image: mongo:latest
-    ports:
-      - "${MONGO_DB_PORT}:27017"
-    volumes:
-      - ${MONGO_MIGRATION_PATH}/rs-initiate.js:/docker-entrypoint-initdb.d/rs-initiate.js
-      - ./.data/mongo/:/data/db/
-    command: [ "--replSet", "dbrs-ppo", "--bind_ip_all" ]
     networks:
       - bs-net
 
@@ -174,31 +96,6 @@ services:
       - ./.data/redis:/var/lib/redis
     ports:
       - "${REDIS_PORT}:6379"
-    networks:
-      - bs-net
-
-  bs-nginx:
-    image: nginx:local
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-      args:
-        modules: "https://github.com/openresty/headers-more-nginx-module.git,https://github.com/openresty/echo-nginx-module.git"
-    container_name: bs-nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./.logs/nginx/:/var/log/nginx/
-      - ./nginx/nginx-without-balance.conf:/etc/nginx/nginx.conf
-      #      - ./components/component-ui/templates:/usr/share/nginx/html
-      - ./components/component-ui/static:/usr/share/nginx/static
-      - ./README.md:/usr/share/nginx/documentation/README.md
-      - ./docs/diagrams:/usr/share/nginx/documentation/docs/diagrams
-      - ./docs/readme.html:/usr/share/nginx/documentation/readme.html
-      - ./docs/legacy.html:/usr/share/nginx/legacy/legacy.html
-      - ./docs/tech-ui.zip:/usr/share/nginx/legacy/tech-ui.zip
-    depends_on:
-      - bs-app-main
     networks:
       - bs-net
 

@@ -13,21 +13,18 @@ build-ui:
 	go build -o techUI cmd/techUI/main.go
 
 run-app: build-all
-	docker compose up -d bs-app-main bs-app-inst1 bs-app-inst2 bs-app-mirror1 \
- 		bs-postgres-master bs-postgres-slave bs-redis bs-nginx bs-pgadmin
+	docker compose up -d bs-app-gin bs-app-echo \
+ 		bs-postgres-master bs-redis
 
 build-all:
 	docker compose build
 
 stop-app:
-	docker stop bs-app-main bs-app-inst1 bs-app-inst2 bs-app-mirror1 \
-		bs-postgres-master bs-postgres-slave bs-redis bs-nginx bs-pgadmin
+	docker stop bs-app-gin bs-app-echo \
+		bs-postgres-master bs-redis
 
 rerun-app:
-	make stop-app && docker rm bs-nginx && make run-app
-
-get-swagger:
-	swag init -g cmd/app/main.go -o ./docs_swagger
+	make stop-app && make run-app
 
 # тесты ППО (исправить)
 #utest-srv:

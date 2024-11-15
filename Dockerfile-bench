@@ -27,12 +27,12 @@ COPY ./components/component-services/ ./components/component-services/
 COPY ./components/component-web-api/ ./components/component-web-api/
 COPY ./components/component-web-api-echo/ ./components/component-web-api-echo/
 
-COPY ./cmd/app ./cmd/app
+COPY ./cmd/bench_app ./cmd/bench_app
 COPY ./docs_swagger ./docs_swagger
 COPY ./internal/app ./internal/app
 COPY ./internal/config ./internal/config
 COPY ./pkg ./pkg
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./app cmd/app/main.go
+RUN go build -o ./app cmd/bench_app/main.go
 
 CMD ["./app"]

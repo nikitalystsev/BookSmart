@@ -1,3 +1,0 @@
-Method,Name,Error,Occurrences
-GET,test_requests,RemoteDisconnected('Remote end closed connection without response'),75
-GET,test_requests,HTTPError('404 Client Error: Not Found for url: test_requests'),2829
