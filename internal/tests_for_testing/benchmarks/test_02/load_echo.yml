@@ -16,7 +16,7 @@ pools:
 
     rps: # shooting schedule
       - type: const
-        duration: 300s
+        duration: 60s
         ops: 10000
 
     startup: # instances startup schedule
