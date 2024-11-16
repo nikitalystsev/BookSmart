@@ -1,0 +1,14 @@
+scrape_configs:
+
+  - job_name: 'bs-app-gin'
+    scrape_interval: 1s
+    static_configs:
+      - targets: [ 'bs-app-gin:8000' ]
+
+  - job_name: 'bs-app-echo'
+    scrape_interval: 1s
+    static_configs:
+      - targets: [ 'bs-app-echo:8002' ]
+
+
+# sort_desc(sum(rate(container_cpu_usage_seconds_total{image!=""}[1m])) by (name))

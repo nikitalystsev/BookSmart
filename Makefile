@@ -14,14 +14,14 @@ build-ui:
 
 run-app: build-all
 	docker compose up -d bs-app-gin bs-app-echo \
- 		bs-postgres-master bs-redis
+ 		bs-postgres-master bs-redis bs-prometheus bs-grafana
 
 build-all:
 	docker compose build
 
 stop-app:
 	docker stop bs-app-gin bs-app-echo \
-		bs-postgres-master bs-redis
+		bs-postgres-master bs-redis bs-prometheus bs-grafana
 
 rerun-app:
 	make stop-app && make run-app

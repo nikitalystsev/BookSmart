@@ -1,0 +1,24 @@
+pools:
+  - id: HTTP pool # pool name (for your choice)
+    gun:
+      type: http # gun type
+      target: localhost:8002 # gun target
+
+    rps-per-instance: false # rps section is counted for each instance or for the whole test. false - for the whole test
+    discard_overflow: true # strict adherence to the request schedule
+
+    ammo:
+      type: uri # ammo format
+      file: ./internal/tests_for_testing/benchmarks/test_01/ammo.uri # ammo File
+    result:
+      type: phout # report format (phout is compatible with Yandex.Tank)
+      destination: ./internal/tests_for_testing/benchmarks/test_01/phout_echo.log # report file name
+
+    rps: # shooting schedule
+      - type: const
+        duration: 300s
+        ops: 10000
+
+    startup: # instances startup schedule
+      type: once # запустить * инстансов за раз
+      times: 1000
