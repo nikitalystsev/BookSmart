@@ -433,11 +433,9 @@ __Администратор__:
 
 [Макеты интерфейсов в Figma](https://www.figma.com/design/E5qk9wR4yClYZI6Wmai1bm/BookSmart?node-id=18-14&t=Uw92z32iasdwAiRR-1)
 
+## Портреты пользователей
 
-
-
-
-
+См. ППО
 
 ## PS 
 
