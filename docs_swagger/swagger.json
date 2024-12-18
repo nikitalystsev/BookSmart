@@ -345,6 +345,13 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Номер страницы",
+                        "name": "page_number",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -869,6 +876,13 @@
                         "description": "Идентификатор читателя",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Номер страницы",
+                        "name": "page_number",
+                        "in": "query",
                         "required": true
                     }
                 ],

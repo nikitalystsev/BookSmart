@@ -351,6 +351,13 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Номер страницы",
+                        "name": "page_number",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -875,6 +882,13 @@ const docTemplate = `{
                         "description": "Идентификатор читателя",
                         "name": "id",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Номер страницы",
+                        "name": "page_number",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -1408,6 +1422,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "API Server for BookSmart Application",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
+	LeftDelim:        "{{",
+	RightDelim:       "}}",
 }
 
 func init() {

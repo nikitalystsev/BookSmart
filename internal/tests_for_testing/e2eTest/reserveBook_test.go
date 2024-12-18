@@ -84,7 +84,7 @@ func (ets *E2ETestSuite) AfterAll(t provider.T) {
 
 func (ets *E2ETestSuite) Test_ReserveBook(t provider.T) {
 	t.Title("E2E Test For Reserve Book")
-	t.Description("Reader SignUp, SignIn and Reserve Book")
+	t.Description("Reader SignUpComponent, SignUpComponent and Reserve Book")
 	if isIntegrationTestsFailed() {
 		t.Skip()
 	}

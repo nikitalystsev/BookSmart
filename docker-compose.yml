@@ -40,9 +40,9 @@ services:
     container_name: bs-app-inst1
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
-      POSTGRES_DB_USER: ${POSTGRES_DB_READER}
-      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_READER_PASSWORD}
-      POSTGRES_HOST: ${POSTGRES_HOST_SLAVE}
+      POSTGRES_DB_USER: ${POSTGRES_DB_ADMIN}
+      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_ADMIN_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST_MASTER}
     depends_on:
       bs-postgres-slave:
         condition: service_healthy
@@ -59,9 +59,9 @@ services:
     container_name: bs-app-inst2
     environment:
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
-      POSTGRES_DB_USER: ${POSTGRES_DB_READER}
-      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_READER_PASSWORD}
-      POSTGRES_HOST: ${POSTGRES_HOST_SLAVE}
+      POSTGRES_DB_USER: ${POSTGRES_DB_ADMIN}
+      POSTGRES_DB_PASSWORD: ${POSTGRES_DB_ADMIN_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST_MASTER}
     depends_on:
       bs-postgres-slave:
         condition: service_healthy
@@ -189,7 +189,7 @@ services:
       - "80:80"
     volumes:
       - ./.logs/nginx/:/var/log/nginx/
-      - ./nginx/nginx-without-balance.conf:/etc/nginx/nginx.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       #      - ./components/component-ui/templates:/usr/share/nginx/html
       - ./components/component-ui/static:/usr/share/nginx/static
       - ./README.md:/usr/share/nginx/documentation/README.md
@@ -197,8 +197,26 @@ services:
       - ./docs/readme.html:/usr/share/nginx/documentation/readme.html
       - ./docs/legacy.html:/usr/share/nginx/legacy/legacy.html
       - ./docs/tech-ui.zip:/usr/share/nginx/legacy/tech-ui.zip
+      - ./components/component-ui/frontend:/var/www
     depends_on:
       - bs-app-main
+      - bs-react
+    networks:
+      - bs-net
+
+  bs-react:
+    image: node:local
+    build:
+      context: ./components/component-ui/frontend
+      dockerfile: Dockerfile
+    container_name: bs-react
+    volumes:
+      - './components/component-ui/frontend:/app'
+      - '/app/node_modules'
+    ports:
+      - 3000:3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     networks:
       - bs-net
 

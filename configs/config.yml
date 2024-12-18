@@ -1,6 +1,6 @@
 auth:
-  accessTokenTTL: 30m
-  refreshTokenTTL: 2h
+  accessTokenTTL: 2h
+  refreshTokenTTL: 5h
 
 db:
   type: postgres # postgres | mongo

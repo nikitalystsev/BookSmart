@@ -24,7 +24,7 @@ func (its *IntegrationTestSuite) TestReader_SignUp_Success(t provider.T) {
 		err           error
 	)
 
-	t.Title("Integration Test SignUp Reader Success")
+	t.Title("Integration Test SignUpComponent Reader Success")
 	t.Description("The new reader was successfully signUp")
 	if isUnitTestsFailed() {
 		t.Skip()
@@ -67,7 +67,7 @@ func (its *IntegrationTestSuite) TestReader_SignIn_Success(t provider.T) {
 		err           error
 	)
 
-	t.Title("Integration Test SignIn Reader Success")
+	t.Title("Integration Test SignUpComponent Reader Success")
 	t.Description("The new reader was successfully signIn")
 	if isUnitTestsFailed() {
 		t.Skip()
