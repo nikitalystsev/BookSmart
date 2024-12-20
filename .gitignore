@@ -28,7 +28,6 @@ diagrams/scheme_drawio/*.bkp
 venv/
 .logs/
 .data
-components/component*/.git
 internal/tests_for_testing/allure-results/
 internal/tests_for_testing/allure-report/
 research/scripts/__pycache__
