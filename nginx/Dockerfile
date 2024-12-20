@@ -32,16 +32,16 @@ RUN set -x \
     && mv owasp-modsecurity-crs{-${owasp_modsecurity_crs_version#v},} \
     && cd -
 
-RUN set -x \
-    && curl -sS https://openresty.org/package/pubkey.gpg | apt-key add - \
-    && echo 'deb http://openresty.org/package/debian stretch openresty' | tee -a /etc/apt/sources.list.d/openresty.list \
-    && apt-get update \
-    && apt-get install -y --no-install-suggests openresty \
-    && cd /usr/local/openresty \
-    && cp -vr ./luajit/* /usr/local/ \
-    && rm -d /usr/local/share/lua/5.1 \
-    && ln -sf /usr/local/lib/lua/5.1 /usr/local/share/lua/ \
-    && cp -vr ./lualib/* /usr/local/lib/lua/5.1
+#RUN set -x \
+#    && curl -sS https://openresty.org/package/pubkey.gpg | apt-key add - \
+#    && echo 'deb http://openresty.org/package/debian stretch openresty' | tee -a /etc/apt/sources.list.d/openresty.list \
+#    && apt-get update \
+#    && apt-get install -y --no-install-suggests openresty \
+#    && cd /usr/local/openresty \
+#    && cp -vr ./luajit/* /usr/local/ \
+#    && rm -d /usr/local/share/lua/5.1 \
+#    && ln -sf /usr/local/lib/lua/5.1 /usr/local/share/lua/ \
+#    && cp -vr ./lualib/* /usr/local/lib/lua/5.1
 
 ENV LUAJIT_LIB=/usr/local/lib \
     LUAJIT_INC=/usr/local/include/luajit-2.1
