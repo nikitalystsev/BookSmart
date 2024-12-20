@@ -24,7 +24,7 @@ go.work.sum
 .idea/
 
 diagrams/scheme_drawio/*.bkp
-.env
+#.env
 venv/
 .logs/
 .data
