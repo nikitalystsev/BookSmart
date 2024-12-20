@@ -6,6 +6,7 @@
 #build-ui:
 #	go build -o techUI cmd/techUI/main.go
 
+
 run-app: build-all
 	docker compose up -d bs-app-main bs-app-inst1 bs-app-inst2 bs-app-mirror1 \
  		bs-postgres-master bs-postgres-slave bs-redis bs-nginx bs-pgadmin bs-react
