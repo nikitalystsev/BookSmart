@@ -42,7 +42,7 @@ func (s *IntegrationTestSuite) TestReader_SignUp_Error() {
 
 func (s *IntegrationTestSuite) TestReader_SignIn_Success() {
 
-	readerDTO := &dto.ReaderSignInDTO{
+	readerDTO := &dto.SignInInputDTO{
 		PhoneNumber: "79314562376",
 		Password:    "sdgdgsgsgd",
 	}
@@ -54,12 +54,12 @@ func (s *IntegrationTestSuite) TestReader_SignIn_Success() {
 
 func (s *IntegrationTestSuite) TestReader_SignIn_Error() {
 
-	readerDTO := &dto.ReaderSignInDTO{
+	readerDTO := &dto.SignInInputDTO{
 		PhoneNumber: "79314562376",
 		Password:    "hjghhgdgfs",
 	}
 
 	_, err := s.readerService.SignIn(context.Background(), readerDTO.PhoneNumber, readerDTO.Password)
 	s.Error(err)
-	s.Equal(errors.New("wrong password"), err)
+	s.Equal(errors.New("invalid login or password"), err)
 }

@@ -8,7 +8,6 @@ then
   export UNIT_TESTS_IS_SUCCESS=1
 fi
 
-
 export INTEGRATION_TESTS_IS_SUCCESS=0
 if go test -v -shuffle on ./internal/tests_for_testing/integrationTests/ --parallel 2
 then

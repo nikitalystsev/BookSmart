@@ -428,7 +428,7 @@ func (its *IntegrationTestSuite) TestReservation_GetAllReservationsByReaderID_Su
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
-		findReservations, err = reservationService.GetAllReservationsByReaderID(context.Background(), reader.ID)
+		findReservations, err = reservationService.GetByReaderID(context.Background(), reader.ID, impl.ReviewsPageLimit, 0)
 	})
 
 	t.WithNewStep("Assert", func(sCtx provider.StepCtx) {

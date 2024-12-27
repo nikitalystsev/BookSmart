@@ -1,8 +1,6 @@
 package serviceTests
 
 import (
-	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
-	"Booksmart/pkg/logging"
 	"context"
 	"errors"
 	"github.com/golang/mock/gomock"
@@ -10,6 +8,8 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/core/models"
 	"github.com/nikitalystsev/BookSmart-services/errs"
 	"github.com/nikitalystsev/BookSmart-services/impl"
+	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
+	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

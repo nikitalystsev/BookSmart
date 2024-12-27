@@ -134,11 +134,11 @@ func (bsts *RatingServiceTestsSuite) Test_GetByBookID_Success(t provider.T) {
 		bookID = uuid.New()
 		rating = tdbmodels.NewRatingModelBuilder().WithBookID(bookID).Build()
 
-		mockRatingRepo.EXPECT().GetByBookID(gomock.Any(), bookID).Return([]*models.RatingModel{rating}, nil)
+		mockRatingRepo.EXPECT().GetByBookID(gomock.Any(), bookID, impl.ReviewsPageLimit, 0).Return([]*models.RatingModel{rating}, nil)
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
-		findRatings, err = ratingService.GetByBookID(context.Background(), bookID)
+		findRatings, err = ratingService.GetByBookID(context.Background(), bookID, impl.ReviewsPageLimit, 0)
 	})
 
 	t.WithNewStep("Assert", func(sCtx provider.StepCtx) {
@@ -168,11 +168,11 @@ func (bsts *RatingServiceTestsSuite) Test_GetByBookID_ErrorGettingRatings(t prov
 			logging.GetLoggerForTests(),
 		)
 		bookID = uuid.New()
-		mockRatingRepo.EXPECT().GetByBookID(gomock.Any(), bookID).Return(nil, errors.New("database error"))
+		mockRatingRepo.EXPECT().GetByBookID(gomock.Any(), bookID, impl.ReviewsPageLimit, 0).Return(nil, errors.New("database error"))
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
-		findRatings, err = ratingService.GetByBookID(context.Background(), bookID)
+		findRatings, err = ratingService.GetByBookID(context.Background(), bookID, impl.ReviewsPageLimit, 0)
 	})
 
 	t.WithNewStep("Assert", func(sCtx provider.StepCtx) {
@@ -205,7 +205,7 @@ func (bsts *RatingServiceTestsSuite) Test_GetAvgRatingByBookID_Success(t provide
 		)
 		bookID = uuid.New()
 		rating = tdbmodels.NewRatingModelBuilder().WithBookID(bookID).Build()
-		mockRatingRepo.EXPECT().GetByBookID(gomock.Any(), bookID).Return([]*models.RatingModel{rating}, nil)
+		mockRatingRepo.EXPECT().GetByBookID(gomock.Any(), bookID, 100000000, 0).Return([]*models.RatingModel{rating}, nil)
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
@@ -239,7 +239,7 @@ func (bsts *RatingServiceTestsSuite) Test_GetAvgRatingByBookID_ErrorRatingsNotFo
 			logging.GetLoggerForTests(),
 		)
 		bookID = uuid.New()
-		mockRatingRepo.EXPECT().GetByBookID(gomock.Any(), bookID).Return(nil, errs.ErrRatingDoesNotExists)
+		mockRatingRepo.EXPECT().GetByBookID(gomock.Any(), bookID, 100000000, 0).Return(nil, errs.ErrRatingDoesNotExists)
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {

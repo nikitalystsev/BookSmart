@@ -9,14 +9,14 @@
 
 run-app: build-all
 	docker compose up -d bs-app-main bs-app-inst1 bs-app-inst2 bs-app-mirror1 \
- 		bs-postgres-master bs-postgres-slave bs-redis bs-nginx bs-pgadmin bs-react
+ 		bs-postgres-master bs-postgres-slave bs-mongo bs-redis bs-nginx bs-pgadmin bs-react
 
 build-all:
 	docker compose build
 
 stop-app:
 	docker stop bs-app-main bs-app-inst1 bs-app-inst2 bs-app-mirror1 \
-		bs-postgres-master bs-postgres-slave bs-redis bs-nginx bs-pgadmin bs-react
+		bs-postgres-master bs-postgres-slave bs-mongo bs-redis bs-nginx bs-pgadmin bs-react
 
 rerun-app:
 	make stop-app && docker rm bs-nginx && make run-app
@@ -24,19 +24,26 @@ rerun-app:
 get-swagger:
 	swag init -g cmd/app/main.go -o ./docs_swagger
 
-# тесты ППО // частично не работают с текущей бизнес логикой
-#utest-srv:
-#	go tests_for_testing -v ./internal/tests/unitTests/serviceTests/
-#
-#utest-repo:
-#	go tests_for_testing -v ./internal/tests/unitTests/repositoryTests/
-#
-#itest:
-#	docker compose up -d bs-postgres-tests_for_testing bs-redis-tests_for_testing
-#	go tests_for_testing -v ./internal/tests/integrationTests
-#
+# тесты ППО
+utest-srv:
+	go test -v ./internal/tests/unitTests/serviceTests/
 
-# тесты тестирования (они тоже не работают в местах, где я добавил пагинацию)
+utest-repo:
+	go test -v ./internal/tests/unitTests/repositoryTests/
+
+itest:
+	docker compose up -d bs-ppo-postgres-test bs-ppo-redis-test
+	go test -v ./internal/tests/integrationTests
+	docker stop bs-ppo-postgres-test bs-ppo-redis-test && docker rm bs-ppo-postgres-test bs-ppo-redis-test
+
+gen-mocks:
+	mockgen -source=./components/component-services/intfRepo/IBookRepo.go -destination=./internal/tests/unitTests/serviceTests/mocks/mockBookRepo.go --package=mocks
+	mockgen -source=./components/component-services/intfRepo/ILibCardRepo.go -destination=./internal/tests/unitTests/serviceTests/mocks/mockLibCardRepo.go --package=mocks
+	mockgen -source=./components/component-services/intfRepo/IRatingRepo.go -destination=./internal/tests/unitTests/serviceTests/mocks/mockRatingRepo.go --package=mocks
+	mockgen -source=./components/component-services/intfRepo/IReaderRepo.go -destination=./internal/tests/unitTests/serviceTests/mocks/mockReaderRepo.go --package=mocks
+	mockgen -source=./components/component-services/intfRepo/IReservationRepo.go -destination=./internal/tests/unitTests/serviceTests/mocks/mockReservationRepo.go --package=mocks
+
+# тесты тестирования
 tests:
 	./run_tests.sh
 

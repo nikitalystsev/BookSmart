@@ -1,17 +1,17 @@
 package repositoryTests
 
 import (
-	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/alicebob/miniredis/v2"
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/nikitalystsev/BookSmart-repo-postgres/impl"
 	"github.com/nikitalystsev/BookSmart-services/core/models"
 	"github.com/nikitalystsev/BookSmart-services/errs"
+	"github.com/nikitalystsev/BookSmart/pkg/logging"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	sqlmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"

@@ -3,12 +3,10 @@ package integrationTests
 // убрал тестовые контейнеры
 
 import (
-	"Booksmart/pkg/logging"
 	"errors"
 	"fmt"
 	trmsqlx "github.com/avito-tech/go-transaction-manager/drivers/sqlx/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2/manager"
-	"github.com/go-redis/redis/v8"
 	"github.com/golang-migrate/migrate/v4"
 	migrations "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -21,9 +19,12 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/pkg/auth"
 	"github.com/nikitalystsev/BookSmart-services/pkg/hash"
 	"github.com/nikitalystsev/BookSmart-services/pkg/transact"
+	"github.com/nikitalystsev/BookSmart/pkg/logging"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/suite"
 	"log"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -66,7 +67,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 		log.Fatal(err)
 	}
 	db, err := s.fillDBMigration()
-	if err != nil {
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		log.Fatal(err)
 	}
 
@@ -83,7 +84,10 @@ func (s *IntegrationTestSuite) SetupSuite() {
 }
 
 func (s *IntegrationTestSuite) createDBMigration() error {
+	fmt.Println("call createDBMigration")
 	dsn := os.Getenv("POSTGRES_CREATE_TEST_DB_URL")
+
+	//fmt.Printf("dsn: [%s]\n", dsn)
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
@@ -93,16 +97,24 @@ func (s *IntegrationTestSuite) createDBMigration() error {
 
 	driver, err := migrations.WithInstance(db.DB, &migrations.Config{})
 	if err != nil {
+		fmt.Println("Failed to connect to database: " + err.Error())
+		return err
+	}
+
+	abs, err := filepath.Abs(os.Getenv("POSTGRES_CREATE_TEST_DB_MIGRATION_PATH"))
+	if err != nil {
 		return err
 	}
 
 	m1, err := migrate.NewWithDatabaseInstance(
-		os.Getenv("POSTGRES_CREATE_TEST_DB_MIGRATION_PATH"),
+		"file://"+filepath.ToSlash(abs),
 		"postgres", driver,
 	)
+
+	fmt.Println("file://" + filepath.ToSlash(abs))
+
 	if err != nil {
-		fmt.Println(os.Getenv("POSTGRES_CREATE_TEST_DB_MIGRATION_PATH"))
-		fmt.Println("error")
+		fmt.Println("Failed to connect to database: " + err.Error())
 		return err
 	}
 
@@ -115,6 +127,8 @@ func (s *IntegrationTestSuite) createDBMigration() error {
 }
 
 func (s *IntegrationTestSuite) createSchemaMigration() error {
+	fmt.Println("call createSchemaMigration")
+
 	dsn := os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_URL")
 
 	db, err := sqlx.Open("postgres", dsn)
@@ -128,8 +142,15 @@ func (s *IntegrationTestSuite) createSchemaMigration() error {
 		return err
 	}
 
+	abs, err := filepath.Abs(os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_MIGRATION_PATH"))
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("file://" + filepath.ToSlash(abs))
+
 	m1, err := migrate.NewWithDatabaseInstance(
-		os.Getenv("POSTGRES_CREATE_TEST_SCHEMA_MIGRATION_PATH"),
+		"file://"+filepath.ToSlash(abs),
 		"postgres", driver,
 	)
 	if err != nil {
@@ -145,7 +166,11 @@ func (s *IntegrationTestSuite) createSchemaMigration() error {
 }
 
 func (s *IntegrationTestSuite) fillDBMigration() (*sqlx.DB, error) {
+	fmt.Println("call fillDBMigration")
+
 	dsn := os.Getenv("POSTGRES_FILL_TEST_DB_URL")
+
+	fmt.Printf("dsn: [%s]\n", dsn)
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
@@ -158,8 +183,15 @@ func (s *IntegrationTestSuite) fillDBMigration() (*sqlx.DB, error) {
 		return nil, err
 	}
 
+	abs, err := filepath.Abs(os.Getenv("POSTGRES_FILL_TEST_DB_MIGRATION_PATH"))
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("file://" + filepath.ToSlash(abs))
+
 	m1, err := migrate.NewWithDatabaseInstance(
-		os.Getenv("POSTGRES_FILL_TEST_DB_MIGRATION_PATH"),
+		"file://"+filepath.ToSlash(abs),
 		"postgres", driver,
 	)
 	if err != nil {
@@ -207,15 +239,15 @@ func (s *IntegrationTestSuite) initDeps() {
 }
 
 func (s *IntegrationTestSuite) TearDownSuite() {
-	if err := s.clearDBMigration(); err != nil {
-		fmt.Println("Failed clearDBMigration")
-	}
-	if err := s.dropSchemaMigration(); err != nil {
-		fmt.Println("Failed dropSchemaMigration")
-	}
-	if err := s.dropDBMigration(); err != nil {
-		fmt.Println("Failed dropDBMigration")
-	}
+	//if err := s.clearDBMigration(); err != nil {
+	//	fmt.Println("Failed clearDBMigration")
+	//}
+	//if err := s.dropSchemaMigration(); err != nil {
+	//	fmt.Println("Failed dropSchemaMigration")
+	//}
+	//if err := s.dropDBMigration(); err != nil {
+	//	fmt.Println("Failed dropDBMigration")
+	//}
 
 	if err := s.db.Close(); err != nil {
 		fmt.Println("Failed to close DB", err)

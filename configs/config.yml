@@ -3,4 +3,4 @@ auth:
   refreshTokenTTL: 5h
 
 db:
-  type: postgres # postgres | mongo
+  type: mongo # postgres | mongo

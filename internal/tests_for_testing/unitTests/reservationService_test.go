@@ -408,7 +408,7 @@ func (rsts *ReservationServiceTestsSuite) Test_GetByID_ErrorReservationDoesNotEx
 	})
 }
 
-func (rsts *ReservationServiceTestsSuite) Test_GetAllReservationsByReaderID_Success(t provider.T) {
+func (rsts *ReservationServiceTestsSuite) Test_GetByReaderID_Success(t provider.T) {
 	var (
 		reservationService intf.IReservationService
 		reservation        *models.ReservationModel
@@ -440,12 +440,11 @@ func (rsts *ReservationServiceTestsSuite) Test_GetAllReservationsByReaderID_Succ
 		reservation = tdbmodels.NewReservationModelBuilder().WithReaderID(reader.ID).Build()
 		expiredReservation = tdbmodels.NewReservationModelBuilder().WithReaderID(reader.ID).
 			WithReturnDate(time.Now().AddDate(0, -1, 0)).Build()
-		mockReservationRepo.EXPECT().GetActiveByReaderID(gomock.Any(), reader.ID).Return([]*models.ReservationModel{reservation}, nil)
-		mockReservationRepo.EXPECT().GetExpiredByReaderID(gomock.Any(), reader.ID).Return([]*models.ReservationModel{expiredReservation}, nil)
+		mockReservationRepo.EXPECT().GetByReaderID(gomock.Any(), reader.ID, impl.ReservationsPageLimit, 0).Return([]*models.ReservationModel{reservation, expiredReservation}, nil)
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
-		findReservations, err = reservationService.GetAllReservationsByReaderID(context.Background(), reader.ID)
+		findReservations, err = reservationService.GetByReaderID(context.Background(), reader.ID, impl.ReservationsPageLimit, 0)
 	})
 
 	t.WithNewStep("Assert", func(sCtx provider.StepCtx) {
@@ -454,7 +453,7 @@ func (rsts *ReservationServiceTestsSuite) Test_GetAllReservationsByReaderID_Succ
 	})
 }
 
-func (rsts *ReservationServiceTestsSuite) Test_GetAllReservationsByReaderID_ErrorCheckExpiredReservations(t provider.T) {
+func (rsts *ReservationServiceTestsSuite) Test_GetByReaderID_ErrorCheckExpiredReservations(t provider.T) {
 	var (
 		reservationService intf.IReservationService
 		reader             *models.ReaderModel
@@ -481,11 +480,11 @@ func (rsts *ReservationServiceTestsSuite) Test_GetAllReservationsByReaderID_Erro
 			logging.GetLoggerForTests(),
 		)
 		reader = ommodels.NewReaderModelObjectMother().DefaultReader()
-		mockReservationRepo.EXPECT().GetActiveByReaderID(gomock.Any(), reader.ID).Return(nil, errors.New("database error"))
+		mockReservationRepo.EXPECT().GetByReaderID(gomock.Any(), reader.ID, impl.ReservationsPageLimit, 0).Return(nil, errors.New("database error"))
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
-		findReservations, err = reservationService.GetAllReservationsByReaderID(context.Background(), reader.ID)
+		findReservations, err = reservationService.GetByReaderID(context.Background(), reader.ID, impl.ReservationsPageLimit, 0)
 	})
 
 	t.WithNewStep("Assert", func(sCtx provider.StepCtx) {

@@ -1,8 +1,6 @@
 package serviceTests
 
 import (
-	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
-	"Booksmart/pkg/logging"
 	"context"
 	"errors"
 	"fmt"
@@ -12,6 +10,8 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/core/models"
 	"github.com/nikitalystsev/BookSmart-services/errs"
 	"github.com/nikitalystsev/BookSmart-services/impl"
+	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
+	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -246,7 +246,7 @@ func TestReaderService_SignUp(t *testing.T) {
 
 func TestReaderService_SignIn(t *testing.T) {
 	type args struct {
-		readerDTO *dto.ReaderSignInDTO
+		readerDTO *dto.SignInInputDTO
 		reader    *models.ReaderModel
 	}
 	type mockBehaviour func(
@@ -270,7 +270,7 @@ func TestReaderService_SignIn(t *testing.T) {
 		{
 			name: "Success successful signIn",
 			args: args{
-				readerDTO: &dto.ReaderSignInDTO{
+				readerDTO: &dto.SignInInputDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
 				},
@@ -296,7 +296,7 @@ func TestReaderService_SignIn(t *testing.T) {
 		{
 			name: "Error reader not found",
 			args: args{
-				readerDTO: &dto.ReaderSignInDTO{
+				readerDTO: &dto.SignInInputDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
 				},
@@ -312,7 +312,7 @@ func TestReaderService_SignIn(t *testing.T) {
 		{
 			name: "Error wrong password",
 			args: args{
-				readerDTO: &dto.ReaderSignInDTO{
+				readerDTO: &dto.SignInInputDTO{
 					PhoneNumber: "12345678901",
 					Password:    "wrong_password",
 				},
@@ -336,7 +336,7 @@ func TestReaderService_SignIn(t *testing.T) {
 		{
 			name: "Error access token generation error",
 			args: args{
-				readerDTO: &dto.ReaderSignInDTO{
+				readerDTO: &dto.SignInInputDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
 				},
@@ -361,7 +361,7 @@ func TestReaderService_SignIn(t *testing.T) {
 		{
 			name: "Error refresh token generation error",
 			args: args{
-				readerDTO: &dto.ReaderSignInDTO{
+				readerDTO: &dto.SignInInputDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
 				},
@@ -387,7 +387,7 @@ func TestReaderService_SignIn(t *testing.T) {
 		{
 			name: "Error: save refresh token error",
 			args: args{
-				readerDTO: &dto.ReaderSignInDTO{
+				readerDTO: &dto.SignInInputDTO{
 					PhoneNumber: "12345678901",
 					Password:    "password",
 				},

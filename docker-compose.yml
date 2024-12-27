@@ -200,6 +200,8 @@ services:
       - ./components/component-ui/frontend:/var/www
     depends_on:
       - bs-app-main
+      - bs-app-inst1
+      - bs-app-inst2
       - bs-react
     networks:
       - bs-net
@@ -220,7 +222,51 @@ services:
     networks:
       - bs-net
 
+  bs-ppo-postgres-test:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    container_name: bs-ppo-postgres-test
+    ports:
+      - "5444:5432"
+    volumes:
+      - ${DB_DATASETS_PATH}:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bs-ppo-test-net
+
+  bs-ppo-redis-test:
+    image: redis:latest
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_USER: ${REDIS_USER}
+      REDIS_USER_PASSWORD: ${REDIS_USER_PASSWORD}
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+        echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+        echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+        redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    container_name: bs-ppo-redis-test
+    ports:
+      - "6380:6379"
+    networks:
+      - bs-ppo-test-net
+
 networks:
   bs-net:
     name: bs-net
+    driver: bridge
+  bs-ppo-test-net:
+    name: bs-ppo-test-net
     driver: bridge

@@ -66,8 +66,6 @@ func GetPostgresForClassicUnitTests() (*testpostgres.PostgresContainer, error) {
 		log.Print("No .env file found")
 	}
 
-	fmt.Printf("os db path: %s\n", os.Getenv("DB_DATASETS_PATH_FOR_TESTS"))
-
 	postgresContainer, err := testpostgres.Run(
 		ctx,
 		"postgres:latest",

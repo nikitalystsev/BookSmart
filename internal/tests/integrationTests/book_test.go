@@ -49,7 +49,7 @@ func (s *IntegrationTestSuite) TestBook_Create_Error() {
 
 func (s *IntegrationTestSuite) TestBook_Delete_Success() {
 
-	id, err := uuid.Parse("a4fbfff5-8e43-4bd7-a08d-91a7495d6cc2")
+	id, err := uuid.Parse("55cbe7ec-66f1-4383-b52d-9bc8c7d33480")
 
 	book, err := s.bookService.GetByID(context.Background(), id)
 	s.NoError(err)

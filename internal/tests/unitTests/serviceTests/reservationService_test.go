@@ -1,8 +1,6 @@
 package serviceTests
 
 import (
-	mockrepo "Booksmart/internal/tests/unitTests/serviceTests/mocks"
-	"Booksmart/pkg/logging"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +9,8 @@ import (
 	"github.com/nikitalystsev/BookSmart-services/core/models"
 	"github.com/nikitalystsev/BookSmart-services/errs"
 	"github.com/nikitalystsev/BookSmart-services/impl"
+	mockrepo "github.com/nikitalystsev/BookSmart/internal/tests/unitTests/serviceTests/mocks"
+	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -345,7 +345,7 @@ func TestReservationService_Update(t *testing.T) {
 
 			testCase.mockBehaviour(mockReaderRepo, mockBookRepo, mockLibCardRepo, mockReservationRepo, testCase.args)
 
-			err := reservationService.Update(context.Background(), testCase.args.reservation)
+			err := reservationService.Update(context.Background(), testCase.args.reservation, 5)
 			testCase.expected(t, err)
 		})
 	}
@@ -530,7 +530,7 @@ func TestReservationService_GetByID(t *testing.T) {
 	}
 }
 
-func TestReservationService_GetAllReservationsByReaderID(t *testing.T) {
+func TestReservationService_GetByReaderID(t *testing.T) {
 	type args struct {
 		readerID uuid.UUID
 	}
@@ -551,7 +551,7 @@ func TestReservationService_GetAllReservationsByReaderID(t *testing.T) {
 				readerID: testReaderID,
 			},
 			mockBehavior: func(m *mockrepo.MockIReservationRepo, args args) {
-				activeReservations := []*models.ReservationModel{
+				reservations := []*models.ReservationModel{
 					{
 						ID:         uuid.New(),
 						BookID:     uuid.New(),
@@ -560,8 +560,6 @@ func TestReservationService_GetAllReservationsByReaderID(t *testing.T) {
 						ReturnDate: time.Now().AddDate(0, 0, 14),
 						State:      "Issued",
 					},
-				}
-				expiredReservations := []*models.ReservationModel{
 					{
 						ID:         uuid.New(),
 						BookID:     uuid.New(),
@@ -570,44 +568,19 @@ func TestReservationService_GetAllReservationsByReaderID(t *testing.T) {
 						State:      "Expired",
 					},
 				}
-				m.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(activeReservations, nil)
-				m.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(expiredReservations, nil)
+				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID, impl.ReservationsPageLimit, 0).Return(reservations, nil)
 			},
 			expected: func(t *testing.T, err error) {
 				assert.NoError(t, err)
 			},
 		},
 		{
-			name: "Error checking active reservations",
+			name: "Error checking reservations",
 			args: args{
 				readerID: testReaderID,
 			},
 			mockBehavior: func(m *mockrepo.MockIReservationRepo, args args) {
-				m.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(nil, errors.New("database error"))
-			},
-			expected: func(t *testing.T, err error) {
-				expectedError := errors.New("database error")
-				assert.Equal(t, expectedError, err)
-			},
-		},
-		{
-			name: "Error checking expired reservations",
-			args: args{
-				readerID: testReaderID,
-			},
-			mockBehavior: func(m *mockrepo.MockIReservationRepo, args args) {
-				activeReservations := []*models.ReservationModel{
-					{
-						ID:         uuid.New(),
-						BookID:     uuid.New(),
-						ReaderID:   args.readerID,
-						IssueDate:  time.Now(),
-						ReturnDate: time.Now().AddDate(0, 0, 14),
-						State:      "Issued",
-					},
-				}
-				m.EXPECT().GetActiveByReaderID(gomock.Any(), args.readerID).Return(activeReservations, nil)
-				m.EXPECT().GetExpiredByReaderID(gomock.Any(), args.readerID).Return(nil, errors.New("database error"))
+				m.EXPECT().GetByReaderID(gomock.Any(), args.readerID, impl.ReservationsPageLimit, 0).Return(nil, errors.New("database error"))
 			},
 			expected: func(t *testing.T, err error) {
 				expectedError := errors.New("database error")
@@ -635,7 +608,7 @@ func TestReservationService_GetAllReservationsByReaderID(t *testing.T) {
 			)
 			testCase.mockBehavior(mockReservationRepo, testCase.args)
 
-			_, err := reservationService.GetAllReservationsByReaderID(context.Background(), testCase.args.readerID)
+			_, err := reservationService.GetByReaderID(context.Background(), testCase.args.readerID, impl.ReservationsPageLimit, 0)
 
 			testCase.expected(t, err)
 		})

@@ -176,7 +176,7 @@ func (its *IntegrationTestSuite) TestRating_GetByBookID_Success(t provider.T) {
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
-		findRatings, err = ratingService.GetByBookID(context.Background(), book.ID)
+		findRatings, err = ratingService.GetByBookID(context.Background(), book.ID, impl.ReviewsPageLimit, 0)
 	})
 
 	t.WithNewStep("Assert", func(sCtx provider.StepCtx) {

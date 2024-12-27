@@ -1,13 +1,13 @@
 package repositoryTests
 
 import (
-	"Booksmart/pkg/logging"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/nikitalystsev/BookSmart-repo-postgres/impl"
 	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/stretchr/testify/assert"
 	sqlmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"
@@ -428,7 +428,7 @@ func TestReservationRepo_GetExpiredByReaderID(t *testing.T) {
 					AddRow(uuid.New(), args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, -5), "Expired")
 
 				mock.ExpectQuery(`select (.+) from bs.reservation_view where (.+)`).
-					WithArgs(args.readerID, time.Now()).WillReturnRows(rows)
+					WithArgs(args.readerID, time.Now().Format("2006-01-02")).WillReturnRows(rows)
 			},
 			args: args{
 				readerID:   uuid.New(),
@@ -445,7 +445,7 @@ func TestReservationRepo_GetExpiredByReaderID(t *testing.T) {
 			name: "Error query execution fails",
 			mockBehavior: func(args args) {
 				mock.ExpectQuery(`select (.+) from bs.reservation_view where (.+)`).
-					WithArgs(args.readerID, time.Now()).WillReturnError(errors.New("query error"))
+					WithArgs(args.readerID, time.Now().Format("2006-01-02")).WillReturnError(errors.New("query error"))
 			},
 			args: args{
 				readerID:   uuid.New(),
@@ -465,7 +465,7 @@ func TestReservationRepo_GetExpiredByReaderID(t *testing.T) {
 					AddRow("invalid-uuid", args.readerID, uuid.New(), time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, -5), "overdue")
 
 				mock.ExpectQuery(`select (.+) from bs.reservation_view where (.+)`).
-					WithArgs(args.readerID, time.Now()).WillReturnRows(rows)
+					WithArgs(args.readerID, time.Now().Format("2006-01-02")).WillReturnRows(rows)
 			},
 			args: args{
 				readerID:   uuid.New(),

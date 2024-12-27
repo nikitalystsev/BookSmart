@@ -1,7 +1,6 @@
 package repositoryTests
 
 import (
-	"Booksmart/pkg/logging"
 	"context"
 	"database/sql"
 	"errors"
@@ -9,6 +8,7 @@ import (
 	"github.com/nikitalystsev/BookSmart-repo-postgres/impl"
 	"github.com/nikitalystsev/BookSmart-services/core/models"
 	"github.com/nikitalystsev/BookSmart-services/errs"
+	"github.com/nikitalystsev/BookSmart/pkg/logging"
 	"github.com/stretchr/testify/assert"
 	sqlxmock "github.com/zhashkevych/go-sqlxmock"
 	"testing"

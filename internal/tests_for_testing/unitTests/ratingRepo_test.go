@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	implRepo "github.com/nikitalystsev/BookSmart-repo-postgres/impl"
 	"github.com/nikitalystsev/BookSmart-services/core/models"
+	"github.com/nikitalystsev/BookSmart-services/impl"
 	"github.com/nikitalystsev/BookSmart-services/intfRepo"
 	ommodels "github.com/nikitalystsev/BookSmart/internal/tests_for_testing/unitTests/objectMother/models"
 	"github.com/nikitalystsev/BookSmart/pkg/logging"
@@ -197,11 +198,11 @@ func (rrts *RatingRepoTestsSuite) Test_GetByBookID_Success(t provider.T) {
 			AddRow(rating.ID, rating.ReaderID, rating.BookID, rating.Review, rating.Rating)
 
 		mock.ExpectQuery(`select (.+) from bs.rating where (.+)`).
-			WithArgs(rating.BookID).WillReturnRows(rows)
+			WithArgs(rating.BookID, impl.ReviewsPageLimit, 0).WillReturnRows(rows)
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
-		findRatings, err = ratingRepo.GetByBookID(context.Background(), rating.BookID)
+		findRatings, err = ratingRepo.GetByBookID(context.Background(), rating.BookID, impl.ReviewsPageLimit, 0)
 	})
 
 	t.WithNewStep("Assert", func(sCtx provider.StepCtx) {
@@ -232,11 +233,11 @@ func (rrts *RatingRepoTestsSuite) Test_GetByBookID_ErrorExecutionQuery(t provide
 		ratingRepo = implRepo.NewRatingRepo(db, logging.GetLoggerForTests())
 
 		mock.ExpectQuery(`select (.+) from bs.rating where (.+)`).
-			WithArgs(rating.BookID).WillReturnError(errors.New("select error"))
+			WithArgs(rating.BookID, impl.ReviewsPageLimit, 0).WillReturnError(errors.New("select error"))
 	})
 
 	t.WithNewStep("Act", func(sCtx provider.StepCtx) {
-		findRatings, err = ratingRepo.GetByBookID(context.Background(), rating.BookID)
+		findRatings, err = ratingRepo.GetByBookID(context.Background(), rating.BookID, impl.ReviewsPageLimit, 0)
 	})
 
 	t.WithNewStep("Assert", func(sCtx provider.StepCtx) {

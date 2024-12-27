@@ -73,7 +73,6 @@ func (rr *RatingRepo) GetByReaderAndBook(ctx context.Context, readerID, bookID u
 	return rr.convertToRatingModel(&rating), nil
 }
 
-// GetByBookID TODO logs
 func (rr *RatingRepo) GetByBookID(ctx context.Context, bookID uuid.UUID, limit, offset int) ([]*models.RatingModel, error) {
 	rr.logger.Infof("selecting ratings with bookID: %s", bookID.String())
 
