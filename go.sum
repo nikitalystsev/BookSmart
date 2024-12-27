@@ -236,6 +236,11 @@ github.com/montanaflynn/stats v0.7.1 h1:etflOAAHORrCC44V+aR6Ftzort912ZU+YLiSTuV8
 github.com/montanaflynn/stats v0.7.1/go.mod h1:etXPPgVO6n31NxCd9KQUMvCM+ve0ruNzt6R8Bnaayow=
 github.com/morikuni/aec v1.0.0 h1:nP9CBfwrvYnBRgY6qfDQkygYDmYwOilePFkwzv4dU8A=
 github.com/morikuni/aec v1.0.0/go.mod h1:BbKIizmSmc5MMPqRYbxO4ZU0S0+P200+tUnFx7PXmsc=
+github.com/nikitalystsev/BookSmart-repo-mongo v0.0.0-20240921135753-b2a899602bec/go.mod h1:BJcaJ1TGT0urm2Z8i9NkAo8DAi3hxzlZt/p5UwfOmys=
+github.com/nikitalystsev/BookSmart-repo-postgres v0.0.0-20240921135822-dd637fe07d4d/go.mod h1:J1rENtDosWDivj54BOWduEaltsFb4wiqYuQhZvL8iIw=
+github.com/nikitalystsev/BookSmart-services v0.0.0-20240919123005-14b28ba85ee2/go.mod h1:j63j5SHSuxxgv8O5jHUCgmWX0FsxU6AK0nrt8MNrFss=
+github.com/nikitalystsev/BookSmart-tech-ui v0.0.0-20240921135907-2c2d32ea8605/go.mod h1:9C6Xrw//HQe8iEP/YX50kpQo9M3mro0eUIzoVPBC7jM=
+github.com/nikitalystsev/BookSmart-web-api v0.0.0-20240921140007-b23de252cb67/go.mod h1:aMRsEcZZHb4ikVXr3WxBB6GVMdVVRV7mk6VIGtyPDxc=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
 github.com/onsi/ginkgo v1.16.5 h1:8xi0RTUf59SOSfEtZMvwTvXYMzG4gV23XVHOZiXNtnE=
