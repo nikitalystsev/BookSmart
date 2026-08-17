@@ -1,3 +1,64 @@
+# BookSmart
+
+BookSmart is an educational library-booking service developed as university coursework. This repository demonstrates a multi-container application environment; it is not presented as production experience.
+
+## Infrastructure
+
+- **Docker** packages the Go application, while a separate Nginx Dockerfile builds the proxy image with additional modules.
+- **Docker Compose** defines four Go application containers, a React frontend, PostgreSQL primary/replica services, Redis, MongoDB, pgAdmin, and Nginx on one bridge network.
+- **Nginx** exposes port 80, routes the frontend and API, load-balances API GET requests across three application containers, and provides documentation, pgAdmin, and status routes. Its configuration also enables gzip and proxy caching.
+- **PostgreSQL** is configured as primary and replica services with health checks; application containers declare dependencies on the relevant database service.
+- **Redis** is configured with password/ACL settings and append-only persistence; application containers declare a dependency on the Redis service.
+- **GitLab CI** runs unit, integration, and end-to-end Go tests and generates Allure report artifacts. No deployment job is present, so this repository demonstrates CI rather than a verified CD flow.
+
+## Architecture
+
+```text
+Client
+  |
+  v
+Nginx :80
+  |-- React frontend :3000
+  |-- Go API containers :8000
+  |     |-- PostgreSQL primary / replica
+  |     `-- Redis
+  |-- pgAdmin
+  `-- documentation and status endpoints
+```
+
+MongoDB is also defined in Compose for an alternative repository component.
+
+## Run locally
+
+The repository declares this startup command in the Makefile:
+
+```bash
+make run-app
+```
+
+It builds the Compose images and starts the application, database, cache, proxy, administration, and frontend services.
+
+Clean-clone reproducibility was **not verified** in this browser pass. The public repository does not include `.env` or the `components/` directory referenced by Docker and Compose, so a clean clone cannot currently be claimed to build without additional project files and environment values.
+
+## Infrastructure files
+
+- [Docker Compose](./docker-compose.yml)
+- [Application Dockerfile](./Dockerfile)
+- [Nginx Dockerfile](./nginx/Dockerfile)
+- [Nginx configuration](./nginx/nginx.conf)
+- [Nginx configuration without load balancing](./nginx/nginx-without-balance.conf)
+- [GitLab CI configuration](./.gitlab-ci.yml)
+- [Application configuration](./configs/config.yml)
+- [Makefile](./Makefile)
+
+## Project context
+
+BookSmart is a university coursework project. The detailed course materials are preserved below for context.
+
+---
+
+## Course documentation
+
 # ППО. Лабораторная №1
 
 ## 1. Название проекта
@@ -501,6 +562,6 @@ __Читатель__:
 	5. Нажимает кнопку "Подробнее" на карточке выбранной брони и переходит на страницу с более подробной информации о брони;
 	6. Пользователь нажимает кнопку "Продлить бронь". Меняется статус брони и дата возврата книги.
 
-## PS 
+## Состояние учебной документации
 
-Тут и сделаны абсолютно все лабы по ППО, включая даже 7-ю, 8-ю и 9-ю. Схемы в связи с 8-й лабой не обновлял -- лень)
+Некоторые схемы из ранних лабораторных работ не синхронизированы с более поздними этапами проекта.
