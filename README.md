@@ -17,7 +17,7 @@ Based on the services wired up in [`internal/app/app.go`](./internal/app/app.go)
 - **Go** - application language.
 - **Gin** - HTTP framework, used via the `BookSmart-web-api` component (declared as a dependency in `go.mod`).
 - **PostgreSQL** - primary datastore; a MongoDB implementation is also wired in as an alternative, selected via `configs/config.yml`.
-- **Redis** - caching layer used by the reader repository.
+- **Redis** - used to store refresh-token mappings with TTL.
 - **Docker / Docker Compose** - local multi-container environment (app, database, cache, Nginx).
 
 ## Infrastructure
@@ -56,7 +56,7 @@ make run-app
 
 It builds the Compose images and starts the application, database, cache, proxy, administration, and frontend services.
 
-Clean-clone reproducibility was **not verified** in this browser pass. The public repository does not include `.env` or the `components/` directory referenced by Docker and Compose, so a clean clone cannot currently be claimed to build without additional project files and environment values.
+The full local environment requires additional coursework frontend files that are not included in this repository.
 
 ## Infrastructure files
 
