@@ -2,6 +2,24 @@
 
 BookSmart is an educational library-booking service developed as university coursework. This repository demonstrates a multi-container application environment; it is not presented as production experience.
 
+## What's implemented
+
+Based on the services wired up in [`internal/app/app.go`](./internal/app/app.go):
+
+- reader registration and JWT-based authentication;
+- book catalog and search;
+- library card issuance;
+- book reservation and renewal;
+- book ratings.
+
+## Stack
+
+- **Go** - application language.
+- **Gin** - HTTP framework, used via the `BookSmart-web-api` component (declared as a dependency in `go.mod`).
+- **PostgreSQL** - primary datastore; a MongoDB implementation is also wired in as an alternative, selected via `configs/config.yml`.
+- **Redis** - caching layer used by the reader repository.
+- **Docker / Docker Compose** - local multi-container environment (app, database, cache, Nginx).
+
 ## Infrastructure
 
 - **Docker** packages the Go application, while a separate Nginx Dockerfile builds the proxy image with additional modules.
@@ -50,6 +68,15 @@ Clean-clone reproducibility was **not verified** in this browser pass. The publi
 - [GitLab CI configuration](./.gitlab-ci.yml)
 - [Application configuration](./configs/config.yml)
 - [Makefile](./Makefile)
+
+## Where to look at the code
+
+- [`cmd/app/main.go`](./cmd/app/main.go) - entry point.
+- [`internal/app/app.go`](./internal/app/app.go) - application bootstrap: config, logger, repositories, services, HTTP handler, router.
+- [`internal/config`](./internal/config) - configuration loading.
+- [`configs/config.yml`](./configs/config.yml) - application configuration.
+- [`nginx`](./nginx) - reverse proxy configuration.
+- HTTP handlers, business logic, and repositories live in separate components: [BookSmart-web-api](https://github.com/nikitalystsev/BookSmart-web-api), [BookSmart-services](https://github.com/nikitalystsev/BookSmart-services), [BookSmart-repo-postgres](https://github.com/nikitalystsev/BookSmart-repo-postgres), [BookSmart-repo-mongo](https://github.com/nikitalystsev/BookSmart-repo-mongo).
 
 ## Project context
 
